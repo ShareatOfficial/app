@@ -6,7 +6,7 @@ runs:
     - name: Setup Java
       uses: actions/setup-java@v4.0.0
       with:
-        java-version: "17"
-        distribution: "temurin"
+        java-version: "21"
+        distribution: "zulu"
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v5.0.0
