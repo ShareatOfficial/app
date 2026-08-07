@@ -22,13 +22,15 @@ jobs:
         uses: ./.github/actions/gradle-setup
 
       - name: Run unit tests
-        run: ./gradlew jvmTest
+        run: ./gradlew :shared:testAndroidHostTest
 
       - name: Upload test reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: "**/build/reports/tests/"
+          if-no-files-found: ignore
 
   build-android:
     name: Build Android
@@ -62,19 +64,17 @@ jobs:
       - name: Gradle setup
         uses: ./.github/actions/gradle-setup
 
-      - name: Set Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
-
       - name: Build iOS simulator app
         run: |
           xcodebuild build \
-          -project iosApp/JetcasterMigration.xcodeproj \
+          -project iosApp/iosApp.xcodeproj \
           -configuration Debug \
-          -scheme JetcasterMigration \
+          -scheme iosApp \
           -sdk iphonesimulator \
           -arch arm64 \
           -derivedDataPath ./build \
-          -verbose
+          -verbose \
+          CODE_SIGNING_ALLOWED=NO
 
       - name: Upload App Folder
         uses: actions/upload-artifact@v4
@@ -94,10 +94,10 @@ jobs:
         uses: ./.github/actions/gradle-setup
 
       - name: Build Wasm distribution
-        run: ./gradlew :wasmApp:wasmJsBrowserDistribution
+        run: ./gradlew :webApp:wasmJsBrowserDistribution
 
       - name: Upload Wasm app
         uses: actions/upload-artifact@v4
         with:
           name: wasm-app
-          path: wasmApp/build/dist/wasmJs/productionExecutable/
+          path: webApp/build/dist/wasmJs/productionExecutable/
