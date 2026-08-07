@@ -1,0 +1,53 @@
+name: Nueva tarea
+description: Crea una tarea para el equipo de Shareat
+title: "[TASK] "
+projects: ["ShareatOfficial/1"]
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: Resumen
+      description: Describe brevemente el objetivo de la tarea.
+      placeholder: Como usuario quiero...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto
+      description: Explica por qué necesitamos realizar esta tarea.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Criterios de aceptación
+      description: Indica qué debe cumplirse para considerar la tarea terminada.
+      placeholder: |
+        - [ ] Criterio 1
+        - [ ] Criterio 2
+        - [ ] Criterio 3
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      options:
+        - Baja
+        - Media
+        - Alta
+        - Urgente
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Notas técnicas
+      description: Añade dependencias, una propuesta técnica o información adicional.
+    validations:
+      required: false
