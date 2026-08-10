@@ -28,5 +28,7 @@ dependencyResolutionManagement {
 }
 
 include(":androidApp")
+include(":feature:home")
+include(":feature:profile")
 include(":shared")
 include(":webApp")
