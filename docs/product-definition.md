@@ -267,13 +267,22 @@ The targets below must be made measurable during technical refinement.
 - Web applications targeting JavaScript and WebAssembly.
 - Gradle version catalogue and Kotlin tests available in `commonTest`.
 
+### Recorded frontend architecture decisions
+
+- Each new feature is split into `data`, `domain`, and `ui` Gradle modules with inward dependencies toward domain.
+- Frontend development starts with repository mocks in `data`; infrastructure DTOs do not cross into domain or UI.
+- Koin is the dependency injection framework, with the app module acting as the composition root.
+- Each screen declares a navigation interface in its `ui` module. The app owns its implementation and `NavKey`, while the feature owns its entry builder.
+- Repositories, use cases, and ViewModels have JUnit unit tests.
+- Implementation guidance lives in the [technical documentation index](./README.md).
+
 ### Architecture decisions still open
 
 - Which platforms are included in the MVP; repository support does not automatically mean simultaneous launch.
-- Backend technology, API style, database, storage, and hosting.
-- Domain/data/presentation boundaries in shared code.
-- Navigation, dependency injection, networking, serialisation, persistence, and image loading libraries.
-- Authentication/session model and role-based authorisation.
+- Backend technology, API style, database, storage, and hosting (#34).
+- Refined data model and representation contracts (#35).
+- Authentication/session model and role-based authorisation (#33).
+- Networking, serialisation, persistence, and image loading libraries.
 - Environment strategy for local, development, staging, and production.
 - CI/CD, signing, store distribution, feature flags, and secrets management.
 - Observability and analytics providers.

@@ -2,6 +2,7 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Web.
 
 ## Project documentation
 
+- [Technical documentation index](./docs/README.md)
 - [Product definition and kickoff notes](./docs/product-definition.md)
 
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
