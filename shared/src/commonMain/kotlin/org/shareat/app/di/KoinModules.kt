@@ -2,7 +2,11 @@ package org.shareat.app.di
 
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import org.shareat.app.navigation.Navigator
 
-val sharedModule: Module = module {}
+val sharedModule: Module = module {
+    includes(navigationModule)
+    factory { parameters -> Navigator(parameters.get()) }
+}
 
 expect val platformModule: Module

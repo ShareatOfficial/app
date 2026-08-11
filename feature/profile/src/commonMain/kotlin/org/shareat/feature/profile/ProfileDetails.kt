@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Profile(
-    onOpenDetails: () -> Unit = {},
+fun ProfileDetails(
+    onBack: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
@@ -27,9 +27,9 @@ fun Profile(
                 Alignment.CenterVertically,
             ),
         ) {
-            Text("Profile", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = onOpenDetails) {
-                Text("Open profile details")
+            Text("Profile details", style = MaterialTheme.typography.headlineMedium)
+            Button(onClick = onBack) {
+                Text("Back to profile")
             }
         }
     }
