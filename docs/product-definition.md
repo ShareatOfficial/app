@@ -1,6 +1,6 @@
-# Shareat — Product definition and kickoff notes
+# Shareat — Product definition and MVP decisions
 
-> Working document created from the kickoff meeting. It separates agreed scope from proposals and open decisions so that assumptions do not silently become requirements.
+> Product source of truth. MVP decisions in this document were closed on 2026-08-12 for [issue #7](https://github.com/ShareatOfficial/app/issues/7). Anything explicitly labelled post-MVP is not required for the first release.
 
 ## 1. Product objective
 
@@ -14,9 +14,21 @@ The initial value proposition is:
 
 ### Expected business result
 
-Validate that customers are willing to review individual dishes—not only restaurants—and that restaurants see enough value in maintaining their menu and consulting feedback to support a future freemium product.
+Validate that customers are willing to review individual dishes—not only restaurants—and that restaurants see enough value in maintaining a public menu to pay a monthly subscription.
 
 ## 2. Users and main use cases
+
+### Primary launch user
+
+The primary MVP user is a customer in Spain who wants to discover restaurants, consult a structured menu, and rate restaurants or individual dishes. Restaurants are the supply-side user: the pilot will onboard as many willing restaurants as the team can support rather than waiting for a fixed minimum cohort.
+
+The pilot scope is:
+
+- Geography: Spain; no city-level restriction for the initial pilot.
+- Product language: Spanish. User-facing copy must remain localisable.
+- Platforms: Android, iOS, and web launch together.
+- Restaurant cohort: invitation/onboarding based on availability, with no numeric launch gate.
+- Customer access: open beta; anonymous browsing is allowed.
 
 ### Visitor
 
@@ -60,7 +72,7 @@ Restaurants cannot rate dishes or restaurants.
 - Restaurant and dish reviews.
 - Restaurant discovery and public menu browsing.
 - A personal review history.
-- Monetisation experiments around access to reviews or restaurant analytics.
+- A monthly restaurant subscription for publishing and keeping a menu public.
 
 ### Explicitly outside the MVP
 
@@ -69,35 +81,39 @@ Restaurants cannot rate dishes or restaurants.
 - Instagram-like activity experience.
 - Public collaborative or Spotify-like lists.
 - Advanced map search.
-- Multiple menus per restaurant unless capacity allows after the core flow works.
+- Multiple menus per restaurant.
 
-### Rules to validate
+### Agreed MVP rules
 
 - **Authentication:** browsing public content does not require an account. Creating reviews, favourites, personal content, or restaurant content does.
 - **Review authorship:** only customer accounts can create ratings and reviews.
 - **Review targets:** a review targets either one restaurant or one dish.
-- **Personal entries:** a customer may record a restaurant that is not on Shareat. The team must decide whether this entry is private, can become public, and how duplicates are merged.
+- **Personal entries:** customer-created restaurants outside the official catalogue are post-MVP.
 - **Menu visibility:** only enabled menus and dishes are visible to visitors.
-- **Ratings:** the rating scale, editing policy, aggregation rules, and whether one review per user and target is enforced remain open.
-- **Allergens:** the source of allergen information and responsibility for its accuracy must be defined before the filter is released.
+- **Ratings:** integer scale from 1 to 5, with one review per customer and target. The customer can edit or delete it.
+- **Review aggregate:** arithmetic mean of public ratings, rounded to one decimal, displayed with the public rating count. Private reviews are excluded.
+- **Comments and visibility:** a rating may include an optional comment. The author chooses whether the whole review is public or private. A private review is visible only to its author.
+- **Moderation:** public reviews are published immediately. Signed-in users can report them; moderators can hide them while investigating and restore or remove them, with an audit trail. Restaurant owners cannot suppress reviews themselves.
+- **Allergens:** optional, restaurant-supplied information in the MVP. The restaurant is responsible for keeping it accurate; Shareat must display its source and a notice to confirm allergens directly with the restaurant. Allergen filtering and verification are post-MVP.
 
-## 4. MVP prioritisation
+## 4. MVP and post-MVP boundary
 
-### Must
+### MVP
 
 - Restaurant registration and sign-in.
 - Customer registration and sign-in.
 - Restaurant list.
 - Restaurant detail with its profile, menu, and dishes.
 - A restaurant can create and publish one menu.
+- The MVP menu is entered as structured data; each dish requires a name and price, while its description, image, and allergens are optional.
 - A customer can rate and optionally review a restaurant.
 - A customer can rate and optionally review a dish.
 - A customer can see their own reviews.
 - A first monetisation experiment.
 
-> **Open decision:** RevenueCat supports in-app purchases and subscriptions, not ad delivery. Decide whether the experiment is an ad placement using a separate ad provider, a RevenueCat-managed paywall/subscription, or rewarded access with both systems.
+> **Monetisation experiment:** a restaurant pays a monthly subscription to publish and keep its menu public. Billing does not restrict sign-in, account recovery, subscription management, data export, privacy settings, or account deletion. When the paid period ends, the menu becomes unpublished but remains editable and exportable by its owner. Price, trial length, and billing provider are implementation decisions due before billing work starts.
 
-### Should
+### Post-MVP — next candidates
 
 - Restaurant verification.
 - Customer email verification.
@@ -108,15 +124,16 @@ Restaurants cannot rate dishes or restaurants.
 - Personal entry for a restaurant not yet on Shareat.
 - QR menu.
 
-### Could
+### Post-MVP — later candidates
 
 - Restaurant search on a map.
 - Public personal lists for restaurants and dishes.
 - Multiple menus per restaurant.
+- Menu import from images or PDF. Images remain available as optional dish media in the MVP, but they are not parsed into menu data.
 - Push notifications.
 - Deep links and native sharing for a dish, restaurant, list, or profile.
 
-### Not now
+### Post-MVP — not planned until the core product shows retention
 
 - Social feed.
 - Follow/unfollow.
@@ -187,15 +204,26 @@ Restaurants cannot rate dishes or restaurants.
 
 ### Reviews
 
-- A customer selects a rating and may add a comment.
+- A customer selects an integer rating from 1 to 5 and may add a comment.
+- There is at most one review per customer and target; resubmitting edits that review instead of creating a duplicate.
+- The author can edit, delete, and switch their review between public and private.
+- Public aggregates use only currently visible public ratings and show the arithmetic mean rounded to one decimal plus the rating count.
 - Reviews store author, target, timestamps, and moderation status.
 - The restaurant and dish views show the agreed rating aggregate.
 - A customer can view their own reviews even if a target is later disabled, subject to retention policy.
+- Public reviews appear immediately and can be reported. Moderator actions require a reason and an audit entry.
+
+### Menu publishing
+
+- A restaurant manually creates one structured menu in the MVP.
+- A dish requires a name and price. Description, image, and allergen declarations are optional.
+- The restaurant can keep the menu as a draft or publish it while its subscription is active.
+- Importing a whole menu from an image or PDF is post-MVP. The future import must produce editable structured dishes rather than making an inaccessible file the only menu representation.
 
 ### Personal organisation
 
 - Favourites, eaten status, personal lists, and private restaurants are separate concepts and should not be represented by a single generic flag.
-- These features are post-core unless explicitly promoted into the MVP.
+- These features are post-MVP unless this decision register is explicitly revised.
 
 ### Notifications and sharing
 
@@ -216,21 +244,19 @@ This is a product model, not a final database schema.
 - **PersonalRestaurant:** customer-owned external restaurant reference and visibility.
 - **List / ListItem:** owner, visibility, ordered restaurant/dish entries; post-MVP.
 - **Follow:** follower and followed customer; not now.
-- **Notification:** recipient, event type, payload, delivery/read state; post-core.
+- **Notification:** recipient, event type, payload, delivery/read state; post-MVP.
 
 ## 8. Non-functional requirements
 
-The targets below must be made measurable during technical refinement.
-
 - **Security:** secure session/token storage, server-side authorisation, rate limiting, input validation, secrets outside source control, and protection against account enumeration.
-- **Privacy:** GDPR-compliant consent, privacy notice, data export/deletion, retention rules, and minimum necessary personal data.
+- **Privacy:** collect only data needed for the documented purpose and record consent where required. Customers and restaurants can export their account and authored content in a portable format and request account deletion without a subscription. Account access is disabled immediately; active personal data is deleted or irreversibly anonymised within 30 days, and encrypted backup copies expire within 90 days. Public reviews disappear immediately on deletion; a restricted moderation copy may be retained for up to 30 days for appeals or abuse investigation, unless a documented legal obligation requires a longer hold.
 - **Accessibility:** semantic labels, scalable text, sufficient contrast, keyboard/focus support where applicable, and no flow that relies on colour alone.
-- **Performance:** define budgets for initial load, restaurant list, menu detail, image weight, and slow-network behaviour.
+- **Performance:** on a supported mid-range device and a stable 4G connection, the 75th percentile for initial usable content and restaurant/menu detail is at most 3 seconds; visible feedback after an interaction appears within 100 ms; list scrolling targets 60 frames per second; and a delivered dish image is at most 500 KB. A recoverable timeout state appears within 10 seconds on a slow or failed network.
 - **Reliability:** graceful error handling, retry policy, idempotent writes, backups, and a recovery plan.
-- **Compatibility:** decide the supported Android/iOS versions and browsers; the current Android minimum is API 24.
-- **Localisation:** decide launch language or languages; do not hard-code user-facing copy.
+- **Compatibility:** Android API 24 (Android 7.0) and later; iOS 18.2 and later; and the current and immediately previous major versions of Chrome, Firefox, Safari, and Edge at release time. Phone layouts are required; tablet and desktop-web layouts must remain usable but do not require dedicated MVP optimisation.
+- **Localisation:** Spanish is the launch language; user-facing copy must not be hard-coded so more languages can be added post-MVP.
 - **Observability:** structured logs, crash reporting, API health monitoring, and alerts without sensitive data.
-- **Moderation:** reporting, review visibility, abuse handling, and an audit trail before public comments scale.
+- **Moderation:** reporting, temporary hiding, removal/restoration, a reason for every action, and an audit trail are required before public comments launch.
 
 ## 9. Data and integrations
 
@@ -243,18 +269,16 @@ The targets below must be made measurable during technical refinement.
 - Consent, verification, moderation, and audit state.
 - Product analytics events using pseudonymous identifiers where possible.
 
-### Integrations to decide
+### Integration scope
 
-- Authentication and email verification provider.
-- Backend/API and database.
-- Image/file storage and transformation.
-- Maps, places, geocoding, and nearby search.
-- Push notifications.
-- Deep links.
-- Transactional email.
+MVP integrations whose provider or implementation remains a technical decision in section 17:
+
+- Authentication, account recovery, and transactional email.
+- Backend/API, database, and image/file storage and transformation.
 - Analytics, crash reporting, and monitoring.
-- RevenueCat for subscriptions or in-app purchases if that monetisation model is selected.
-- An ad network if advertising is selected.
+- Monthly subscription billing, using RevenueCat or another provider that meets the platform and store requirements.
+
+Maps/places, push notifications, deep links, and advertising integrations are post-MVP.
 
 ## 10. Current stack and architecture
 
@@ -278,16 +302,15 @@ The targets below must be made measurable during technical refinement.
 
 ### Architecture decisions still open
 
-- Which platforms are included in the MVP; repository support does not automatically mean simultaneous launch.
-- Backend technology, API style, database, storage, and hosting (#34).
-- Refined data model and representation contracts (#35).
-- Authentication/session model and role-based authorisation (#33).
+- Backend technology, API style, database, storage, and hosting ([#34](https://github.com/ShareatOfficial/app/issues/34)).
+- Refined data model and representation contracts ([#35](https://github.com/ShareatOfficial/app/issues/35)).
+- Authentication/session model and role-based authorisation ([#33](https://github.com/ShareatOfficial/app/issues/33)).
 - Networking, serialisation, persistence, and image loading libraries.
 - Environment strategy for local, development, staging, and production.
 - CI/CD, signing, store distribution, feature flags, and secrets management.
 - Observability and analytics providers.
 
-An Architecture Decision Record should document each material choice and its trade-offs before implementation depends on it.
+These are technical follow-ups, not unresolved MVP product scope. Their owners and deadlines are recorded in section 17. An Architecture Decision Record should document each material choice and its trade-offs before implementation depends on it.
 
 ## 11. Acceptance criteria for the MVP
 
@@ -310,7 +333,7 @@ The MVP is functionally complete when all of the following are demonstrable in a
 
 ### Phase 0 — Product and technical definition
 
-- Resolve the open decisions in this document.
+- Resolve the dated technical decisions in section 17.
 - Produce low-fidelity critical flows and a small design system.
 - Define the API/data model and choose the backend and identity strategy.
 - Set up environments, CI, quality checks, analytics taxonomy, and Definition of Done.
@@ -343,7 +366,11 @@ Estimation should happen by epic after the Phase 0 decisions. Use ranges and rec
 
 ## 13. Quality and ways of working
 
-### Proposed workflow to validate
+### Ownership
+
+The current team—[@javigp2002](https://github.com/javigp2002), [@tonela10](https://github.com/tonela10), and [@TorrellesN](https://github.com/TorrellesN)—shares responsibility for product, design, engineering, QA/acceptance, moderation, and launch. Any member can perform any role; a release or moderation action must still record which member executed and approved it. All three are global code owners in `.github/CODEOWNERS`.
+
+### Workflow
 
 - Short-lived feature branches and pull requests into the agreed integration branch.
 - At least one review for product code; additional review for security-sensitive changes.
@@ -394,7 +421,7 @@ Final targets require a baseline and measurement window. Candidate metrics are:
 | Fraudulent or abusive reviews | Reputational and legal risk | Add reporting, moderation states, rate limits, and auditability |
 | Incorrect allergen information | Health and legal risk | Define provenance, disclaimers, edit responsibility, and verification before launch |
 | Monetisation harms the core experience | Lower activation/retention | Test a narrow experiment with guardrail metrics |
-| RevenueCat mistaken for an ad provider | Blocked monetisation implementation | Decide the business model and integration before estimating it |
+| Billing provider or store rules conflict with the subscription flow | Blocked monetisation implementation | Validate the provider and store-specific rules before estimating billing work |
 | Location and push permissions reduce trust | Lower opt-in | Ask contextually, explain value, and support denial gracefully |
 | Architecture chosen before platform scope | Unnecessary complexity | Decide launch platforms and vertical slice first |
 
@@ -402,7 +429,7 @@ Final targets require a baseline and measurement window. Candidate metrics are:
 
 ### Launch readiness
 
-- Pilot/beta cohort and acceptance owner identified.
+- The pilot covers Spain, launches in Spanish on Android, iOS, and web, and onboards restaurants as the team can support. The three shared owners are acceptance owners.
 - Store, signing, domain, privacy, and support materials ready for chosen platforms.
 - Production data migration/seed plan tested.
 - Feature flags or kill switches for risky integrations.
@@ -425,23 +452,39 @@ Final targets require a baseline and measurement window. Candidate metrics are:
 - Notifications.
 - Social graph and feed, only after the core marketplace shows retention.
 
-## 17. Decisions required before refinement
+## 17. Decision register
 
-The kickoff should assign an owner and deadline to each item:
+### Closed for the MVP on 2026-08-12
 
-- [ ] Confirm the one-sentence objective and primary launch user.
-- [ ] Choose MVP platforms: Android, iOS, web, or a subset.
-- [ ] Confirm that public browsing is anonymous and define which actions require authentication.
-- [ ] Define rating scale, review editing/deletion, uniqueness, aggregate, and moderation rules.
-- [ ] Define what “subir un menú” includes: images/PDF, structured dishes, or both.
-- [ ] Decide whether comments are optional and whether public reviews appear in the MVP.
-- [ ] Decide how external/personal restaurants work and how they become official listings.
-- [ ] Select backend, database, authentication, storage, hosting, and environments.
-- [ ] Resolve monetisation: ads, subscription/paywall, rewarded access, or a staged experiment.
-- [ ] Choose the launch geography, language, and seeded restaurant cohort.
-- [ ] Define supported devices/OS/browser versions and measurable performance targets.
-- [ ] Define privacy, moderation, allergen liability, retention, export, and account deletion policies.
-- [ ] Agree analytics events, success targets, and guardrail metrics.
-- [ ] Assign product, design, technical, QA/acceptance, moderation, and launch owners.
-- [ ] Agree Definition of Ready, Definition of Done, branching/PR policy, and release cadence.
-- [ ] Set the next deliverable: validated critical-flow wireframes plus a technical architecture proposal.
+| Decision | Outcome | Owners |
+| --- | --- | --- |
+| Objective and primary user | Help customers in Spain discover restaurants and rate restaurants and dishes | Entire team |
+| Launch scope | Spain, Spanish, Android, iOS, and web; open customer beta and availability-based restaurant cohort | Entire team |
+| Public access | Anonymous browsing; authentication for write and personal actions | Entire team |
+| Reviews | Integer 1–5; one per customer/target; editable/deletable; optional comment; public/private choice; immediate public publication with reporting | Entire team |
+| Aggregation | Arithmetic mean of visible public ratings, one decimal, with rating count | Entire team |
+| MVP menu | One manually entered structured menu; dish name and price required; description, image, and allergens optional | Entire team |
+| Menu files | Whole-menu image/PDF import is post-MVP | Entire team |
+| Monetisation | Monthly restaurant subscription to publish and keep a menu public; account and privacy actions never paywalled | Entire team |
+| Compatibility and performance | Targets in section 8 | Entire team |
+| Privacy and moderation | Export/deletion and retention limits in section 8; immediate publication, reporting, moderator controls, and audit trail | Entire team |
+| Responsibilities | `@javigp2002`, `@tonela10`, and `@TorrellesN` share every delivery role and global code ownership | Entire team |
+| Delivery policy | Definition of Ready, Definition of Done, short-lived branches, linked PRs, review, and staged validation as defined in this document | Entire team |
+
+### Pending technical or experiment implementation decisions
+
+These items do not change the agreed MVP product boundary. “Entire team” means all three owners above; the person implementing an item records the final choice in its issue or ADR.
+
+| Pending decision | Owner | Decision due | Tracking/deliverable |
+| --- | --- | --- | --- |
+| Authentication, session, recovery, and role/ownership authorisation | Entire team | 2026-08-26 | [Issue #33](https://github.com/ShareatOfficial/app/issues/33) |
+| Backend, API style, database, storage, hosting, and environments | Entire team | 2026-08-26 | [Issue #34](https://github.com/ShareatOfficial/app/issues/34) |
+| Data model and representation contracts | Entire team | 2026-08-26 | [Issue #35](https://github.com/ShareatOfficial/app/issues/35) |
+| Networking, serialisation, local persistence, and image-loading libraries | Entire team | 2026-09-02 | Architecture proposal/ADR |
+| CI/CD, signing, distribution, feature flags, secrets, observability, and analytics providers | Entire team | 2026-09-02 | Architecture proposal/ADRs |
+| Subscription price, trial, billing provider, grace/retry behaviour, and store-specific rules | Entire team | 2026-09-09 | Monetisation experiment specification |
+| Analytics event taxonomy, baselines, success thresholds, and monetisation guardrails | Entire team | 2026-09-09 | Measurement plan |
+| Validation of privacy notice, allergen wording, and retention policy for launch | Entire team | 2026-09-09 | Launch/privacy checklist |
+| Release cadence and the first release window | Entire team | 2026-09-09 | Release plan |
+
+The next Phase 0 deliverable is a validated set of critical-flow wireframes plus the technical architecture proposal. It is owned by the entire team and due on 2026-09-09.
