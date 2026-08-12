@@ -12,10 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.shareat.feature.profile.navigation.ProfileNavigation
 
 @Composable
 fun Profile(
-    onOpenDetails: () -> Unit = {},
+    navigator: ProfileNavigation,
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
@@ -28,8 +29,8 @@ fun Profile(
             ),
         ) {
             Text("Profile", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = onOpenDetails) {
-                Text("Open profile details")
+            Button(onClick = navigator::openEditProfile) {
+                Text("Edit profile")
             }
         }
     }

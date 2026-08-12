@@ -12,10 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.shareat.feature.home.navigation.HomeNavigation
 
 @Composable
 fun Home(
-    onOpenDetails: () -> Unit = {},
+    navigator: HomeNavigation,
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
@@ -28,7 +29,7 @@ fun Home(
             ),
         ) {
             Text("Home", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = onOpenDetails) {
+            Button(onClick = navigator::openHomeDetails) {
                 Text("Open home details")
             }
         }

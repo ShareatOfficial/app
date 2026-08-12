@@ -7,4 +7,4 @@ import kotlinx.serialization.Serializable
 data object ProfileKey : NavKey
 
 @Serializable
-data object ProfileDetailsKey : NavKey
+data object EditProfileKey : NavKey

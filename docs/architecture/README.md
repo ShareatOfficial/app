@@ -45,9 +45,10 @@ Contiene:
 - pantallas y componentes propios de la feature;
 - ViewModels, estados y efectos;
 - interfaces de navegación expresadas como intenciones;
-- entry builders que conectan una key proporcionada por la app con la pantalla.
 
 Depende de `domain`; no depende de implementaciones concretas de `data` ni del módulo de app.
+
+Las keys, implementaciones de las interfaces y entradas Koin Navigation 3 viven en `:shared`, que conecta cada pantalla con el grafo de la aplicación.
 
 ## Dirección de dependencias
 
