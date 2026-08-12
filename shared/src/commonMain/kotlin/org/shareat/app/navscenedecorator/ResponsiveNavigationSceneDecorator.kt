@@ -35,6 +35,8 @@ import androidx.navigation3.scene.SceneDecoratorStrategyScope
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.window.core.layout.WindowSizeClass
 
+const val HIDE_NAVIGATION_METADATA = "hideNavigation"
+
 data class ResponsiveNavigationScene<T : Any>(
     private val scene: Scene<T>,
     private val sharedTransitionScope: SharedTransitionScope,
@@ -114,6 +116,15 @@ fun <T : Any> rememberResponsiveNavigationSceneDecoratorStrategy(
     }
 }
 
+/**
+ * A [SceneDecoratorStrategy] that decorates a [Scene] with a navigation bar and a navigation rail.
+ * Scenes marked with [HIDE_NAVIGATION_METADATA] are returned without decoration.
+ *
+ * @param windowSizeClass the current window size class
+ * @param sharedTransitionScope the current shared transition scope
+ * @param navBarContent the content of the navigation bar
+ * @param navRailContent the content of the navigation rail
+ */
 class ResponsiveNavigationSceneDecoratorStrategy<T : Any>(
     private val windowSizeClass: WindowSizeClass,
     private val sharedTransitionScope: SharedTransitionScope,
@@ -122,6 +133,10 @@ class ResponsiveNavigationSceneDecoratorStrategy<T : Any>(
 ) : SceneDecoratorStrategy<T> {
 
     override fun SceneDecoratorStrategyScope<T>.decorateScene(scene: Scene<T>): Scene<T> {
+        if (scene.metadata[HIDE_NAVIGATION_METADATA] == true) {
+            return scene
+        }
+
         return ResponsiveNavigationScene(
             scene,
             sharedTransitionScope,

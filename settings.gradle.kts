@@ -30,5 +30,6 @@ dependencyResolutionManagement {
 include(":androidApp")
 include(":feature:home")
 include(":feature:profile")
+include(":feature:login")
 include(":shared")
 include(":webApp")
