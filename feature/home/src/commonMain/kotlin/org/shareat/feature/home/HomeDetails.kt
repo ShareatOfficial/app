@@ -13,12 +13,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
-import org.shareat.feature.home.navigation.HomeNavigation
+import org.shareat.feature.home.navigation.HomeDetailsNavigation
 
 @Composable
-fun Home(
+fun HomeDetails(
     modifier: Modifier = Modifier,
-    navigator: HomeNavigation = koinInject(),
+    navigator: HomeDetailsNavigation = koinInject(),
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(
@@ -29,9 +29,9 @@ fun Home(
                 Alignment.CenterVertically,
             ),
         ) {
-            Text("Home", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = navigator::openHomeDetails) {
-                Text("Open home details")
+            Text("Home details", style = MaterialTheme.typography.headlineMedium)
+            Button(onClick = navigator::goBack) {
+                Text("Back to home")
             }
         }
     }

@@ -1,4 +1,4 @@
-package org.shareat.feature.home
+package org.shareat.feature.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,12 +13,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
-import org.shareat.feature.home.navigation.HomeNavigation
+import org.shareat.feature.profile.navigation.EditProfileNavigation
 
 @Composable
-fun Home(
+fun EditProfile(
     modifier: Modifier = Modifier,
-    navigator: HomeNavigation = koinInject(),
+    navigator: EditProfileNavigation = koinInject(),
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(
@@ -29,9 +29,9 @@ fun Home(
                 Alignment.CenterVertically,
             ),
         ) {
-            Text("Home", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = navigator::openHomeDetails) {
-                Text("Open home details")
+            Text("Edit profile", style = MaterialTheme.typography.headlineMedium)
+            Button(onClick = navigator::goBack) {
+                Text("Back to profile")
             }
         }
     }

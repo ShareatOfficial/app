@@ -1,24 +1,9 @@
-/*
- * Copyright 2026 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package org.shareat.app.navscenedecorator
+package org.shareat.app.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
@@ -35,15 +20,18 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
-import org.shareat.feature.home.HomeRoute
-import org.shareat.feature.profile.ProfileRoute
+import org.shareat.app.navigation.home.HomeDetailsKey
+import org.shareat.app.navigation.home.HomeKey
+import org.shareat.app.navigation.profile.EditProfileKey
+import org.shareat.app.navigation.profile.ProfileKey
 
 private val navigationConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
-            subclass(HomeRoute::class, HomeRoute.serializer())
-            subclass(ProfileRoute::class, ProfileRoute.serializer())
+            subclass(HomeKey::class, HomeKey.serializer())
+            subclass(HomeDetailsKey::class, HomeDetailsKey.serializer())
+            subclass(ProfileKey::class, ProfileKey.serializer())
+            subclass(EditProfileKey::class, EditProfileKey.serializer())
         }
     }
 }
@@ -61,7 +49,7 @@ fun rememberNavigationState(
         configuration = navigationConfiguration,
         serializer = MutableStateSerializer(PolymorphicSerializer(NavKey::class)),
     ) {
-        androidx.compose.runtime.mutableStateOf(startRoute)
+        mutableStateOf(startRoute)
     }
     val backStacks = topLevelRoutes.associateWith { route ->
         rememberNavBackStack(navigationConfiguration, route)

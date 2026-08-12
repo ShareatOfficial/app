@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -11,21 +12,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
-import kotlinx.serialization.Serializable
-
-@Serializable
-data object ProfileRoute : NavKey
+import org.koin.compose.koinInject
+import org.shareat.feature.profile.navigation.ProfileNavigation
 
 @Composable
-fun Profile(modifier: Modifier = Modifier) {
+fun Profile(
+    modifier: Modifier = Modifier,
+    navigator: ProfileNavigation = koinInject(),
+) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.spacedBy(
+                16.dp,
+                Alignment.CenterVertically,
+            ),
         ) {
             Text("Profile", style = MaterialTheme.typography.headlineMedium)
+            Button(onClick = navigator::openEditProfile) {
+                Text("Edit profile")
+            }
         }
     }
 }
