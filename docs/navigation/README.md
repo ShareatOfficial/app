@@ -19,7 +19,10 @@ interface HomeNavigation {
 }
 
 @Composable
-fun Home(navigator: HomeNavigation) {
+fun Home(
+    modifier: Modifier = Modifier,
+    navigator: HomeNavigation = koinInject(),
+) {
     Button(onClick = navigator::openHomeDetails) {
         Text("Open home details")
     }
@@ -53,21 +56,17 @@ class HomeNavigationImpl(
 
 ## Entradas y módulos Koin
 
-Cada módulo de navegación de `shared` registra las implementaciones como factories parametrizadas. El parámetro es el `Navigator` asociado al `NavigationState` creado por Compose.
+Cada módulo de navegación de `shared` registra las implementaciones como factories. Estas pueden recibir el `Navigator` mediante parámetros o resolverlo automáticamente desde el contenedor Koin si ha sido registrado globalmente en la `App`.
 
 ```kotlin
 val homeNavigationModule = module {
     factory<HomeNavigation> { parameters ->
-        HomeNavigationImpl(navigator = parameters.get())
+        val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
+        HomeNavigationImpl(navigator = navigator)
     }
 
     navigation<HomeKey> {
-        val appNavigator = LocalNavigator.current
-        val homeNavigator = koinInject<HomeNavigation> {
-            parametersOf(appNavigator)
-        }
-
-        Home(navigator = homeNavigator)
+        Home()
     }
 }
 ```
@@ -83,7 +82,15 @@ val navigationModule = module {
 }
 ```
 
-`App` obtiene un único `koinEntryProvider<NavKey>()`. Koin agrega las entradas declaradas en los módulos incluidos. `LocalNavigator` solo se usa en la capa de navegación de `shared`; nunca dentro de una feature.
+`App` obtiene un único `koinEntryProvider<NavKey>()`. Koin agrega las entradas declaradas en los módulos incluidos. Para habilitar la inyección automática en las pantallas, el `Navigator` debe ser declarado en el contenedor Koin dentro de la `App`:
+
+```kotlin
+val navigator = koinInject<Navigator> { parametersOf(navigationState) }
+val koin = getKoin()
+remember(navigator) { koin.declare(navigator) }
+```
+
+`LocalNavigator` solo se usa en la capa de navegación de `shared`; nunca dentro de una feature.
 
 ## Top-level y subpantallas
 

@@ -12,12 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.koin.compose.koinInject
 import org.shareat.feature.profile.navigation.ProfileNavigation
 
 @Composable
 fun Profile(
-    navigator: ProfileNavigation,
     modifier: Modifier = Modifier,
+    navigator: ProfileNavigation = koinInject(),
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(

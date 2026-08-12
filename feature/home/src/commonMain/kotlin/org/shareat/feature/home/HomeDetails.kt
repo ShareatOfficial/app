@@ -12,12 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.koin.compose.koinInject
 import org.shareat.feature.home.navigation.HomeDetailsNavigation
 
 @Composable
 fun HomeDetails(
-    navigator: HomeDetailsNavigation,
     modifier: Modifier = Modifier,
+    navigator: HomeDetailsNavigation = koinInject(),
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column(

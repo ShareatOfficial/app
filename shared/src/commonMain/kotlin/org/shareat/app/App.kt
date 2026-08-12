@@ -4,8 +4,10 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.ui.NavDisplay
+import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -33,6 +35,10 @@ fun App() {
             val navigator = koinInject<Navigator> {
                 parametersOf(navigationState)
             }
+
+            val koin = getKoin()
+            remember(navigator) { koin.declare(navigator) }
+
             val navigationSceneDecorator =
                 rememberResponsiveNavigationSceneDecoratorStrategy<NavKey>(
                     navBar = { TopLevelNavigationBar(TOP_LEVEL_NAV_ITEMS, navigator) },
