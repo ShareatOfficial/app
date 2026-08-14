@@ -12,6 +12,7 @@ Esta carpeta es la fuente de verdad para explicar las decisiones técnicas y có
 | Navegación | [Navegación](./navigation/README.md) | Contratos por pantalla, `NavKey` y entry builders |
 | Inyección | [Koin](./dependency-injection/README.md) | Composition root, módulos y selección de repositorios |
 | Calidad | [Pruebas y mocks](./testing/README.md) | Repositorios mock y pruebas de repositorios, use cases y ViewModels |
+| Backend | [Supabase local](./supabase/README.md) | Migraciones, Auth, RLS, Storage y flujo local/alojado |
 
 ## Convención para nuevas guías
 

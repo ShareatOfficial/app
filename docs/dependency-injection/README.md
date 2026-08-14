@@ -13,45 +13,24 @@ Usar Koin para ensamblar implementaciones en el borde de la aplicación y permit
 - `:shared:ui` actúa como composition root: inicia Koin una vez, combina módulos y elige el modo de datos del entorno.
 - No se obtiene una dependencia globalmente desde una entidad, use case o repositorio.
 
-## Módulos de una feature
+## Módulos de datos
 
 ```kotlin
-enum class DataMode {
-    Mock,
-    Remote,
-}
-
-fun homeDataModule(dataMode: DataMode) = module {
-    single<HomeRepository> {
-        when (dataMode) {
-            DataMode.Mock -> MockHomeRepository()
-            DataMode.Remote -> RemoteHomeRepository(get())
-        }
-    }
-}
-
-val homeUiModule = module {
-    factory { GetRestaurants(repository = get()) }
-    viewModel { HomeViewModel(getRestaurants = get()) }
-}
+val fakeDataModule = module { /* deterministic repositories */ }
+fun supabaseDataModule(config: SupabaseConfig) = module { /* runtime repositories */ }
 ```
 
-El ejemplo describe la separación. Los nombres finales y las dependencias de Koin se fijarán al implementar #9 y se actualizarán aquí.
+`sharedModule` usa Supabase en Android, iOS y web. `previewSharedModule` usa los fakes y se selecciona explícitamente con `initKoin(useFakeData = true)` para demos, previews y pruebas.
 
 ## Composition root
 
 La app decide qué módulos cargar. La selección mock/remoto debe proceder de configuración de entorno, no de condiciones repartidas por pantallas o repositorios.
 
 ```kotlin
-fun appModules(dataMode: DataMode) = listOf(
-    homeDataModule(dataMode),
-    homeUiModule,
-    profileDataModule(dataMode),
-    profileUiModule,
-)
+modules(sharedModule, platformModule)
 ```
 
-Cada plataforma llama a una inicialización compartida y aporta únicamente dependencias específicas de plataforma cuando sean necesarias.
+Cada plataforma llama a una inicialización compartida. Android aporta almacenamiento de sesión cifrado mediante Keystore; iOS aporta Keychain; web usa el almacenamiento del navegador bajo CSP restrictiva.
 
 ## Reglas de scopes
 
@@ -68,12 +47,11 @@ No se debe arrancar un contenedor global de Koin para probar una regla de domini
 
 ## Checklist
 
-- [ ] Todas las dependencias obligatorias entran por constructor.
-- [ ] Solo el composition root selecciona mock o remoto.
-- [ ] No hay imports de Koin en `domain`.
-- [ ] Los módulos tienen nombres de feature y responsabilidad claros.
-- [ ] Existe una prueba de arranque/resolución del grafo.
-- [ ] Los scopes tienen una vida útil justificada.
+- [x] Todas las dependencias obligatorias entran por constructor.
+- [x] Solo el composition root selecciona fake o Supabase.
+- [x] No hay imports de Koin en `domain`.
+- [x] Existe una prueba de resolución para los grafos de datos.
+- [x] Los scopes tienen una vida útil justificada.
 
 ## Referencias
 

@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Definir un modelo común para previews, desarrollo con datos fake y una futura fuente remota sin acoplar la UI al proveedor de datos.
+Definir un modelo común para previews, datos fake deterministas y Supabase sin acoplar la UI al proveedor de datos.
 
 La implementación se divide en módulos Gradle con dependencias dirigidas hacia dominio:
 
@@ -38,7 +38,7 @@ Las excepciones por festivos o cierres puntuales se añadirán más adelante sin
 Un plato pertenece al catálogo de un restaurante y puede aparecer en varios menús. La relación es muchos-a-muchos mediante `MenuItem`:
 
 ```text
-Restaurant 1 — N Menu
+Restaurant 1 — 1 Menu (MVP)
 Restaurant 1 — N Dish
 Menu       N — N Dish  (MenuItem)
 ```
@@ -73,7 +73,13 @@ Los agregados incluyen únicamente reviews públicas con moderación `Visible`. 
 - `Offline`: error tipado sin esperas reales;
 - `Unavailable`: fallo recuperable del servicio.
 
-`fakeDataModule` enlaza las interfaces con estas implementaciones. Al introducir el backend se sustituirá ese módulo de composición por repositorios remotos; las entidades, interfaces y consumidores no deberán cambiar por detalles del proveedor.
+`fakeDataModule` enlaza las interfaces con estas implementaciones para previews y pruebas. `supabaseDataModule` enlaza los mismos contratos con Auth, PostgREST y Storage para runtime; las entidades, interfaces y consumidores no cambian por detalles del proveedor.
+
+## Persistencia Supabase
+
+Las migraciones versionadas viven en `supabase/migrations`. La identidad de `accounts.id` coincide con `auth.users.id`; el trigger de registro valida una única vez `customer|restaurant`, crea `accounts` y crea `customer_profiles` cuando corresponde. La autorización posterior consulta tablas protegidas por RLS, nunca metadata mutable del JWT.
+
+La relación N-N menú/plato se materializa en `menu_items`, que incluye `restaurant_id` y claves foráneas compuestas para impedir asociaciones entre restaurantes. Los agregados de rating son vistas `security_invoker` que solo consideran reviews públicas y visibles.
 
 ## Reglas revisables
 

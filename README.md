@@ -23,6 +23,10 @@ Use the run configurations provided by the run widget in your IDE's toolbar. You
   - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
 - iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
 
+### Local backend
+
+The Supabase CLI is pinned through `package-lock.json`. Run `npm install`, `npx supabase start`, then `npx supabase db reset --local`. Database and RLS tests run with `npx supabase test db`; see [the Supabase guide](./docs/supabase/README.md).
+
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
