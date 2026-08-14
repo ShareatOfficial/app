@@ -2,8 +2,8 @@ package org.shareat.app.navigation
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavKey
+import org.shareat.app.auth.SessionCoordinator
 import org.shareat.app.navigation.login.LoginKey
-import org.shareat.feature.login.isUserLogged
 
 val LocalNavigator = staticCompositionLocalOf<Navigator> {
     error("Navigator is not available in the current composition")
@@ -11,9 +11,12 @@ val LocalNavigator = staticCompositionLocalOf<Navigator> {
 
 interface RequiresLogin : NavKey
 
-class Navigator(val state: NavigationState) {
+class Navigator(
+    val state: NavigationState,
+    private val sessions: SessionCoordinator,
+) {
     fun navigate(route: NavKey) {
-        if (route is RequiresLogin && !isUserLogged) {
+        if (route is RequiresLogin && !sessions.isAuthenticated) {
             state.backStacks[state.topLevelRoute]?.add(LoginKey(route))
             return
         }

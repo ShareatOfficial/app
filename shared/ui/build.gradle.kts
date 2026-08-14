@@ -18,6 +18,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            binaryOption("bundleId", "org.shareat.shared")
         }
     }
 
@@ -80,6 +81,7 @@ kotlin {
             implementation(libs.jetbrains.material3.adaptiveNavigation3)
 
             implementation(libs.kotlinx.serialization.core)
+            implementation(libs.kotlinx.coroutines.core)
 
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)

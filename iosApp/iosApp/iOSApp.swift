@@ -9,6 +9,9 @@ struct iOSApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onOpenURL { url in
+                    AuthCallback_iosKt.handleAuthCallback(url: url.absoluteString)
+                }
         }
     }
 }
