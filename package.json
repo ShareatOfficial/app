@@ -1,0 +1,10 @@
+{
+  "name": "shareat-development-tools",
+  "private": true,
+  "scripts": {
+    "supabase": "supabase"
+  },
+  "devDependencies": {
+    "supabase": "2.110.0"
+  }
+}
