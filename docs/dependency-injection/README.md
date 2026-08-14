@@ -10,7 +10,7 @@ Usar Koin para ensamblar implementaciones en el borde de la aplicación y permit
 - Las clases reciben sus dependencias por constructor.
 - `data` publica las definiciones de sus repositorios y fuentes de datos.
 - `ui` publica las definiciones de sus ViewModels y, cuando corresponda, use cases.
-- `:shared` actúa como composition root: inicia Koin una vez, combina módulos y elige el modo de datos del entorno.
+- `:shared:ui` actúa como composition root: inicia Koin una vez, combina módulos y elige el modo de datos del entorno.
 - No se obtiene una dependencia globalmente desde una entidad, use case o repositorio.
 
 ## Módulos de una feature

@@ -56,7 +56,7 @@ class HomeNavigationImpl(
 
 ## Entradas y módulos Koin
 
-Cada módulo de navegación de `shared` registra las implementaciones como factories. Estas pueden recibir el `Navigator` mediante parámetros o resolverlo automáticamente desde el contenedor Koin si ha sido registrado globalmente en la `App`.
+Cada módulo de navegación de `:shared:ui` registra las implementaciones como factories. Estas pueden recibir el `Navigator` mediante parámetros o resolverlo automáticamente desde el contenedor Koin si ha sido registrado globalmente en la `App`.
 
 ```kotlin
 val homeNavigationModule = module {
@@ -90,7 +90,7 @@ val koin = getKoin()
 remember(navigator) { koin.declare(navigator) }
 ```
 
-`LocalNavigator` solo se usa en la capa de navegación de `shared`; nunca dentro de una feature.
+`LocalNavigator` solo se usa en la capa de navegación de `:shared:ui`; nunca dentro de una feature.
 
 ## Top-level y subpantallas
 
@@ -102,7 +102,7 @@ Cada key, incluida cualquier subpantalla, debe registrarse también en el `Seria
 
 - Una pantalla no navega directamente con una key de otra feature.
 - Cada pantalla que navega declara su propia interfaz; no se reutiliza una interfaz genérica con acceso a todo el grafo.
-- Las implementaciones de navegación y las keys permanecen en `shared`.
+- Las implementaciones de navegación y las keys permanecen en `:shared:ui`.
 - Los argumentos de navegación son mínimos, serializables y estables; la pantalla carga el dato completo mediante dominio.
 - La app es la única que conoce el grafo completo y puede implementar navegación entre features.
 - Cada key está registrada para restauración de estado.

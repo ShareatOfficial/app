@@ -237,7 +237,8 @@ This is a product model, not a final database schema.
 - **CustomerProfile:** display name, avatar, preferences, privacy settings.
 - **Restaurant:** owner account, name, description, address/location, category, verification state, publication state.
 - **Menu:** restaurant, name, description, schedule/type, enabled state, publication timestamps.
-- **Dish:** menu, name, description, price, image, allergen data, enabled state.
+- **Dish:** restaurant, name, description, image, allergen data, enabled state.
+- **MenuItem:** menu, dish, price, position, enabled state; join entity that permits a dish to appear in more than one menu.
 - **Review:** customer, target type, target ID, rating, comment, moderation state, timestamps.
 - **Favourite:** customer and restaurant/dish target.
 - **DishHistory:** customer, dish, eaten state and date.
@@ -285,7 +286,7 @@ Maps/places, push notifications, deep links, and advertising integrations are po
 ### Verified in the repository
 
 - Kotlin Multiplatform project.
-- Shared Compose Multiplatform UI/code in `shared`.
+- Shared Kotlin Multiplatform code split into `:shared:domain`, `:shared:data`, and `:shared:ui`; only UI applies Compose.
 - Android application.
 - iOS application entry point and shared framework integration.
 - Web applications targeting JavaScript and WebAssembly.

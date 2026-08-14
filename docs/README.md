@@ -8,6 +8,7 @@ Esta carpeta es la fuente de verdad para explicar las decisiones técnicas y có
 | --- | --- | --- |
 | Producto | [Definición del producto](./product-definition.md) | Alcance, reglas y flujos del MVP |
 | Arquitectura | [Arquitectura por feature](./architecture/README.md) | Módulos `data`, `domain` y `ui`, dependencias y flujo de datos |
+| Datos | [Modelo de dominio](./data-model/README.md) | Entidades, relaciones y contratos de repositorio del MVP |
 | Navegación | [Navegación](./navigation/README.md) | Contratos por pantalla, `NavKey` y entry builders |
 | Inyección | [Koin](./dependency-injection/README.md) | Composition root, módulos y selección de repositorios |
 | Calidad | [Pruebas y mocks](./testing/README.md) | Repositorios mock y pruebas de repositorios, use cases y ViewModels |
