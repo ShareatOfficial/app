@@ -2,10 +2,13 @@ package org.shareat.feature.login
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,6 +16,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import org.koin.compose.koinInject
+
+private const val ContentFadeOutMillis = 140
+
+private const val PanelResizeMillis = 320
+
+private const val ContentSlideInMillis = 260
 
 @Composable
 fun LoginScreen(
@@ -33,9 +42,28 @@ fun LoginScreen(
             transitionSpec = {
                 val towardsDetail = targetState != LoginStep.Welcome
                 val offset = if (towardsDetail) 1 else -1
-                val enter = slideInHorizontally { width -> offset * width / 4 } + fadeIn()
-                val exit = slideOutHorizontally { width -> -offset * width / 4 } + fadeOut()
-                enter togetherWith exit using SizeTransform(clip = false)
+                val enter = slideInHorizontally(
+                    animationSpec = tween(
+                        durationMillis = ContentSlideInMillis,
+                        delayMillis = PanelResizeMillis,
+                        easing = LinearOutSlowInEasing,
+                    ),
+                ) { width -> offset * width / 4 } + fadeIn(
+                    animationSpec = tween(
+                        durationMillis = ContentSlideInMillis,
+                        delayMillis = PanelResizeMillis,
+                        easing = LinearEasing,
+                    ),
+                )
+                val exit = fadeOut(
+                    animationSpec = tween(
+                        durationMillis = ContentFadeOutMillis,
+                        easing = LinearEasing,
+                    ),
+                )
+                enter togetherWith exit using SizeTransform(clip = false) { _, _ ->
+                    tween(durationMillis = PanelResizeMillis, easing = FastOutSlowInEasing)
+                }
             },
         ) { currentStep ->
             when (currentStep) {
