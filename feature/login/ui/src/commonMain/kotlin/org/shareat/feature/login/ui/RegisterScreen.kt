@@ -1,4 +1,4 @@
-package org.shareat.feature.login
+package org.shareat.feature.login.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -32,7 +32,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.shareat.app.domain.model.AccountRole
-import org.shareat.feature.login.components.AuthTextField
+import org.shareat.feature.login.ui.components.AuthTextField
 
 private const val MIN_PASSWORD_LENGTH = 8
 

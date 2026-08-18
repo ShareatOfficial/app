@@ -1,4 +1,4 @@
-package org.shareat.feature.login
+package org.shareat.feature.login.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.shareat.feature.login.components.AuthTextField
+import org.shareat.feature.login.ui.components.AuthTextField
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable

@@ -22,7 +22,7 @@ kotlin {
     }
 
     android {
-        namespace = "org.shareat.feature.login"
+        namespace = "org.shareat.feature.login.ui"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -37,6 +37,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":feature:login:domain"))
             implementation(project(":shared:domain"))
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -49,4 +50,10 @@ kotlin {
             implementation(libs.koin.compose)
         }
     }
+}
+
+// Pinned rather than inferred from the project path so the `Res` import stays stable if the
+// module ever moves.
+compose.resources {
+    packageOfResClass = "shareat.feature.login.ui.generated.resources"
 }

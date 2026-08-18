@@ -1,4 +1,4 @@
-package org.shareat.feature.login
+package org.shareat.feature.login.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,8 +28,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import shareat.feature.login.generated.resources.Res
-import shareat.feature.login.generated.resources.high_quality_immersive_vertical_food_photography_for_a_restaurant_app_welcome
+import shareat.feature.login.ui.generated.resources.Res
+import shareat.feature.login.ui.generated.resources.high_quality_immersive_vertical_food_photography_for_a_restaurant_app_welcome
 
 private val welcomeBackground: DrawableResource
     get() = Res.drawable.high_quality_immersive_vertical_food_photography_for_a_restaurant_app_welcome

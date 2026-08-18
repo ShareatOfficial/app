@@ -1,4 +1,4 @@
-package org.shareat.feature.login.components
+package org.shareat.feature.login.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme

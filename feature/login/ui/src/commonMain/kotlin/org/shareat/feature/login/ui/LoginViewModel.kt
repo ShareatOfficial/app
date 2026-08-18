@@ -1,4 +1,4 @@
-package org.shareat.feature.login
+package org.shareat.feature.login.ui
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel

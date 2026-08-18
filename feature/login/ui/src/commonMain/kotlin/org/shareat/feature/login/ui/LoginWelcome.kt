@@ -1,4 +1,4 @@
-package org.shareat.feature.login
+package org.shareat.feature.login.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
