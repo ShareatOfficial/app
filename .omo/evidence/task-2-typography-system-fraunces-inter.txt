@@ -1,0 +1,39 @@
+# Task 2: Typography System - Font.kt Builder Functions
+
+## File Created
+- Path: `shared/ui/src/commonMain/kotlin/org/shareat/app/theme/Font.kt`
+- Package: `org.shareat.app.theme`
+- Status: ✅ Created and verified
+
+## Exact Generated Font Resource Symbols
+Discovered from: `shared/ui/build/generated/compose/resourceGenerator/kotlin/commonMainResourceAccessors/shareat/shared/ui/generated/resources/Font0.commonMain.kt`
+
+### Fraunces Fonts (3 weights)
+- `Res.font.Fraunces_72pt_Regular` → FontWeight.Normal
+- `Res.font.Fraunces_72pt_SemiBold` → FontWeight.SemiBold
+- `Res.font.Fraunces_72pt_Bold` → FontWeight.Bold
+
+### Inter Fonts (4 weights)
+- `Res.font.Inter_18pt_Regular` → FontWeight.Normal
+- `Res.font.Inter_18pt_Medium` → FontWeight.Medium
+- `Res.font.Inter_18pt_SemiBold` → FontWeight.SemiBold
+- `Res.font.Inter_18pt_Bold` → FontWeight.Bold
+
+## Build Verification
+```
+Command: ./gradlew :shared:ui:compileKotlinIosArm64
+Result: BUILD SUCCESSFUL in 14s
+Tasks executed: 12
+Tasks up-to-date: 32
+```
+
+## Implementation Details
+- Both functions are `@Composable` and `internal`
+- Return type: `androidx.compose.ui.text.font.FontFamily`
+- Imports: Uses `org.jetbrains.compose.resources.Font` and generated resource accessors
+- No additional Gradle configuration needed (compose.components.resources already in dependencies)
+
+## Notes for Downstream Tasks
+- These exact symbol names MUST be used in Todo 3 (theme integration) and Todo 4 (screen composables)
+- The functions are builders only — they do NOT set fontFamily globally
+- Each screen composable will call these functions to get the FontFamily instances

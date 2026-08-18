@@ -30,11 +30,14 @@ import org.shareat.app.navscenedecorator.TOP_LEVEL_NAV_ITEMS
 import org.shareat.app.navscenedecorator.TopLevelNavigationBar
 import org.shareat.app.navscenedecorator.TopLevelNavigationRail
 import org.shareat.app.navscenedecorator.rememberResponsiveNavigationSceneDecoratorStrategy
+import org.shareat.app.theme.AppTypography
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun App() {
-    MaterialTheme {
+    MaterialTheme(
+        typography = AppTypography(),
+    ) {
         val sessionCoordinator = koinInject<SessionCoordinator>()
         val sessionState by sessionCoordinator.state.collectAsState()
         if (sessionState is org.shareat.app.domain.model.AuthSessionState.Initializing) {

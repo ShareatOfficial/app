@@ -1,0 +1,20 @@
+=== FINAL FILE LIST (ls -1) ===
+shared/ui/src/commonMain/composeResources/font/Fraunces_72pt-Bold.ttf
+shared/ui/src/commonMain/composeResources/font/Fraunces_72pt-Regular.ttf
+shared/ui/src/commonMain/composeResources/font/Fraunces_72pt-SemiBold.ttf
+shared/ui/src/commonMain/composeResources/font/Inter_18pt-Bold.ttf
+shared/ui/src/commonMain/composeResources/font/Inter_18pt-Medium.ttf
+shared/ui/src/commonMain/composeResources/font/Inter_18pt-Regular.ttf
+shared/ui/src/commonMain/composeResources/font/Inter_18pt-SemiBold.ttf
+
+=== FILE COUNT ===
+       7
+
+=== GIT STATUS (porcelain) ===
+?? shared/ui/src/commonMain/composeResources/font/Fraunces_72pt-Bold.ttf
+?? shared/ui/src/commonMain/composeResources/font/Fraunces_72pt-Regular.ttf
+?? shared/ui/src/commonMain/composeResources/font/Fraunces_72pt-SemiBold.ttf
+?? shared/ui/src/commonMain/composeResources/font/Inter_18pt-Bold.ttf
+?? shared/ui/src/commonMain/composeResources/font/Inter_18pt-Medium.ttf
+?? shared/ui/src/commonMain/composeResources/font/Inter_18pt-Regular.ttf
+?? shared/ui/src/commonMain/composeResources/font/Inter_18pt-SemiBold.ttf

@@ -1,0 +1,30 @@
+TASK 3: Typography System (Fraunces + Inter) - Evidence Log
+===========================================================
+
+FILE CREATED: shared/ui/src/commonMain/kotlin/org/shareat/app/theme/Typography.kt
+
+MAPPING VERIFICATION (15 roles):
+- displayLarge → FrauncesFontFamily(), FontWeight.SemiBold ✓
+- displayMedium → FrauncesFontFamily(), FontWeight.SemiBold ✓
+- displaySmall → FrauncesFontFamily(), FontWeight.SemiBold ✓
+- headlineLarge → FrauncesFontFamily(), FontWeight.SemiBold ✓
+- headlineMedium → FrauncesFontFamily(), FontWeight.SemiBold ✓
+- headlineSmall → InterFontFamily(), FontWeight.SemiBold ✓
+- titleLarge → InterFontFamily(), FontWeight.SemiBold ✓
+- titleMedium → InterFontFamily(), FontWeight.Medium ✓
+- titleSmall → InterFontFamily(), FontWeight.Medium ✓
+- bodyLarge → InterFontFamily(), FontWeight.Normal ✓
+- bodyMedium → InterFontFamily(), FontWeight.Normal ✓
+- bodySmall → InterFontFamily(), FontWeight.Normal ✓
+- labelLarge → InterFontFamily(), FontWeight.SemiBold ✓
+- labelMedium → InterFontFamily(), FontWeight.Medium ✓
+- labelSmall → InterFontFamily(), FontWeight.Medium ✓
+
+FONT FAMILY/WEIGHT COUNT: 15 matches (expected: 15) ✓
+
+BUILD VERIFICATION:
+Command: ./gradlew :shared:ui:compileAndroidMain
+Result: BUILD SUCCESSFUL in 1s ✓
+
+All 15 Material3 typography roles explicitly assigned with correct fontFamily and fontWeight.
+No fontSize, lineHeight, or letterSpacing modified (only .copy(fontFamily=..., fontWeight=...) used).

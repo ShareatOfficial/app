@@ -1,0 +1,54 @@
+# Task 4: MaterialTheme Typography System Integration
+
+## Changes Made
+- File: shared/ui/src/commonMain/kotlin/org/shareat/app/App.kt
+- Added import: org.shareat.app.theme.AppTypography
+- Changed MaterialTheme call from `MaterialTheme {` to `MaterialTheme(typography = AppTypography()) {`
+
+## Git Diff
+```
+diff --git a/shared/ui/src/commonMain/kotlin/org/shareat/app/App.kt b/shared/ui/src/commonMain/kotlin/org/shareat/app/App.kt
+index 1e5b1ba..b56c460 100644
+--- a/shared/ui/src/commonMain/kotlin/org/shareat/app/App.kt
++++ b/shared/ui/src/commonMain/kotlin/org/shareat/app/App.kt
+@@ -30,11 +30,14 @@ import org.shareat.app.navscenedecorator.TOP_LEVEL_NAV_ITEMS
+ import org.shareat.app.navscenedecorator.TopLevelNavigationBar
+ import org.shareat.app.navscenedecorator.TopLevelNavigationRail
+ import org.shareat.app.navscenedecorator.rememberResponsiveNavigationSceneDecoratorStrategy
++import org.shareat.app.theme.AppTypography
+ 
+ @OptIn(KoinExperimentalAPI::class)
+ @Composable
+ fun App() {
+-    MaterialTheme {
++    MaterialTheme(
++        typography = AppTypography(),
++    ) {
+         val sessionCoordinator = koinInject<SessionCoordinator>()
+         val sessionState by sessionCoordinator.state.collectAsState()
+         if (sessionState is org.shareat.app.domain.model.AuthSessionState.Initializing) {
+```
+
+## Build Verification
+Command: ./gradlew :androidApp:assembleDebug
+Result: BUILD SUCCESSFUL in 7s
+- 134 actionable tasks: 17 executed, 117 up-to-date
+- No compilation errors
+- App compiles end-to-end with typography system integrated
+
+## File Status
+Only modified file: shared/ui/src/commonMain/kotlin/org/shareat/app/App.kt
+- 5 lines added, 1 line removed
+- No other files changed
+- No navigation, session handling, or other logic modified
+
+## Verification Checklist
+✓ Import added: org.shareat.app.theme.AppTypography (non-wildcard)
+✓ MaterialTheme call updated with typography parameter
+✓ No colorScheme or shapes parameters added
+✓ Build successful end-to-end
+✓ Only App.kt modified
+✓ All other code unchanged
+
+## Status
+COMPLETE - App.kt wiring is complete and the app builds end-to-end with the typography system integrated.
