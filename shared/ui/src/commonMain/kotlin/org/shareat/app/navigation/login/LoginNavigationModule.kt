@@ -7,11 +7,12 @@ import org.shareat.app.navigation.Navigator
 import org.shareat.app.navscenedecorator.HIDE_NAVIGATION_METADATA
 import org.shareat.feature.login.LoginNavigation
 import org.shareat.feature.login.LoginScreen
-import org.shareat.feature.login.LoginViewModel
+import org.shareat.feature.login.di.loginModule
 
 @OptIn(KoinExperimentalAPI::class)
 val loginNavigationModule = module {
-    factory { LoginViewModel(get()) }
+    includes(loginModule)
+
     factory<LoginNavigation> { parameters ->
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
         LoginNavigationImpl(navigator = navigator)

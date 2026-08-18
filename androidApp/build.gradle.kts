@@ -11,7 +11,7 @@ kotlin {
     }
 }
 dependencies {
-    coreLibraryDesugaring(libs.android.desugarJdkLibs)
+    coreLibraryDesugaring(libs.android.desugarJdkLibs) // coreLibraryDesugaring is a tool that allows you to use modern Java 8+ APIs like java.time
     implementation(project(":shared:ui"))
 
     implementation(libs.androidx.activity.compose)
