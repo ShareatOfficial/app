@@ -91,7 +91,7 @@ internal fun LoginScreenContent(
         }
     }
 
-    // TODO: guest browsing scope boundary no-op. This is an intentional no-op in both Compact and TwoPane layouts and is out of scope for this change.
+    // This is an intentional no-op in both Compact and TwoPane layouts and is out of scope for this adaptive-layout change.
     val onBrowseAsGuestClick = { /* TODO: guest browsing */ }
 
     if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)) {
