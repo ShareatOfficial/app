@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -53,6 +54,10 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.annotations)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.compose.ui.test)
+        }
     }
 }
 
@@ -60,4 +65,31 @@ kotlin {
 // module ever moves.
 compose.resources {
     packageOfResClass = "shareat.feature.login.ui.generated.resources"
+}
+
+// Configure wasmJs browser tests to use Playwright's Chrome if available.
+// WHY: This machine has no /Applications/Google Chrome.app and it cannot be installed,
+// so Karma cannot find Chrome. We glob Playwright's cache for the highest-versioned
+// chromium-* directory that contains an executable Chrome binary, and set CHROME_BIN so
+// Karma uses it. No-ops silently on CI/Linux where CHROME_BIN is already set in the
+// environment or Chrome is available on PATH.
+val resolvedChromeBin = providers.environmentVariable("CHROME_BIN")
+    .orElse(
+        providers.environmentVariable("HOME").map { home ->
+            File("$home/Library/Caches/ms-playwright")
+                .listFiles { f -> f.isDirectory && f.name.startsWith("chromium-") }
+                ?.sortedByDescending { it.name.removePrefix("chromium-").toIntOrNull() ?: 0 }
+                ?.firstNotNullOfOrNull { chromiumDir ->
+                    chromiumDir.walk().firstOrNull { f ->
+                        f.isFile && f.canExecute() && f.name.contains("Google Chrome")
+                    }?.absolutePath
+                }.orEmpty()
+        }
+    )
+
+tasks.withType<org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest>().configureEach {
+    val bin = resolvedChromeBin.orNull
+    if (!bin.isNullOrEmpty()) {
+        environment("CHROME_BIN", bin)
+    }
 }
