@@ -76,12 +76,27 @@ No se usan esperas reales ni aleatoriedad en pruebas. Un scheduler, clock o fuen
 ## Estructura sugerida
 
 ```text
+shared/data/src/commonTest/...
 feature/<nombre>/domain/src/commonTest/...
 feature/<nombre>/data/src/commonTest/...
 feature/<nombre>/ui/src/commonTest/...
 ```
 
 Si una prueba necesita una API exclusiva de JVM/Android, se ubica en el source set de host correspondiente sin mover lógica multiplataforma fuera de `commonMain`.
+
+## Supabase local
+
+```bash
+npm install
+npx supabase start
+npx supabase db reset --local
+npx supabase test db
+npx supabase db lint --local --schema private,public --level warning --fail-on warning
+```
+
+`supabase/tests` contiene pgTAP para esquema, constraints, índices, grants, RLS y Storage. `supabase/seed.sql` solo se aplica localmente y aporta un catálogo público para el contrato JVM de los repositorios reales. Para ejecutar ese contrato, exportar `SHAREAT_SUPABASE_URL` y `SHAREAT_SUPABASE_PUBLISHABLE_KEY` desde `npx supabase status -o env` y ejecutar `./gradlew :shared:data:jvmTest`.
+
+Los seeds no se incluyen en `db push`; nunca se crean cuentas o restaurantes fake en el proyecto alojado.
 
 ## Trabajo relacionado
 

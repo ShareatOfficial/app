@@ -14,7 +14,15 @@ Cada nueva feature se divide en tres módulos Gradle:
 :feature:<nombre>:ui
 ```
 
-El módulo de composición de la aplicación es `:shared` en la estructura actual. Ensambla features, navegación y dependencias para Android, iOS y web.
+La base compartida también está separada en tres módulos Gradle:
+
+```text
+:shared:domain
+:shared:data
+:shared:ui
+```
+
+`:shared:ui` es el módulo de composición de la aplicación. Ensambla features, navegación y dependencias para Android, iOS y web, y produce el framework `Shared` que consume iOS.
 
 ### `domain`
 
@@ -25,7 +33,7 @@ Contiene:
 - use cases y reglas de negocio;
 - errores y resultados expresados en términos de producto.
 
-No depende de `data`, `ui`, Koin, DTO, almacenamiento ni clientes de red.
+No depende de `data`, `ui`, Koin, Compose, DTO, almacenamiento ni clientes de red. `:shared:domain` aplica esta misma regla.
 
 ### `data`
 
@@ -36,7 +44,7 @@ Contiene:
 - DTO y modelos de persistencia;
 - mappers entre representaciones externas y dominio.
 
-Depende de `domain`. Los DTO y detalles del proveedor no pueden formar parte de la API pública que consume `domain` o `ui`.
+Depende de `domain`. Los DTO y detalles del proveedor no pueden formar parte de la API pública que consume `domain` o `ui`. `data`, incluido `:shared:data`, no aplica plugins de Compose ni declara dependencias o recursos Compose.
 
 ### `ui`
 
@@ -48,18 +56,23 @@ Contiene:
 
 Depende de `domain`; no depende de implementaciones concretas de `data` ni del módulo de app.
 
-Las keys, implementaciones de las interfaces y entradas Koin Navigation 3 viven en `:shared`, que conecta cada pantalla con el grafo de la aplicación.
+Las keys, implementaciones de las interfaces y entradas Koin Navigation 3 viven en `:shared:ui`, que conecta cada pantalla con el grafo de la aplicación.
 
 ## Dirección de dependencias
 
 ```text
-                    :shared (composition root)
-                       /                 \
-                      v                   v
-          :feature:<nombre>:ui   :feature:<nombre>:data
-                      \                   /
-                       v                 v
-                    :feature:<nombre>:domain
+ Android / iOS / Web
+          |
+          v
+    :shared:ui --------------> :shared:data
+          |                          |
+          |                          v
+          +------------------> :shared:domain
+          |
+          +------------------> :feature:<nombre>:ui
+                                      |
+                                      v
+                            :feature:<nombre>:domain
 ```
 
 Una dependencia entre features debe pasar por una API explícita. No se importan implementaciones internas de otra feature para reutilizar una pantalla, un repositorio o un ViewModel.
@@ -79,6 +92,7 @@ Pantalla -> ViewModel -> Use case -> Repository (interfaz)
 
 - [ ] Los tres módulos están incluidos en `settings.gradle.kts`.
 - [ ] `domain` no conoce frameworks ni infraestructura.
+- [ ] `:shared:domain` y `:shared:data` no aplican plugins Compose ni contienen imports o recursos Compose.
 - [ ] `ui` solo depende de `domain` y librerías de presentación.
 - [ ] `data` implementa interfaces definidas por `domain`.
 - [ ] La app ensambla navegación y dependencias.

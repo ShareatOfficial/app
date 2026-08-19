@@ -33,10 +33,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":shared:domain"))
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.compose)
         }

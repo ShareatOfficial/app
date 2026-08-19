@@ -22,7 +22,11 @@ jobs:
         uses: ./.github/actions/gradle-setup
 
       - name: Run unit tests
-        run: ./gradlew :shared:testAndroidHostTest
+        run: >-
+          ./gradlew
+          :shared:domain:jvmTest
+          :shared:data:jvmTest
+          :shared:ui:testAndroidHostTest
 
       - name: Upload test reports
         if: always()
