@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -87,6 +88,7 @@ internal fun RegisterScreen(
             supportingText = "At least $MIN_PASSWORD_LENGTH characters", // extract string resource
         )
         AuthTextField(
+            modifier = Modifier.testTag("register-confirm-password"),
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = "Confirm password", // extract string resource
