@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -41,7 +42,7 @@ internal fun TwoPaneLoginLayout(
 ) {
     Row(Modifier.fillMaxSize().testTag("login-two-pane-panel")) {
         // Photo pane
-        Box(Modifier.weight(0.45f)) {
+        Box(Modifier.weight(0.45f).fillMaxHeight()) {
             Image(
                 painter = painterResource(welcomeBackground),
                 contentDescription = null,
