@@ -1,5 +1,10 @@
 package org.shareat.feature.login.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -76,14 +81,21 @@ internal fun TwoPaneLoginLayout(
                         .padding(horizontal = 24.dp, vertical = 28.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (step == LoginStep.Welcome) {
-                        LoginWelcomeActions(
-                            onSignInClick = { onGoTo(LoginStep.SignIn) },
-                            onRegisterClick = { onGoTo(LoginStep.Register) },
-                            onBrowseAsGuestClick = onBrowseAsGuestClick
-                        )
-                    } else {
-                        formContent(step)
+                    AnimatedContent(
+                        targetState = step,
+                        transitionSpec = {
+                            fadeIn(tween(200)) togetherWith fadeOut(tween(140))
+                        }
+                    ) { currentStep ->
+                        if (currentStep == LoginStep.Welcome) {
+                            LoginWelcomeActions(
+                                onSignInClick = { onGoTo(LoginStep.SignIn) },
+                                onRegisterClick = { onGoTo(LoginStep.Register) },
+                                onBrowseAsGuestClick = onBrowseAsGuestClick
+                            )
+                        } else {
+                            formContent(currentStep)
+                        }
                     }
                 }
             }
