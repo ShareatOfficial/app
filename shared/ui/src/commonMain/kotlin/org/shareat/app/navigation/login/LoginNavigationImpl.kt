@@ -1,7 +1,7 @@
 package org.shareat.app.navigation.login
 
 import org.shareat.app.navigation.Navigator
-import org.shareat.feature.login.LoginNavigation
+import org.shareat.feature.login.ui.LoginNavigation
 
 class LoginNavigationImpl(
     private val navigator: Navigator,
