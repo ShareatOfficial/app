@@ -1,5 +1,6 @@
-package org.shareat.feature.login
+package org.shareat.feature.login.ui
 
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.EmailAddress
 import org.shareat.app.domain.model.RegistrationCredentials
@@ -24,34 +26,57 @@ data class LoginUiState(
     val errorMessage: String? = null,
     val recoverySent: Boolean = false,
     val authenticated: Boolean = false,
+    val step: LoginStep = LoginStep.Welcome
 )
 
+@Stable
+@KoinViewModel
 class LoginViewModel(
     private val authRepository: AuthRepository,
+//    private val registerUseCase: Unit,
+//    private val signInUseCase: Unit,
+//    private val requestPasswordResetUseCase: Unit,
 ) : ViewModel() {
-    private val mutableState = MutableStateFlow(LoginUiState())
-    val state: StateFlow<LoginUiState> = mutableState.asStateFlow()
+    private val _uiState = MutableStateFlow(LoginUiState())
+    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun updateEmail(value: String) = mutableState.update { it.copy(email = value, errorMessage = null) }
-    fun updatePassword(value: String) = mutableState.update { it.copy(password = value, errorMessage = null) }
-    fun updateDisplayName(value: String) = mutableState.update { it.copy(displayName = value, errorMessage = null) }
-    fun selectRole(value: AccountRole) = mutableState.update { it.copy(registrationRole = value) }
-    fun setRegistration(value: Boolean) = mutableState.update {
+    fun onEmailFieldChange(value: String) =
+        _uiState.update { it.copy(email = value, errorMessage = null) }
+
+    fun onPasswordFieldChange(value: String) =
+        _uiState.update { it.copy(password = value, errorMessage = null) }
+
+    fun onDisplayNameFieldChange(value: String) =
+        _uiState.update { it.copy(displayName = value, errorMessage = null) }
+
+    fun onSelectRole(value: AccountRole) = _uiState.update { it.copy(registrationRole = value) }
+    fun setRegistration(value: Boolean) = _uiState.update {
         it.copy(isRegistration = value, errorMessage = null, recoverySent = false)
     }
 
-    fun submit() {
-        val snapshot = state.value
+    fun goTo(target: LoginStep) {
+        setRegistration(target == LoginStep.Register)
+        _uiState.value = _uiState.value.copy(step = target)
+    }
+
+    fun onLoginClick() {
+        val snapshot = uiState.value
         val email = runCatching { EmailAddress(snapshot.email.trim()) }.getOrNull()
         if (email == null || snapshot.password.length < 8) {
-            mutableState.update {
+            _uiState.update {
                 it.copy(errorMessage = "Enter a valid email and a password of at least 8 characters.")
             }
             return
         }
         viewModelScope.launch {
-            mutableState.update { it.copy(isLoading = true, errorMessage = null, recoverySent = false) }
-            val result = if (snapshot.isRegistration) {
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    errorMessage = null,
+                    recoverySent = false
+                )
+            }
+            val result = if (uiState.value.isRegistration) {
                 authRepository.register(
                     RegistrationCredentials(
                         email = email,
@@ -63,7 +88,7 @@ class LoginViewModel(
             } else {
                 authRepository.signIn(email, snapshot.password)
             }
-            mutableState.update {
+            _uiState.update {
                 when (result) {
                     is RepositoryResult.Success -> it.copy(isLoading = false, authenticated = true)
                     is RepositoryResult.Failure -> it.copy(
@@ -75,26 +100,31 @@ class LoginViewModel(
         }
     }
 
-    fun requestPasswordRecovery() {
-        val email = runCatching { EmailAddress(state.value.email.trim()) }.getOrNull()
+    fun onRequestPasswordRecovery() {
+        val email = runCatching { EmailAddress(uiState.value.email.trim()) }.getOrNull()
         if (email == null) {
-            mutableState.update { it.copy(errorMessage = "Enter your email first.") }
+            _uiState.update { it.copy(errorMessage = "Enter your email first.") }
             return
         }
         viewModelScope.launch {
-            mutableState.update { it.copy(isLoading = true, errorMessage = null, recoverySent = false) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    errorMessage = null,
+                    recoverySent = false
+                )
+            }
             when (val result = authRepository.requestPasswordReset(email)) {
-                is RepositoryResult.Success -> mutableState.update {
+                is RepositoryResult.Success -> _uiState.update {
                     it.copy(isLoading = false, recoverySent = true)
                 }
-                is RepositoryResult.Failure -> mutableState.update {
+
+                is RepositoryResult.Failure -> _uiState.update {
                     it.copy(isLoading = false, errorMessage = result.error.toUserMessage())
                 }
             }
         }
     }
-
-    fun consumeAuthentication() = mutableState.update { it.copy(authenticated = false) }
 }
 
 private fun RepositoryError.toUserMessage(): String = when (this) {

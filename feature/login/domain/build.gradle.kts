@@ -4,11 +4,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
+    jvm()
     iosArm64()
     iosSimulatorArm64()
 
@@ -22,7 +21,7 @@ kotlin {
     }
 
     android {
-        namespace = "org.shareat.feature.login"
+        namespace = "org.shareat.feature.login.domain"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -33,14 +32,12 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":shared:domain"))
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(libs.compose.ui)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            // `api` because the shared domain models show up in the use case signatures below.
+            api(project(":shared:domain"))
             implementation(libs.kotlinx.coroutines.core)
-            implementation(project.dependencies.platform(libs.koin.bom))
-            implementation(libs.koin.compose)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
         }
     }
 }
