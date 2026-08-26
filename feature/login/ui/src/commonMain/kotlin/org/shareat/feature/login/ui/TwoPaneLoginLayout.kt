@@ -68,7 +68,7 @@ internal fun TwoPaneLoginLayout(
                 }
             }
         }
-        
+
         // Content pane
         Box(
             modifier = Modifier.weight(0.55f),
