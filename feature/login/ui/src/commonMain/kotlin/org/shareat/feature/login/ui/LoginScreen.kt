@@ -10,12 +10,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.window.core.layout.WindowSizeClass
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.AccountRole
 
 @Composable
 fun LoginScreen(
     navigator: LoginNavigation = koinInject(),
-    viewModel: LoginViewModel = koinInject(),
+    viewModel: LoginViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
 
