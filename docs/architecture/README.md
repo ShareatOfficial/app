@@ -14,13 +14,16 @@ Cada nueva feature se divide en tres módulos Gradle:
 :feature:<nombre>:ui
 ```
 
-La base compartida también está separada en tres módulos Gradle:
+La base compartida también está separada en tres módulos Gradle, más un módulo hoja adicional para contratos de navegación compartidos:
 
 ```text
 :shared:domain
 :shared:data
+:shared:navigation
 :shared:ui
 ```
+
+`:shared:navigation` no aplica plugins Compose y no depende de ningún otro módulo del proyecto. Contiene únicamente contratos de navegación (hoy, el marcador `RequiresLogin`) que varias features y `:shared:ui` necesitan compartir sin crear una dependencia circular entre una feature y el módulo de app. Ver [Navegación](../navigation/README.md). Se mantiene deliberadamente mínimo: no debe crecer para incluir `Navigator`, `NavigationState` ni los `*NavigationImpl`/`*NavigationModule` de cada feature — esos referencian pantallas Compose concretas de cada feature y, si vivieran aquí, recrearían el mismo ciclo de dependencias que este módulo existe para evitar. Ver la sección "Decisión registrada" en [Navegación](../navigation/README.md).
 
 `:shared:ui` es el módulo de composición de la aplicación. Ensambla features, navegación y dependencias para Android, iOS y web, y produce el framework `Shared` que consume iOS.
 
@@ -56,7 +59,7 @@ Contiene:
 
 Depende de `domain`; no depende de implementaciones concretas de `data` ni del módulo de app.
 
-Las keys, implementaciones de las interfaces y entradas Koin Navigation 3 viven en `:shared:ui`, que conecta cada pantalla con el grafo de la aplicación.
+Cada feature declara sus propias `NavKey` (sus destinos) junto a su interfaz de navegación. Las implementaciones de esas interfaces y las entradas Koin Navigation 3 viven en `:shared:ui`, que importa las keys de cada feature y conecta cada pantalla con el grafo de la aplicación. Ver [Navegación](../navigation/README.md) para el detalle.
 
 ## Dirección de dependencias
 

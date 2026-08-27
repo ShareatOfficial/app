@@ -1,4 +1,4 @@
-package org.shareat.app.navigation.home
+package org.shareat.feature.home.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

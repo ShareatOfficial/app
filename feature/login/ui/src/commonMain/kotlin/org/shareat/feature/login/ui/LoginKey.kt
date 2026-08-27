@@ -1,4 +1,4 @@
-package org.shareat.app.navigation.login
+package org.shareat.feature.login.ui
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Polymorphic

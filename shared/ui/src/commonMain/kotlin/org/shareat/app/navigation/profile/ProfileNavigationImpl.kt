@@ -1,6 +1,7 @@
 package org.shareat.app.navigation.profile
 
 import org.shareat.app.navigation.Navigator
+import org.shareat.feature.profile.navigation.EditProfileKey
 import org.shareat.feature.profile.navigation.ProfileNavigation
 
 class ProfileNavigationImpl(

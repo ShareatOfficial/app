@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Cada feature declara qué navegación necesita sin conocer el back stack global ni las keys concretas de la aplicación. La app conserva el control de la topología, deep links y navegación entre features.
+Cada feature declara qué navegación necesita y qué destinos tiene, sin conocer el back stack global. La app conserva el control de la topología, deep links y navegación entre features.
 
 ## Responsabilidades
 
@@ -10,13 +10,20 @@ Cada feature declara qué navegación necesita sin conocer el back stack global 
 
 - Define una interfaz por cada pantalla que emite intenciones de navegación.
 - Recibe esa interfaz desde la pantalla; no recibe el `Navigator` global.
-- No importa `NavKey`, Koin Navigation 3 ni implementaciones del módulo de app.
+- Declara sus propias implementaciones `NavKey` serializables (sus destinos). Una feature no importa Koin Navigation 3 ni implementaciones del módulo de app.
 - Una pantalla sin acciones de navegación no necesita interfaz.
+- Una key cuyo destino requiere sesión implementa `RequiresLogin` (definida en `:shared:navigation`, ver más abajo) en lugar de comprobar el estado de sesión en la pantalla.
 
 ```kotlin
 interface HomeNavigation {
     fun openHomeDetails()
 }
+
+@Serializable
+data object HomeKey : NavKey
+
+@Serializable
+data object HomeDetailsKey : NavKey
 
 @Composable
 fun Home(
@@ -29,22 +36,21 @@ fun Home(
 }
 ```
 
-### Módulo de app
+### `:shared:navigation`
 
-- Declara las implementaciones `NavKey` serializables.
-- Implementa las interfaces de navegación de cada feature.
+Módulo compartido mínimo, sin Compose, que contiene únicamente los contratos de navegación que varias features y el módulo de app necesitan compartir sin depender unas de otras. Hoy solo declara `interface RequiresLogin : NavKey`. Existe para evitar una dependencia circular: `:shared:ui` depende de cada feature, así que una feature no puede depender de vuelta en `:shared:ui` para acceder a algo como `RequiresLogin`; en cambio, tanto las features como `:shared:ui` dependen de este módulo hoja.
+
+**Decisión registrada:** se evaluó (agosto 2026) mover también `Navigator`, `NavigationState` y los `*NavigationImpl`/`*NavigationModule` de cada feature a este módulo, y se descartó. Esos archivos importan las pantallas Compose concretas de cada feature (`Home()`, `Profile()`, `LoginScreen()`, etc.) y `Navigator` importa `LoginKey` de `feature:login:ui`; si `:shared:navigation` los asemblara, tendría que depender de las mismas features que ya dependen de él para `RequiresLogin`, recreando el ciclo que este módulo existe para evitar. `:shared:navigation` se mantiene deliberadamente mínimo — solo contratos compartidos, sin Compose y sin depender de ninguna feature — y `:shared:ui` sigue siendo el único módulo de composición del grafo de navegación.
+
+### Módulo de app (`:shared:ui`)
+
+- Implementa las interfaces de navegación de cada feature, importando las `NavKey` que esa feature declaró.
 - Modifica el estado/back stack mediante el `Navigator` de la app.
 - Declara las entradas Koin Navigation 3 y las agrupa por feature.
 - Compone todos los módulos de navegación en `navigationModule`.
-- Registra serializadores, top-level destinations y deep links.
+- Registra serializadores (usando las keys que importa de cada feature), top-level destinations y deep links.
 
 ```kotlin
-@Serializable
-data object HomeKey : NavKey
-
-@Serializable
-data object HomeDetailsKey : NavKey
-
 class HomeNavigationImpl(
     private val navigator: Navigator,
 ) : HomeNavigation {
@@ -56,7 +62,7 @@ class HomeNavigationImpl(
 
 ## Entradas y módulos Koin
 
-Cada módulo de navegación de `:shared:ui` registra las implementaciones como factories. Estas pueden recibir el `Navigator` mediante parámetros o resolverlo automáticamente desde el contenedor Koin si ha sido registrado globalmente en la `App`.
+Cada módulo de navegación de `:shared:ui` registra las implementaciones como factories, importando la key correspondiente desde la feature. Estas pueden recibir el `Navigator` mediante parámetros o resolverlo automáticamente desde el contenedor Koin si ha sido registrado globalmente en la `App`.
 
 ```kotlin
 val homeNavigationModule = module {
@@ -96,13 +102,14 @@ remember(navigator) { koin.declare(navigator) }
 
 Solo los destinos mostrados en la barra o rail forman parte de `topLevelRoutes`. Las subpantallas, como `HomeDetailsKey` y `EditProfileKey`, se añaden al back stack activo mediante `Navigator.navigate()`.
 
-Cada key, incluida cualquier subpantalla, debe registrarse también en el `SerializersModule` de `NavigationState` para poder restaurar el back stack.
+Cada key, incluida cualquier subpantalla, debe registrarse también en el `SerializersModule` de `NavigationState` para poder restaurar el back stack. `:shared:ui` importa cada key desde su feature para este registro.
 
 ## Reglas de revisión
 
 - Una pantalla no navega directamente con una key de otra feature.
 - Cada pantalla que navega declara su propia interfaz; no se reutiliza una interfaz genérica con acceso a todo el grafo.
-- Las implementaciones de navegación y las keys permanecen en `:shared:ui`.
+- Cada feature declara sus propias `NavKey`; las implementaciones de navegación (`*NavigationImpl`, `*NavigationModule`) permanecen en `:shared:ui`.
+- Una key que requiere sesión implementa `RequiresLogin` desde `:shared:navigation`, no un chequeo ad-hoc en la feature o en el módulo de app.
 - Los argumentos de navegación son mínimos, serializables y estables; la pantalla carga el dato completo mediante dominio.
 - La app es la única que conoce el grafo completo y puede implementar navegación entre features.
 - Cada key está registrada para restauración de estado.
@@ -119,3 +126,7 @@ Cada key, incluida cualquier subpantalla, debe registrarse también en el `Seria
 
 - [Conceptos básicos de Navigation 3](https://developer.android.com/guide/navigation/navigation-3/basics)
 - [Modularización de Navigation 3](https://developer.android.com/guide/navigation/navigation-3/modularize)
+
+## Trabajo relacionado
+
+- Mover las `NavKey` al módulo de cada feature: issue "[TASK] Move NavKey's to feature module".
