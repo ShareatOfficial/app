@@ -22,18 +22,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.EventAvailable
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.ManageAccounts
+import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.RestaurantMenu
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Storefront
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -218,49 +223,57 @@ private fun UserSettings(
             ),
         ) {
             SettingsItem(
-                leadingIcon = Icons.Default.Edit,
+                leadingIcon = Icons.Outlined.ManageAccounts,
                 text = "Edit profile",
                 onClick = callbacks.onEditProfileClick,
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Default.Lock,
+                leadingIcon = Icons.Outlined.Lock,
                 text = "Password & security",
                 onClick = callbacks.onPasswordAndSecurityClick,
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Default.Notifications,
+                leadingIcon = Icons.Outlined.NotificationsNone,
                 text = "Notifications",
                 onClick = callbacks.onNotificationsClick,
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Default.Person,
+                leadingIcon = Icons.Outlined.Security,
                 text = "Privacy",
                 onClick = callbacks.onPrivacyClick,
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Default.Settings,
+                leadingIcon = Icons.Outlined.Link,
                 text = "Connected accounts",
                 onClick = {},
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Default.DateRange,
+                leadingIcon = Icons.Outlined.History,
                 text = "Review history",
                 onClick = {},
             )
-            SettingsDivider()
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+        ) {
             SettingsItem(
-                leadingIcon = Icons.Default.Email,
+                leadingIcon = Icons.Outlined.Download,
                 text = "Download my data",
                 onClick = callbacks.onDownloadDataClick,
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Default.Delete,
+                leadingIcon = Icons.Outlined.Delete,
                 text = "Delete account",
                 onClick = callbacks.onDeleteAccountClick,
                 isDestructive = true,
@@ -337,7 +350,7 @@ private fun RestaurantSettings(
         item {
             RestaurantSectionCard(
                 title = "Basic info",
-                icon = Icons.Default.Info,
+                icon = Icons.Outlined.Storefront,
             ) {
                 RestaurantTextField(
                     value = uiState.name,
@@ -375,7 +388,7 @@ private fun RestaurantSettings(
         item {
             RestaurantSectionCard(
                 title = "Location",
-                icon = Icons.Default.LocationOn,
+                icon = Icons.Outlined.LocationOn,
             ) {
                 RestaurantTextField(
                     value = uiState.streetAddress,
@@ -402,7 +415,7 @@ private fun RestaurantSettings(
                     )
                 }
                 TextButton(onClick = {}) {
-                    Icon(imageVector = Icons.Default.LocationOn, contentDescription = null)
+                    Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null)
                     Spacer(modifier = Modifier.size(8.dp))
                     Text("Adjust map pin")
                 }
@@ -411,7 +424,7 @@ private fun RestaurantSettings(
         item {
             RestaurantSectionCard(
                 title = "Opening hours",
-                icon = Icons.Default.DateRange,
+                icon = Icons.Outlined.Schedule,
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -444,23 +457,23 @@ private fun RestaurantSettings(
         item {
             RestaurantSectionCard(
                 title = "Management",
-                icon = Icons.Default.Settings,
+                icon = Icons.Outlined.Tune,
             ) {
-                SettingsItem(Icons.Default.DateRange, "Reservations & order links", {})
+                SettingsItem(Icons.Outlined.EventAvailable, "Reservations & order links", {})
                 SettingsDivider()
-                SettingsItem(Icons.Default.Settings, "Menu management", {})
+                SettingsItem(Icons.Outlined.RestaurantMenu, "Menu management", {})
                 SettingsDivider()
-                SettingsItem(Icons.Default.AccountCircle, "Photos & media", {})
+                SettingsItem(Icons.Outlined.PhotoLibrary, "Photos & media", {})
                 SettingsDivider()
-                SettingsItem(Icons.Default.Notifications, "Notifications", {})
+                SettingsItem(Icons.Outlined.NotificationsNone, "Notifications", {})
                 SettingsDivider()
-                SettingsItem(Icons.Default.Person, "Team & permissions", {})
+                SettingsItem(Icons.Outlined.Group, "Team & permissions", {})
             }
         }
         item {
             RestaurantSectionCard(
                 title = "Account",
-                icon = Icons.Default.AccountCircle,
+                icon = Icons.Outlined.ManageAccounts,
             ) {
                 Row(
                     modifier = Modifier
@@ -519,7 +532,7 @@ private fun RestaurantIdentityHeader(uiState: SettingsUiState.Restaurant) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(
-                imageVector = Icons.Default.AccountCircle,
+                imageVector = Icons.Outlined.Storefront,
                 contentDescription = null,
                 modifier = Modifier.size(72.dp),
                 tint = MaterialTheme.colorScheme.primary,
@@ -535,7 +548,7 @@ private fun RestaurantIdentityHeader(uiState: SettingsUiState.Restaurant) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
+                    imageVector = Icons.Outlined.CheckCircle,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.primary,
@@ -730,7 +743,7 @@ private fun RestaurantSettingsScreenPreview() {
 private fun SettingsItemPreview() {
     MaterialTheme {
         SettingsItem(
-            leadingIcon = Icons.Default.Edit,
+            leadingIcon = Icons.Outlined.ManageAccounts,
             text = "Edit profile",
             onClick = {},
         )
