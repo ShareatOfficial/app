@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.koin.compiler)
 }
 
 kotlin {
@@ -33,17 +34,32 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.compose.uiTooling)
+        }
+
         commonMain.dependencies {
             implementation(project(":shared:navigation"))
-
+            implementation(
+                libs.androidx.lifecycle.viewmodelCompose
+            )
             implementation(libs.compose.foundation)
+            implementation(libs.compose.material.icons.core)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
-            implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(libs.compose.uiToolingPreview)
+
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.annotations)
+            implementation(project.dependencies.platform(libs.koin.bom))
 
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.kotlinx.serialization.core)
         }
     }
+}
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.uiTooling)
 }
