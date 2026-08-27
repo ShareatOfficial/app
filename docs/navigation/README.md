@@ -38,9 +38,7 @@ fun Home(
 
 ### `:shared:navigation`
 
-Módulo compartido mínimo, sin Compose, que contiene únicamente los contratos de navegación que varias features y el módulo de app necesitan compartir sin depender unas de otras. Hoy solo declara `interface RequiresLogin : NavKey`. Existe para evitar una dependencia circular: `:shared:ui` depende de cada feature, así que una feature no puede depender de vuelta en `:shared:ui` para acceder a algo como `RequiresLogin`; en cambio, tanto las features como `:shared:ui` dependen de este módulo hoja.
-
-**Decisión registrada:** se evaluó (agosto 2026) mover también `Navigator`, `NavigationState` y los `*NavigationImpl`/`*NavigationModule` de cada feature a este módulo, y se descartó. Esos archivos importan las pantallas Compose concretas de cada feature (`Home()`, `Profile()`, `LoginScreen()`, etc.) y `Navigator` importa `LoginKey` de `feature:login:ui`; si `:shared:navigation` los asemblara, tendría que depender de las mismas features que ya dependen de él para `RequiresLogin`, recreando el ciclo que este módulo existe para evitar. `:shared:navigation` se mantiene deliberadamente mínimo — solo contratos compartidos, sin Compose y sin depender de ninguna feature — y `:shared:ui` sigue siendo el único módulo de composición del grafo de navegación.
+Módulo compartido mínimo, sin Compose, con marcadores de navegación (`NavKey` vacíos como `RequiresLogin`) que varias features pueden necesitar. Al declarar una key nueva, comprueba este módulo: si alguno de sus marcadores aplica a esa pantalla, la key debe implementarlo. Hoy solo existe `interface RequiresLogin : NavKey`; en el futuro puede haber otros (p. ej. `OnlyRestaurants`).
 
 ### Módulo de app (`:shared:ui`)
 
