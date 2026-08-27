@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.koin.compiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -51,6 +52,9 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.annotations)
+
+            implementation(libs.jetbrains.navigation3.ui)
+            implementation(libs.kotlinx.serialization.core)
         }
     }
 }

@@ -1,0 +1,96 @@
+# Feature architecture
+
+## Goal
+
+Let features evolve in parallel and let the data source switch from mocks to the real backend without touching use cases, ViewModels, or screens.
+
+## Module split
+
+Each feature is three Gradle modules:
+
+```
+:feature:<name>:domain
+:feature:<name>:data
+:feature:<name>:ui
+```
+
+The shared base mirrors this, plus one extra leaf module for shared navigation contracts:
+
+```
+:shared:domain
+:shared:data
+:shared:navigation
+:shared:ui
+```
+
+`:shared:navigation` applies no Compose plugin and depends on nothing else in the project. It holds only navigation contracts that multiple features and `:shared:ui` need in common — today just the `RequiresLogin` marker interface — so that a feature can declare a key requiring login without depending back on `:shared:ui` (which would be circular, since `:shared:ui` already depends on every feature). Keep it that way deliberately: `Navigator`, `NavigationState`, and each feature's `*NavigationImpl`/`*NavigationModule` stay in `:shared:ui`, not here — they reference concrete feature Composables, and pulling them into `:shared:navigation` would make it depend on the same features that depend on it, recreating the cycle it exists to avoid. See the "Decided" note in `navigation.md`.
+
+`:shared:ui` is the app's composition module: it assembles features, navigation, and dependencies for Android, iOS, and web, and produces the `Shared` framework iOS consumes.
+
+Note: not every feature in the repo has all three modules split out yet (some are still a single module while migration is in progress) — check `settings.gradle.kts` for what's actually declared before assuming the full split exists for a given feature.
+
+### `domain`
+
+Contains: domain entities and value objects, repository interfaces, use cases and business rules, errors/results expressed in product terms.
+
+Does **not** depend on `data`, `ui`, Koin, Compose, DTOs, storage, or network clients. `:shared:domain` follows the same rule.
+
+### `data`
+
+Contains: mock and remote repository implementations, data sources and fixtures, DTOs and persistence models, mappers between external representations and domain.
+
+Depends on `domain`. DTOs and provider-specific details never leak into the public API `domain` or `ui` consume. `data` (including `:shared:data`) applies no Compose plugin and declares no Compose dependencies or resources.
+
+### `ui`
+
+Contains: the feature's screens and components, ViewModels/state/effects, navigation interfaces expressed as intents (not concrete navigation).
+
+Depends on `domain` only — never on a concrete `data` implementation or the app module. A feature declares its own `NavKey`s (its destinations) alongside its navigation interface. The navigation interface implementations and the Koin Navigation 3 entries live in `:shared:ui`, which imports each feature's keys and wires each screen into the app's graph (see `navigation.md`).
+
+## Dependency direction
+
+```
+ Android / iOS / Web
+          |
+          v
+    :shared:ui --------------> :shared:data
+          |                          |
+          |                          v
+          +------------------> :shared:domain
+          |
+          +------------------> :feature:<name>:ui
+                                      |
+                                      v
+                            :feature:<name>:domain
+```
+
+A dependency between two features must go through an explicit API. Never import another feature's internal implementation to reuse a screen, repository, or ViewModel.
+
+## Data flow
+
+```
+Screen -> ViewModel -> Use case -> Repository (interface)
+                                      |
+                                      +-> MockRepository
+                                      +-> RemoteRepository (Supabase)
+```
+
+`data` maps fixtures or remote responses into domain models before the repository call completes. The UI maps domain into presentation state only when it actually needs to.
+
+## Checklist for a new feature
+
+- [ ] All three modules are declared in `settings.gradle.kts`.
+- [ ] `domain` knows nothing about frameworks or infrastructure.
+- [ ] `:shared:domain` and `:shared:data` apply no Compose plugin and contain no Compose imports or resources.
+- [ ] `ui` depends only on `domain` and presentation libraries.
+- [ ] `data` implements the interfaces `domain` defines.
+- [ ] The app module wires navigation and dependencies (composition root, see `dependency-injection.md`).
+- [ ] Repository, use case, and ViewModel tests exist (see `testing.md`).
+- [ ] The affected `docs/` guide is updated if a new pattern shows up (see the "Keeping this skill and docs/ in sync" section of SKILL.md).
+
+## Related tickets
+
+- Backend and mock contracts: [#34](https://github.com/ShareatOfficial/app/issues/34)
+- Data model: [#35](https://github.com/ShareatOfficial/app/issues/35)
+- Authentication and authorization: [#33](https://github.com/ShareatOfficial/app/issues/33)
+- Shared base implementation: [#9](https://github.com/ShareatOfficial/app/issues/9)

@@ -6,7 +6,9 @@ import org.koin.dsl.navigation3.navigation
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.home.Home
 import org.shareat.feature.home.HomeDetails
+import org.shareat.feature.home.navigation.HomeDetailsKey
 import org.shareat.feature.home.navigation.HomeDetailsNavigation
+import org.shareat.feature.home.navigation.HomeKey
 import org.shareat.feature.home.navigation.HomeNavigation
 
 @OptIn(KoinExperimentalAPI::class)

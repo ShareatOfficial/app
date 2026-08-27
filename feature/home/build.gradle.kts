@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -33,11 +34,16 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":shared:navigation"))
+
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.compose)
+
+            implementation(libs.jetbrains.navigation3.ui)
+            implementation(libs.kotlinx.serialization.core)
         }
     }
 }

@@ -6,7 +6,9 @@ import org.koin.dsl.navigation3.navigation
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.profile.EditProfile
 import org.shareat.feature.profile.Profile
+import org.shareat.feature.profile.navigation.EditProfileKey
 import org.shareat.feature.profile.navigation.EditProfileNavigation
+import org.shareat.feature.profile.navigation.ProfileKey
 import org.shareat.feature.profile.navigation.ProfileNavigation
 
 @OptIn(KoinExperimentalAPI::class)
