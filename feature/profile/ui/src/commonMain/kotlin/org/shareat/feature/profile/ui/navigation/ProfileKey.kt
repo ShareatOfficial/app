@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.navigation
+package org.shareat.feature.profile.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

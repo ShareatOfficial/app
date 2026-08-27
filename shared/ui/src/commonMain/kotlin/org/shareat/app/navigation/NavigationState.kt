@@ -23,8 +23,8 @@ import kotlinx.serialization.modules.polymorphic
 import org.shareat.feature.home.navigation.HomeDetailsKey
 import org.shareat.feature.home.navigation.HomeKey
 import org.shareat.feature.login.ui.LoginKey
-import org.shareat.feature.profile.navigation.EditProfileKey
-import org.shareat.feature.profile.navigation.ProfileKey
+import org.shareat.feature.profile.ui.navigation.EditProfileKey
+import org.shareat.feature.profile.ui.navigation.ProfileKey
 
 private val navigationConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {

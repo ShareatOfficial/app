@@ -25,6 +25,7 @@ interface RestaurantRepository {
     suspend fun getPublishedRestaurants(): RepositoryResult<List<Restaurant>>
     suspend fun getRestaurant(id: RestaurantId): RepositoryResult<Restaurant>
     suspend fun getRestaurantForOwner(accountId: AccountId): RepositoryResult<Restaurant>
+    suspend fun updateRestaurant(restaurant: Restaurant): RepositoryResult<Restaurant>
 }
 
 interface MenuRepository {

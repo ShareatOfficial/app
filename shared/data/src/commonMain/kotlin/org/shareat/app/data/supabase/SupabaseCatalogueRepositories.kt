@@ -3,6 +3,8 @@ package org.shareat.app.data.supabase
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
 import org.shareat.app.domain.model.Account
 import org.shareat.app.domain.model.AccountId
@@ -71,6 +73,15 @@ internal class SupabaseRestaurantRepository(
     override suspend fun getRestaurantForOwner(accountId: AccountId): RepositoryResult<Restaurant> = supabaseResult {
         findRestaurant("owner_account_id", accountId.value)
             ?: throw DomainNotFound("restaurant for owner", accountId.value)
+    }
+
+    override suspend fun updateRestaurant(restaurant: Restaurant): RepositoryResult<Restaurant> = supabaseResult {
+        client.postgrest.rpc(
+            function = "update_restaurant_settings",
+            parameters = restaurant.toUpdateSettingsRpc(),
+        )
+        findRestaurant("id", restaurant.id.value)
+            ?: throw DomainNotFound("restaurant", restaurant.id.value)
     }
 
     private suspend fun findRestaurant(column: String, value: String): Restaurant? {

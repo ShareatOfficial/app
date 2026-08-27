@@ -11,6 +11,7 @@ plugins {
 }
 
 kotlin {
+    jvm()
     iosArm64()
     iosSimulatorArm64()
 
@@ -24,7 +25,7 @@ kotlin {
     }
 
     android {
-        namespace = "org.shareat.feature.profile"
+        namespace = "org.shareat.feature.profile.ui"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -39,6 +40,8 @@ kotlin {
         }
 
         commonMain.dependencies {
+            implementation(project(":feature:profile:domain"))
+            implementation(project(":shared:domain"))
             implementation(project(":shared:navigation"))
             implementation(
                 libs.androidx.lifecycle.viewmodelCompose
@@ -56,6 +59,13 @@ kotlin {
 
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.kotlinx.serialization.core)
+            implementation(libs.kotlinx.coroutines.core)
+        }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.koin.test)
         }
     }
 }

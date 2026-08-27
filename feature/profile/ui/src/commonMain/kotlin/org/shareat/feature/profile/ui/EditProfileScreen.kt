@@ -1,4 +1,4 @@
-package org.shareat.feature.profile
+package org.shareat.feature.profile.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,6 +42,7 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,7 +64,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.shareat.feature.profile.navigation.EditProfileNavigation
+import org.shareat.feature.profile.ui.navigation.EditProfileNavigation
 
 @Composable
 fun EditProfileScreen(
@@ -78,54 +79,16 @@ fun EditProfileScreen(
         modifier = modifier,
         callbacks = SettingsCallbacks(
             onBackClick = navigator::goBack,
-            onEditProfileClick = {},
-            onPasswordAndSecurityClick = {},
-            onNotificationsClick = {},
-            onPrivacyClick = {},
-            onDownloadDataClick = {},
-            onDeleteAccountClick = {},
-            onLogOutClick = viewModel::onCloseSession,
-            onRestaurantNameChange = viewModel::onRestaurantNameChange,
-            onRestaurantCuisineChange = viewModel::onRestaurantCuisineChange,
-            onRestaurantDescriptionChange = viewModel::onRestaurantDescriptionChange,
-            onRestaurantPhoneChange = viewModel::onRestaurantPhoneChange,
-            onRestaurantEmailChange = viewModel::onRestaurantEmailChange,
-            onRestaurantWebsiteChange = viewModel::onRestaurantWebsiteChange,
-            onRestaurantStreetChange = viewModel::onRestaurantStreetChange,
-            onRestaurantCityChange = viewModel::onRestaurantCityChange,
-            onRestaurantPostcodeChange = viewModel::onRestaurantPostcodeChange,
-            onRestaurantVisibilityChange = viewModel::onRestaurantVisibilityChange,
-            onOpeningDayChange = viewModel::onOpeningDayChange,
-            onOpeningTimeChange = viewModel::onOpeningTimeChange,
-            onClosingTimeChange = viewModel::onClosingTimeChange,
-            onSaveClick = viewModel::onSaveClick,
+            onUserAction = viewModel::onUserAction,
+            onRestaurantAction = viewModel::onRestaurantAction,
         ),
     )
 }
 
 private data class SettingsCallbacks(
     val onBackClick: () -> Unit = {},
-    val onPasswordAndSecurityClick: () -> Unit = {},
-    val onNotificationsClick: () -> Unit = {},
-    val onPrivacyClick: () -> Unit = {},
-    val onEditProfileClick: () -> Unit = {},
-    val onDownloadDataClick: () -> Unit = {},
-    val onDeleteAccountClick: () -> Unit = {},
-    val onLogOutClick: () -> Unit = {},
-    val onRestaurantNameChange: (String) -> Unit = {},
-    val onRestaurantCuisineChange: (String) -> Unit = {},
-    val onRestaurantDescriptionChange: (String) -> Unit = {},
-    val onRestaurantPhoneChange: (String) -> Unit = {},
-    val onRestaurantEmailChange: (String) -> Unit = {},
-    val onRestaurantWebsiteChange: (String) -> Unit = {},
-    val onRestaurantStreetChange: (String) -> Unit = {},
-    val onRestaurantCityChange: (String) -> Unit = {},
-    val onRestaurantPostcodeChange: (String) -> Unit = {},
-    val onRestaurantVisibilityChange: (Boolean) -> Unit = {},
-    val onOpeningDayChange: (String, Boolean) -> Unit = { _, _ -> },
-    val onOpeningTimeChange: (String, String) -> Unit = { _, _ -> },
-    val onClosingTimeChange: (String, String) -> Unit = { _, _ -> },
-    val onSaveClick: () -> Unit = {},
+    val onUserAction: (SettingsUserAction) -> Unit = {},
+    val onRestaurantAction: (SettingsRestaurantAction) -> Unit = {},
 )
 
 @Composable
@@ -145,7 +108,11 @@ private fun SettingsScreenStateless(
                 },
                 onBackClick = callbacks.onBackClick,
                 actionText = if (uiState is SettingsUiState.Restaurant) "Save" else null,
-                onActionClick = callbacks.onSaveClick,
+                actionEnabled = uiState is SettingsUiState.Restaurant &&
+                    !uiState.isLoading && !uiState.isSaving,
+                onActionClick = {
+                    callbacks.onRestaurantAction(SettingsRestaurantAction.SaveChanges)
+                },
             )
 
             when (uiState) {
@@ -168,6 +135,7 @@ private fun SettingsTopBar(
     title: String,
     onBackClick: () -> Unit,
     actionText: String?,
+    actionEnabled: Boolean,
     onActionClick: () -> Unit,
 ) {
     Row(
@@ -188,7 +156,7 @@ private fun SettingsTopBar(
             style = MaterialTheme.typography.headlineSmall,
         )
         if (actionText != null) {
-            TextButton(onClick = onActionClick) {
+            TextButton(onClick = onActionClick, enabled = actionEnabled) {
                 Text(actionText)
             }
         }
@@ -215,6 +183,13 @@ private fun UserSettings(
         ) {
         UserIdentityHeader(uiState)
 
+        if (uiState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        }
+        uiState.errorMessage?.let { message ->
+            SettingsStatusText(message = message, isError = true)
+        }
+
         Card(
             modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(20.dp),
@@ -225,37 +200,37 @@ private fun UserSettings(
             SettingsItem(
                 leadingIcon = Icons.Outlined.ManageAccounts,
                 text = "Edit profile",
-                onClick = callbacks.onEditProfileClick,
+                onClick = { callbacks.onUserAction(SettingsUserAction.EditProfile) },
             )
             SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.Lock,
                 text = "Password & security",
-                onClick = callbacks.onPasswordAndSecurityClick,
+                onClick = { callbacks.onUserAction(SettingsUserAction.PasswordAndSecurity) },
             )
             SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.NotificationsNone,
                 text = "Notifications",
-                onClick = callbacks.onNotificationsClick,
+                onClick = { callbacks.onUserAction(SettingsUserAction.Notifications) },
             )
             SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.Security,
                 text = "Privacy",
-                onClick = callbacks.onPrivacyClick,
+                onClick = { callbacks.onUserAction(SettingsUserAction.Privacy) },
             )
             SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.Link,
                 text = "Connected accounts",
-                onClick = {},
+                onClick = { callbacks.onUserAction(SettingsUserAction.ConnectedAccounts) },
             )
             SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.History,
                 text = "Review history",
-                onClick = {},
+                onClick = { callbacks.onUserAction(SettingsUserAction.ReviewHistory) },
             )
         }
 
@@ -269,13 +244,13 @@ private fun UserSettings(
             SettingsItem(
                 leadingIcon = Icons.Outlined.Download,
                 text = "Download my data",
-                onClick = callbacks.onDownloadDataClick,
+                onClick = { callbacks.onUserAction(SettingsUserAction.DownloadData) },
             )
             SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.Delete,
                 text = "Delete account",
-                onClick = callbacks.onDeleteAccountClick,
+                onClick = { callbacks.onUserAction(SettingsUserAction.DeleteAccount) },
                 isDestructive = true,
                 showChevron = false,
             )
@@ -283,8 +258,9 @@ private fun UserSettings(
 
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            onClick = callbacks.onLogOutClick,
+            onClick = { callbacks.onUserAction(SettingsUserAction.LogOut) },
             modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isLoading,
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ExitToApp,
@@ -347,6 +323,19 @@ private fun RestaurantSettings(
         item {
             RestaurantIdentityHeader(uiState)
         }
+        if (uiState.isLoading) {
+            item {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+        uiState.errorMessage?.let { message ->
+            item { SettingsStatusText(message = message, isError = true) }
+        }
+        if (uiState.saveSucceeded) {
+            item { SettingsStatusText(message = "Changes saved.", isError = false) }
+        }
         item {
             RestaurantSectionCard(
                 title = "Basic info",
@@ -355,33 +344,33 @@ private fun RestaurantSettings(
                 RestaurantTextField(
                     value = uiState.name,
                     label = "Restaurant name",
-                    onValueChange = callbacks.onRestaurantNameChange,
-                )
-                RestaurantTextField(
-                    value = uiState.cuisine,
-                    label = "Cuisine / category",
-                    onValueChange = callbacks.onRestaurantCuisineChange,
+                    onValueChange = {
+                        callbacks.onRestaurantAction(SettingsRestaurantAction.NameChanged(it))
+                    },
                 )
                 RestaurantTextField(
                     value = uiState.description,
                     label = "Short description",
-                    onValueChange = callbacks.onRestaurantDescriptionChange,
+                    onValueChange = {
+                        callbacks.onRestaurantAction(
+                            SettingsRestaurantAction.DescriptionChanged(it),
+                        )
+                    },
                     minLines = 3,
                 )
                 RestaurantTextField(
                     value = uiState.phone,
                     label = "Contact phone",
-                    onValueChange = callbacks.onRestaurantPhoneChange,
+                    onValueChange = {
+                        callbacks.onRestaurantAction(SettingsRestaurantAction.PhoneChanged(it))
+                    },
                 )
                 RestaurantTextField(
                     value = uiState.email,
                     label = "Contact email",
-                    onValueChange = callbacks.onRestaurantEmailChange,
-                )
-                RestaurantTextField(
-                    value = uiState.website,
-                    label = "Website",
-                    onValueChange = callbacks.onRestaurantWebsiteChange,
+                    onValueChange = {
+                        callbacks.onRestaurantAction(SettingsRestaurantAction.EmailChanged(it))
+                    },
                 )
             }
         }
@@ -393,7 +382,9 @@ private fun RestaurantSettings(
                 RestaurantTextField(
                     value = uiState.streetAddress,
                     label = "Street address",
-                    onValueChange = callbacks.onRestaurantStreetChange,
+                    onValueChange = {
+                        callbacks.onRestaurantAction(SettingsRestaurantAction.StreetChanged(it))
+                    },
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -401,20 +392,28 @@ private fun RestaurantSettings(
                 ) {
                     OutlinedTextField(
                         value = uiState.city,
-                        onValueChange = callbacks.onRestaurantCityChange,
+                        onValueChange = {
+                            callbacks.onRestaurantAction(SettingsRestaurantAction.CityChanged(it))
+                        },
                         modifier = Modifier.weight(1f),
                         label = { Text("City") },
                         singleLine = true,
                     )
                     OutlinedTextField(
                         value = uiState.postcode,
-                        onValueChange = callbacks.onRestaurantPostcodeChange,
+                        onValueChange = {
+                            callbacks.onRestaurantAction(SettingsRestaurantAction.PostcodeChanged(it))
+                        },
                         modifier = Modifier.weight(1f),
                         label = { Text("Postcode") },
                         singleLine = true,
                     )
                 }
-                TextButton(onClick = {}) {
+                TextButton(
+                    onClick = {
+                        callbacks.onRestaurantAction(SettingsRestaurantAction.AdjustMapPin)
+                    },
+                ) {
                     Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null)
                     Spacer(modifier = Modifier.size(8.dp))
                     Text("Adjust map pin")
@@ -430,26 +429,44 @@ private fun RestaurantSettings(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    TextButton(onClick = {}) {
+                    TextButton(
+                        onClick = {
+                            callbacks.onRestaurantAction(
+                                SettingsRestaurantAction.SpecialDatesAndHolidays,
+                            )
+                        },
+                    ) {
                         Text("Special dates & holidays")
                     }
                 }
                 uiState.openingHours.forEach { hours ->
                     OpeningHoursRow(
                         hours = hours,
-                        onOpenChange = { callbacks.onOpeningDayChange(hours.day, it) },
+                        onOpenChange = {
+                            callbacks.onRestaurantAction(
+                                SettingsRestaurantAction.OpeningDayChanged(hours.day, it),
+                            )
+                        },
                         onOpeningTimeChange = {
-                            callbacks.onOpeningTimeChange(hours.day, it)
+                            callbacks.onRestaurantAction(
+                                SettingsRestaurantAction.OpeningTimeChanged(hours.day, it),
+                            )
                         },
                         onClosingTimeChange = {
-                            callbacks.onClosingTimeChange(hours.day, it)
+                            callbacks.onRestaurantAction(
+                                SettingsRestaurantAction.ClosingTimeChanged(hours.day, it),
+                            )
                         },
                     )
                     if (hours != uiState.openingHours.last()) {
                         SettingsDivider()
                     }
                 }
-                TextButton(onClick = {}) {
+                TextButton(
+                    onClick = {
+                        callbacks.onRestaurantAction(SettingsRestaurantAction.AddSplitHours)
+                    },
+                ) {
                     Text("+ Add split hours")
                 }
             }
@@ -459,15 +476,35 @@ private fun RestaurantSettings(
                 title = "Management",
                 icon = Icons.Outlined.Tune,
             ) {
-                SettingsItem(Icons.Outlined.EventAvailable, "Reservations & order links", {})
+                SettingsItem(
+                    Icons.Outlined.EventAvailable,
+                    "Reservations & order links",
+                    { callbacks.onRestaurantAction(SettingsRestaurantAction.ReservationsAndOrderLinks) },
+                )
                 SettingsDivider()
-                SettingsItem(Icons.Outlined.RestaurantMenu, "Menu management", {})
+                SettingsItem(
+                    Icons.Outlined.RestaurantMenu,
+                    "Menu management",
+                    { callbacks.onRestaurantAction(SettingsRestaurantAction.MenuManagement) },
+                )
                 SettingsDivider()
-                SettingsItem(Icons.Outlined.PhotoLibrary, "Photos & media", {})
+                SettingsItem(
+                    Icons.Outlined.PhotoLibrary,
+                    "Photos & media",
+                    { callbacks.onRestaurantAction(SettingsRestaurantAction.PhotosAndMedia) },
+                )
                 SettingsDivider()
-                SettingsItem(Icons.Outlined.NotificationsNone, "Notifications", {})
+                SettingsItem(
+                    Icons.Outlined.NotificationsNone,
+                    "Notifications",
+                    { callbacks.onRestaurantAction(SettingsRestaurantAction.Notifications) },
+                )
                 SettingsDivider()
-                SettingsItem(Icons.Outlined.Group, "Team & permissions", {})
+                SettingsItem(
+                    Icons.Outlined.Group,
+                    "Team & permissions",
+                    { callbacks.onRestaurantAction(SettingsRestaurantAction.TeamAndPermissions) },
+                )
             }
         }
         item {
@@ -494,14 +531,20 @@ private fun RestaurantSettings(
                     }
                     Switch(
                         checked = uiState.isPublished,
-                        onCheckedChange = callbacks.onRestaurantVisibilityChange,
+                        onCheckedChange = {
+                            callbacks.onRestaurantAction(
+                                SettingsRestaurantAction.VisibilityChanged(it),
+                            )
+                        },
                     )
                 }
                 SettingsDivider()
                 SettingsItem(
                     leadingIcon = Icons.AutoMirrored.Filled.ExitToApp,
                     text = "Log out",
-                    onClick = callbacks.onLogOutClick,
+                    onClick = {
+                        callbacks.onRestaurantAction(SettingsRestaurantAction.LogOut)
+                    },
                     isDestructive = true,
                     showChevron = false,
                 )
@@ -509,10 +552,17 @@ private fun RestaurantSettings(
         }
         item {
             Button(
-                onClick = callbacks.onSaveClick,
+                onClick = {
+                    callbacks.onRestaurantAction(SettingsRestaurantAction.SaveChanges)
+                },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading && !uiState.isSaving,
             ) {
-                Text("Save changes")
+                if (uiState.isSaving) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                } else {
+                    Text("Save changes")
+                }
             }
         }
     }
@@ -538,11 +588,6 @@ private fun RestaurantIdentityHeader(uiState: SettingsUiState.Restaurant) {
                 tint = MaterialTheme.colorScheme.primary,
             )
             Text(uiState.name, style = MaterialTheme.typography.headlineSmall)
-            Text(
-                uiState.cuisine,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -632,7 +677,7 @@ private fun OpeningHoursRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = hours.day,
+                text = hours.day.label,
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.titleSmall,
             )
@@ -668,6 +713,23 @@ private fun OpeningHoursRow(
             }
         }
     }
+}
+
+@Composable
+private fun SettingsStatusText(
+    message: String,
+    isError: Boolean,
+) {
+    Text(
+        text = message,
+        modifier = Modifier.fillMaxWidth(),
+        style = MaterialTheme.typography.bodyMedium,
+        color = if (isError) {
+            MaterialTheme.colorScheme.error
+        } else {
+            MaterialTheme.colorScheme.primary
+        },
+    )
 }
 
 @Composable

@@ -1,4 +1,4 @@
-package org.shareat.feature.profile
+package org.shareat.feature.profile.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
-import org.shareat.feature.profile.navigation.ProfileNavigation
+import org.shareat.feature.profile.ui.navigation.ProfileNavigation
 
 @Composable
 fun Profile(
