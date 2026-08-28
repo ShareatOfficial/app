@@ -26,6 +26,9 @@ import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.feature.profile.ui.profile.ProfileNavigation
+import org.shareat.feature.profile.ui.editprofile.EditProfileNavigation
+import org.shareat.feature.profile.ui.editprofile.EditProfileUiState
+import org.shareat.feature.profile.ui.editprofile.EditProfileViewModel
 import org.shareat.feature.profile.ui.settings.SettingsNavigation
 import org.shareat.feature.profile.ui.settings.SettingsUiState
 import org.shareat.feature.profile.ui.settings.SettingsViewModel
@@ -66,6 +69,7 @@ class ProfileUiModuleTest {
                     single<AccountRepository> { WiringAccountRepository(account) }
                     single<RestaurantRepository> { WiringRestaurantRepository(restaurant) }
                     single<ProfileNavigation> { WiringProfileNavigation }
+                    single<EditProfileNavigation> { WiringEditProfileNavigation }
                     single<SettingsNavigation> { WiringSettingsNavigation }
                 },
                 profileUiModule,
@@ -75,6 +79,7 @@ class ProfileUiModuleTest {
         assertIs<SettingsUiState.Restaurant>(
             app.koin.get<SettingsViewModel>().uiState.value,
         )
+        assertIs<EditProfileUiState>(app.koin.get<EditProfileViewModel>().uiState.value)
     }
 }
 
@@ -82,8 +87,13 @@ private data object WiringProfileNavigation : ProfileNavigation {
     override fun openSettings() = Unit
 }
 
+private data object WiringEditProfileNavigation : EditProfileNavigation {
+    override fun goBack() = Unit
+}
+
 private data object WiringSettingsNavigation : SettingsNavigation {
     override fun goBack() = Unit
+    override fun openEditProfile() = Unit
 }
 
 private class WiringAuthRepository(account: Account) : AuthRepository {

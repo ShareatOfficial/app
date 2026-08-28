@@ -5,6 +5,9 @@ import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.profile.ui.di.profileUiModule
+import org.shareat.feature.profile.ui.editprofile.EditProfileKey
+import org.shareat.feature.profile.ui.editprofile.EditProfileNavigation
+import org.shareat.feature.profile.ui.editprofile.EditProfileScreen
 import org.shareat.feature.profile.ui.profile.Profile
 import org.shareat.feature.profile.ui.profile.ProfileKey
 import org.shareat.feature.profile.ui.profile.ProfileNavigation
@@ -20,6 +23,10 @@ val profileNavigationModule = module {
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
         ProfileNavigationImpl(navigator = navigator)
     }
+    factory<EditProfileNavigation> { parameters ->
+        val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
+        EditProfileNavigationImpl(navigator = navigator)
+    }
     factory<SettingsNavigation> { parameters ->
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
         SettingsNavigationImpl(navigator = navigator)
@@ -27,4 +34,5 @@ val profileNavigationModule = module {
 
     navigation<ProfileKey> { Profile() }
     navigation<SettingsKey> { SettingsScreen() }
+    navigation<EditProfileKey> { EditProfileScreen() }
 }

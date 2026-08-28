@@ -19,6 +19,7 @@ import org.shareat.app.domain.model.ReviewTarget
 interface AccountRepository {
     suspend fun getAccount(id: AccountId): RepositoryResult<Account>
     suspend fun getCustomerProfile(accountId: AccountId): RepositoryResult<CustomerProfile>
+    suspend fun updateCustomerProfile(profile: CustomerProfile): RepositoryResult<CustomerProfile>
 }
 
 interface RestaurantRepository {

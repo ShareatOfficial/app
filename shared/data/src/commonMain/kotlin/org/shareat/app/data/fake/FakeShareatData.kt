@@ -36,13 +36,14 @@ import org.shareat.app.domain.model.WeeklyOpeningHours
 
 class FakeShareatData internal constructor(
     internal val accounts: List<Account>,
-    internal val customerProfiles: List<CustomerProfile>,
+    customerProfiles: List<CustomerProfile>,
     restaurants: List<Restaurant>,
     internal val menus: List<Menu>,
     internal val dishes: List<Dish>,
     internal val menuItems: List<MenuItem>,
     reviews: List<Review>,
 ) {
+    internal val customerProfiles: MutableList<CustomerProfile> = customerProfiles.toMutableList()
     internal val restaurants: MutableList<Restaurant> = restaurants.toMutableList()
     internal val reviews: MutableList<Review> = reviews.toMutableList()
 
@@ -96,10 +97,15 @@ private fun previewData(): FakeShareatData {
             accountId = FakeIds.customerAccount,
             displayName = "Ana",
             avatar = ImageRef("https://images.example.com/users/ana.jpg", "Ana"),
+            fullName = "Ana Rivera",
+            phoneNumber = "+34 600 000 001",
+            preferredLanguage = "es-ES",
         ),
         CustomerProfile(
             accountId = FakeIds.secondCustomerAccount,
             displayName = "Diego",
+            fullName = "Diego Martín",
+            preferredLanguage = "es-ES",
         ),
     )
     val service = OpeningPeriod(LocalTime(13, 0), LocalTime(16, 0))

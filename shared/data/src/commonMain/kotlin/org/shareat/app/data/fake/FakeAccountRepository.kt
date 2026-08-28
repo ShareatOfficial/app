@@ -30,4 +30,24 @@ class FakeAccountRepository(
             return RepositoryResult.Failure(RepositoryError.NotFound("CustomerProfile", accountId.value))
         },
     )
+
+    override suspend fun updateCustomerProfile(
+        profile: CustomerProfile,
+    ): RepositoryResult<CustomerProfile> = scenario.result(
+        populated = {
+            val index = data.customerProfiles.indexOfFirst { it.accountId == profile.accountId }
+            if (index < 0) {
+                return RepositoryResult.Failure(
+                    RepositoryError.NotFound("CustomerProfile", profile.accountId.value),
+                )
+            }
+            data.customerProfiles[index] = profile
+            profile
+        },
+        empty = {
+            return RepositoryResult.Failure(
+                RepositoryError.NotFound("CustomerProfile", profile.accountId.value),
+            )
+        },
+    )
 }

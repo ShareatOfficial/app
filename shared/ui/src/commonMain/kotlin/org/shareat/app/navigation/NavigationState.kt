@@ -24,6 +24,7 @@ import org.shareat.feature.home.navigation.HomeDetailsKey
 import org.shareat.feature.home.navigation.HomeKey
 import org.shareat.feature.login.ui.LoginKey
 import org.shareat.feature.profile.ui.profile.ProfileKey
+import org.shareat.feature.profile.ui.editprofile.EditProfileKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
 
 private val navigationConfiguration = SavedStateConfiguration {
@@ -33,6 +34,7 @@ private val navigationConfiguration = SavedStateConfiguration {
             subclass(HomeDetailsKey::class, HomeDetailsKey.serializer())
             subclass(ProfileKey::class, ProfileKey.serializer())
             subclass(SettingsKey::class, SettingsKey.serializer())
+            subclass(EditProfileKey::class, EditProfileKey.serializer())
             subclass(LoginKey::class, LoginKey.serializer())
         }
     }

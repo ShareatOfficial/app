@@ -78,7 +78,13 @@ fun SettingsScreen(
         modifier = modifier,
         callbacks = SettingsCallbacks(
             onBackClick = navigator::goBack,
-            onUserAction = viewModel::onUserAction,
+            onUserAction = { action ->
+                if (action == SettingsUserAction.EditProfile) {
+                    navigator.openEditProfile()
+                } else {
+                    viewModel.onUserAction(action)
+                }
+            },
             onRestaurantAction = viewModel::onRestaurantAction,
         ),
     )

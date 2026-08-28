@@ -41,17 +41,38 @@ internal class SupabaseAccountRepository(
             filter { eq("account_id", accountId.value) }
         }.decodeList<CustomerProfileDto>().singleOrNull()
             ?: throw DomainNotFound("customer profile", accountId.value)
-        CustomerProfile(
-            accountId = AccountId(dto.accountId),
-            displayName = dto.displayName,
-            avatar = dto.avatarPath?.let { path ->
-                ImageRef(
-                    url = client.storage.from("avatars").createSignedUrl(path, 1.hours),
-                    alternativeText = dto.avatarAltText,
-                )
-            },
-        )
+        dto.toDomain()
     }
+
+    override suspend fun updateCustomerProfile(
+        profile: CustomerProfile,
+    ): RepositoryResult<CustomerProfile> = supabaseResult {
+        val dto = client.from("customer_profiles").update({
+            set("full_name", profile.fullName)
+            set("display_name", profile.displayName)
+            set("phone_number", profile.phoneNumber)
+            set("preferred_language", profile.preferredLanguage)
+        }) {
+            select()
+            filter { eq("account_id", profile.accountId.value) }
+        }.decodeList<CustomerProfileDto>().singleOrNull()
+            ?: throw DomainForbidden()
+        dto.toDomain()
+    }
+
+    private suspend fun CustomerProfileDto.toDomain() = CustomerProfile(
+        accountId = AccountId(accountId),
+        displayName = displayName,
+        avatar = avatarPath?.let { path ->
+            ImageRef(
+                url = client.storage.from("avatars").createSignedUrl(path, 1.hours),
+                alternativeText = avatarAltText,
+            )
+        },
+        fullName = fullName,
+        phoneNumber = phoneNumber,
+        preferredLanguage = preferredLanguage,
+    )
 }
 
 internal class SupabaseRestaurantRepository(

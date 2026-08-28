@@ -171,10 +171,16 @@ private class TestAuthRepository(
 
 private class TestAccountRepository(
     private val account: Account,
-    private val profile: CustomerProfile,
+    private var profile: CustomerProfile,
 ) : AccountRepository {
     override suspend fun getAccount(id: AccountId) = RepositoryResult.Success(account)
     override suspend fun getCustomerProfile(accountId: AccountId) = RepositoryResult.Success(profile)
+    override suspend fun updateCustomerProfile(
+        profile: CustomerProfile,
+    ): RepositoryResult<CustomerProfile> {
+        this.profile = profile
+        return RepositoryResult.Success(profile)
+    }
 }
 
 private class TestRestaurantRepository(
@@ -190,4 +196,4 @@ private class TestRestaurantRepository(
 }
 
 private fun <T> unavailable(): RepositoryResult<T> =
-    RepositoryResult.Failure(RepositoryError.Unavailable)
+    RepositoryResult.Failure(RepositoryError.Unavailable())
