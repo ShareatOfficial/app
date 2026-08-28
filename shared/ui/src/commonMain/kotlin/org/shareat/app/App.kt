@@ -1,7 +1,6 @@
 package org.shareat.app
 
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,21 +29,19 @@ import org.shareat.app.navscenedecorator.TOP_LEVEL_NAV_ITEMS
 import org.shareat.app.navscenedecorator.TopLevelNavigationBar
 import org.shareat.app.navscenedecorator.TopLevelNavigationRail
 import org.shareat.app.navscenedecorator.rememberResponsiveNavigationSceneDecoratorStrategy
-import org.shareat.app.theme.AppTypography
+import org.shareat.app.theme.AppTheme
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun App() {
-    MaterialTheme(
-        typography = AppTypography(),
-    ) {
+    AppTheme {
         val sessionCoordinator = koinInject<SessionCoordinator>()
         val sessionState by sessionCoordinator.state.collectAsState()
         if (sessionState is org.shareat.app.domain.model.AuthSessionState.Initializing) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-            return@MaterialTheme
+            return@AppTheme
         }
         SharedTransitionLayout {
             val navigationState = rememberNavigationState(
