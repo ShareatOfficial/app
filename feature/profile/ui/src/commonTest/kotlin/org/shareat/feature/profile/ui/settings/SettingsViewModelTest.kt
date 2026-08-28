@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.settings
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,7 +27,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class EditProfileViewModelTest {
+class SettingsViewModelTest {
     private val dispatcher = StandardTestDispatcher()
 
     @BeforeTest
@@ -49,16 +49,16 @@ class EditProfileViewModelTest {
             AccountRole.Customer,
             AccountStatus.Active,
         )
-        val viewModel = EditProfileViewModel(
-            loadProfileSettings = LoadProfileSettingsUseCase {
+        val viewModel = SettingsViewModel(
+            loadProfileSettingsUseCase = LoadProfileSettingsUseCase {
                 RepositoryResult.Success(
                     ProfileSettings.User(account, CustomerProfile(accountId, "Ana Rivera")),
                 )
             },
-            updateRestaurantInfo = UpdateRestaurantInfoUseCase {
+            updateRestaurantInfoUseCase = UpdateRestaurantInfoUseCase {
                 error("Restaurant update must not run for user settings")
             },
-            signOut = SignOutUseCase { RepositoryResult.Success(Unit) },
+            signOutUseCase = SignOutUseCase { RepositoryResult.Success(Unit) },
         )
 
         advanceUntilIdle()
@@ -148,18 +148,18 @@ private fun viewModelFor(
         RepositoryResult.Success(restaurant)
     },
     signOut: SignOutUseCase = SignOutUseCase { RepositoryResult.Success(Unit) },
-): EditProfileViewModel {
+): SettingsViewModel {
     val account = Account(
         AccountId("owner-id"),
         EmailAddress("owner@example.com"),
         AccountRole.Restaurant,
         AccountStatus.Active,
     )
-    return EditProfileViewModel(
-        loadProfileSettings = LoadProfileSettingsUseCase {
+    return SettingsViewModel(
+        loadProfileSettingsUseCase = LoadProfileSettingsUseCase {
             RepositoryResult.Success(ProfileSettings.RestaurantOwner(account, restaurant))
         },
-        updateRestaurantInfo = update,
-        signOut = signOut,
+        updateRestaurantInfoUseCase = update,
+        signOutUseCase = signOut,
     )
 }

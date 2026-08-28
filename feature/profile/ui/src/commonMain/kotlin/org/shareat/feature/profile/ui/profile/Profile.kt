@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
-import org.shareat.feature.profile.ui.navigation.ProfileNavigation
 
 @Composable
 fun Profile(
@@ -30,8 +29,8 @@ fun Profile(
             ),
         ) {
             Text("Profile", style = MaterialTheme.typography.headlineMedium)
-            Button(onClick = navigator::openEditProfile) {
-                Text("Edit profile")
+            Button(onClick = navigator::openSettings) {
+                Text("Settings")
             }
         }
     }

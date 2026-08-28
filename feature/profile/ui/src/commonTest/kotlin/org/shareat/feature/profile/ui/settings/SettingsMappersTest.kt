@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.settings
 
 import org.shareat.app.domain.model.Account
 import org.shareat.app.domain.model.AccountId

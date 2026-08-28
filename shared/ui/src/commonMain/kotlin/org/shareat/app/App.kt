@@ -22,7 +22,7 @@ import org.shareat.app.navigation.LocalNavigator
 import org.shareat.app.auth.SessionCoordinator
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.home.navigation.HomeKey
-import org.shareat.feature.profile.ui.navigation.ProfileKey
+import org.shareat.feature.profile.ui.profile.ProfileKey
 import org.shareat.app.navigation.rememberNavigationState
 import org.shareat.app.navigation.toEntries
 import org.shareat.app.navscenedecorator.TOP_LEVEL_NAV_ITEMS

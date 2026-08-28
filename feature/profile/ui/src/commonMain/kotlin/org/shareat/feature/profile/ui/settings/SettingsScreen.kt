@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,13 +64,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.shareat.feature.profile.ui.navigation.EditProfileNavigation
 
 @Composable
-fun EditProfileScreen(
+fun SettingsScreen(
     modifier: Modifier = Modifier,
-    navigator: EditProfileNavigation = koinInject(),
-    viewModel: EditProfileViewModel = koinViewModel(),
+    navigator: SettingsNavigation = koinInject(),
+    viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.di
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,9 +25,11 @@ import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
-import org.shareat.feature.profile.ui.di.profileUiModule
-import org.shareat.feature.profile.ui.navigation.EditProfileNavigation
-import org.shareat.feature.profile.ui.navigation.ProfileNavigation
+import org.shareat.feature.profile.ui.profile.ProfileNavigation
+import org.shareat.feature.profile.ui.settings.SettingsNavigation
+import org.shareat.feature.profile.ui.settings.SettingsUiState
+import org.shareat.feature.profile.ui.settings.SettingsViewModel
+import org.shareat.feature.profile.ui.settings.restaurantFixture
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -49,7 +51,7 @@ class ProfileUiModuleTest {
     }
 
     @Test
-    fun resolvesEditProfileViewModelWithUseCases() {
+    fun resolvesProfileViewModelsWithUseCases() {
         val restaurant = restaurantFixture()
         val account = Account(
             AccountId("owner-id"),
@@ -64,23 +66,23 @@ class ProfileUiModuleTest {
                     single<AccountRepository> { WiringAccountRepository(account) }
                     single<RestaurantRepository> { WiringRestaurantRepository(restaurant) }
                     single<ProfileNavigation> { WiringProfileNavigation }
-                    single<EditProfileNavigation> { WiringEditProfileNavigation }
+                    single<SettingsNavigation> { WiringSettingsNavigation }
                 },
                 profileUiModule,
             )
         }
 
         assertIs<SettingsUiState.Restaurant>(
-            app.koin.get<EditProfileViewModel>().uiState.value,
+            app.koin.get<SettingsViewModel>().uiState.value,
         )
     }
 }
 
 private data object WiringProfileNavigation : ProfileNavigation {
-    override fun openEditProfile() = Unit
+    override fun openSettings() = Unit
 }
 
-private data object WiringEditProfileNavigation : EditProfileNavigation {
+private data object WiringSettingsNavigation : SettingsNavigation {
     override fun goBack() = Unit
 }
 
@@ -101,6 +103,9 @@ private class WiringAccountRepository(
     override suspend fun getAccount(id: AccountId) = RepositoryResult.Success(account)
     override suspend fun getCustomerProfile(accountId: AccountId): RepositoryResult<CustomerProfile> =
         unavailable()
+    override suspend fun updateCustomerProfile(
+        profile: CustomerProfile,
+    ): RepositoryResult<CustomerProfile> = unavailable()
 }
 
 private class WiringRestaurantRepository(
@@ -116,4 +121,4 @@ private class WiringRestaurantRepository(
 }
 
 private fun <T> unavailable(): RepositoryResult<T> =
-    RepositoryResult.Failure(RepositoryError.Unavailable)
+    RepositoryResult.Failure(RepositoryError.Unavailable())

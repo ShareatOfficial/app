@@ -1,11 +1,11 @@
 package org.shareat.app.navigation.profile
 
 import org.shareat.app.navigation.Navigator
-import org.shareat.feature.profile.ui.navigation.EditProfileNavigation
+import org.shareat.feature.profile.ui.settings.SettingsNavigation
 
-class EditProfileNavigationImpl(
+class SettingsNavigationImpl(
     private val navigator: Navigator,
-) : EditProfileNavigation {
+) : SettingsNavigation {
     override fun goBack() {
         navigator.goBack()
     }

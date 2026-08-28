@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.settings
 
 enum class SettingsUserAction {
     EditProfile,

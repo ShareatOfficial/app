@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.settings
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
@@ -19,10 +19,10 @@ import org.shareat.feature.profile.domain.UpdateRestaurantInfoUseCase
 
 @Stable
 @KoinViewModel
-class EditProfileViewModel(
-    private val loadProfileSettings: LoadProfileSettingsUseCase,
-    private val updateRestaurantInfo: UpdateRestaurantInfoUseCase,
-    private val signOut: SignOutUseCase,
+class SettingsViewModel(
+    private val loadProfileSettingsUseCase: LoadProfileSettingsUseCase,
+    private val updateRestaurantInfoUseCase: UpdateRestaurantInfoUseCase,
+    private val signOutUseCase: SignOutUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<SettingsUiState>(
         SettingsUiState.User(isLoading = true),
@@ -37,7 +37,7 @@ class EditProfileViewModel(
 
     fun onUserAction(action: SettingsUserAction) {
         when (action) {
-            SettingsUserAction.EditProfile -> editProfile()
+            SettingsUserAction.EditProfile -> Unit
             SettingsUserAction.PasswordAndSecurity -> openPasswordAndSecurity()
             SettingsUserAction.Notifications -> openUserNotifications()
             SettingsUserAction.Privacy -> openPrivacy()
@@ -61,10 +61,13 @@ class EditProfileViewModel(
             is SettingsRestaurantAction.VisibilityChanged -> changeRestaurantVisibility(action.value)
             is SettingsRestaurantAction.OpeningDayChanged ->
                 changeOpeningDay(action.day, action.isOpen)
+
             is SettingsRestaurantAction.OpeningTimeChanged ->
                 changeOpeningTime(action.day, action.value)
+
             is SettingsRestaurantAction.ClosingTimeChanged ->
                 changeClosingTime(action.day, action.value)
+
             SettingsRestaurantAction.AdjustMapPin -> adjustMapPin()
             SettingsRestaurantAction.SpecialDatesAndHolidays -> openSpecialDatesAndHolidays()
             SettingsRestaurantAction.AddSplitHours -> addSplitHours()
@@ -80,7 +83,7 @@ class EditProfileViewModel(
 
     private fun loadSettings() {
         viewModelScope.launch {
-            when (val result = loadProfileSettings()) {
+            when (val result = loadProfileSettingsUseCase()) {
                 is RepositoryResult.Success -> when (val settings = result.value) {
                     is ProfileSettings.User -> _uiState.value = settings.toUiState()
                     is ProfileSettings.RestaurantOwner -> {
@@ -88,12 +91,14 @@ class EditProfileViewModel(
                         _uiState.value = settings.toUiState()
                     }
                 }
+
                 is RepositoryResult.Failure -> updateCurrentState {
                     when (this) {
                         is SettingsUiState.User -> copy(
                             isLoading = false,
                             errorMessage = result.error.toUserMessage(),
                         )
+
                         is SettingsUiState.Restaurant -> copy(
                             isLoading = false,
                             errorMessage = result.error.toUserMessage(),
@@ -104,7 +109,6 @@ class EditProfileViewModel(
         }
     }
 
-    private fun editProfile(): Nothing = TODO("To be implemented")
     private fun openPasswordAndSecurity(): Nothing = TODO("To be implemented")
     private fun openUserNotifications(): Nothing = TODO("To be implemented")
     private fun openPrivacy(): Nothing = TODO("To be implemented")
@@ -116,10 +120,12 @@ class EditProfileViewModel(
     private fun changeRestaurantName(value: String) = editRestaurant { copy(name = value) }
     private fun changeRestaurantDescription(value: String) =
         editRestaurant { copy(description = value) }
+
     private fun changeRestaurantPhone(value: String) = editRestaurant { copy(phone = value) }
     private fun changeRestaurantEmail(value: String) = editRestaurant { copy(email = value) }
     private fun changeRestaurantStreet(value: String) =
         editRestaurant { copy(streetAddress = value) }
+
     private fun changeRestaurantCity(value: String) = editRestaurant { copy(city = value) }
     private fun changeRestaurantPostcode(value: String) = editRestaurant { copy(postcode = value) }
     private fun changeRestaurantVisibility(value: Boolean) =
@@ -155,13 +161,21 @@ class EditProfileViewModel(
             is RestaurantSettingsMappingResult.Failure -> updateRestaurant {
                 copy(errorMessage = mapping.message, saveSucceeded = false)
             }
+
             is RestaurantSettingsMappingResult.Success -> viewModelScope.launch {
-                updateRestaurant { copy(isSaving = true, errorMessage = null, saveSucceeded = false) }
-                when (val result = updateRestaurantInfo(mapping.params)) {
+                updateRestaurant {
+                    copy(
+                        isSaving = true,
+                        errorMessage = null,
+                        saveSucceeded = false
+                    )
+                }
+                when (val result = updateRestaurantInfoUseCase(mapping.params)) {
                     is RepositoryResult.Success -> {
                         loadedRestaurant = result.value
                         _uiState.value = result.value.toUiState().copy(saveSucceeded = true)
                     }
+
                     is RepositoryResult.Failure -> updateRestaurant {
                         copy(
                             isSaving = false,
@@ -182,19 +196,21 @@ class EditProfileViewModel(
             }
         }
         viewModelScope.launch {
-            when (val result = signOut()) {
+            when (val result = signOutUseCase()) {
                 is RepositoryResult.Success -> updateCurrentState {
                     when (this) {
                         is SettingsUiState.User -> copy(isLoading = false)
                         is SettingsUiState.Restaurant -> copy(isLoading = false)
                     }
                 }
+
                 is RepositoryResult.Failure -> updateCurrentState {
                     when (this) {
                         is SettingsUiState.User -> copy(
                             isLoading = false,
                             errorMessage = result.error.toUserMessage(),
                         )
+
                         is SettingsUiState.Restaurant -> copy(
                             isLoading = false,
                             errorMessage = result.error.toUserMessage(),
@@ -240,7 +256,7 @@ private fun RepositoryError.toUserMessage(): String = when (this) {
     RepositoryError.Offline -> "You appear to be offline. Try again when connected."
     RepositoryError.Unauthenticated -> "Your session has expired. Please sign in again."
     RepositoryError.Forbidden -> "This account is not allowed to perform that action."
-    RepositoryError.Unavailable -> "The service is temporarily unavailable."
+    is RepositoryError.Unavailable -> "The service is temporarily unavailable."
     is RepositoryError.AlreadyExists -> "The ${entity} already exists."
     is RepositoryError.Conflict -> reason
     is RepositoryError.NotFound -> "The requested ${entity} could not be found."

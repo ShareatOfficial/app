@@ -1,4 +1,4 @@
-package org.shareat.feature.profile.ui
+package org.shareat.feature.profile.ui.settings
 
 import org.shareat.app.domain.model.DailyOpeningHours
 import org.shareat.app.domain.model.EmailAddress
@@ -12,9 +12,9 @@ import org.shareat.feature.profile.domain.ProfileSettings
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoParams
 
 internal fun ProfileSettings.User.toUiState(): SettingsUiState.User = SettingsUiState.User(
-    name = profile.displayName,
+    name = profile.fullName,
     email = account.loginEmail.value,
-    initials = profile.displayName.toInitials(),
+    initials = profile.fullName.toInitials(),
 )
 
 internal fun ProfileSettings.RestaurantOwner.toUiState(): SettingsUiState.Restaurant =
