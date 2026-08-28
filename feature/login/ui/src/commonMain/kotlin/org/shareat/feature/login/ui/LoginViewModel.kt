@@ -132,7 +132,7 @@ private fun RepositoryError.toUserMessage(): String = when (this) {
     RepositoryError.Offline -> "You appear to be offline. Try again when connected."
     RepositoryError.Unauthenticated -> "Your session has expired. Please sign in again."
     RepositoryError.Forbidden -> "This account is not allowed to perform that action."
-    RepositoryError.Unavailable -> "The service is temporarily unavailable."
+    is RepositoryError.Unavailable -> "The service is temporarily unavailable."
     is RepositoryError.AlreadyExists -> "An account with that email already exists."
     is RepositoryError.Conflict -> reason
     is RepositoryError.NotFound -> "The requested ${entity} could not be found."

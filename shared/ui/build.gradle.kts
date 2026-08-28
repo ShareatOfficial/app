@@ -64,7 +64,7 @@ kotlin {
             implementation(project(":shared:navigation"))
 
             implementation(project(":feature:home"))
-            implementation(project(":feature:profile"))
+            implementation(project(":feature:profile:ui"))
             implementation(project(":feature:login:ui"))
 
             implementation(libs.compose.runtime)

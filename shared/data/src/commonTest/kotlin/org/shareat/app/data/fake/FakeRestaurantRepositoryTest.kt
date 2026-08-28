@@ -31,4 +31,19 @@ class FakeRestaurantRepositoryTest {
             result,
         )
     }
+
+    @Test
+    fun updateRestaurantPersistsForSubsequentReads() = runSuspend {
+        val repository = FakeRestaurantRepository(FakeShareatData.preview())
+        val current = assertIs<RepositoryResult.Success<org.shareat.app.domain.model.Restaurant>>(
+            repository.getRestaurant(FakeIds.restaurant),
+        ).value
+
+        repository.updateRestaurant(current.copy(name = "Updated restaurant"))
+
+        val reloaded = assertIs<RepositoryResult.Success<org.shareat.app.domain.model.Restaurant>>(
+            repository.getRestaurant(FakeIds.restaurant),
+        ).value
+        assertEquals("Updated restaurant", reloaded.name)
+    }
 }

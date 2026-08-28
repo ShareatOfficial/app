@@ -89,6 +89,36 @@ internal fun RestaurantDto.toDomain(
     },
 )
 
+internal fun Restaurant.toUpdateSettingsRpc(): UpdateRestaurantSettingsRpc =
+    UpdateRestaurantSettingsRpc(
+        restaurantId = id.value,
+        name = name,
+        description = description,
+        publicEmail = publicEmail?.value,
+        publicPhone = publicPhone,
+        streetLine = address.streetLine,
+        locality = address.locality,
+        postalCode = address.postalCode,
+        publicationState = when (publicationState) {
+            RestaurantPublicationState.Draft -> "draft"
+            RestaurantPublicationState.Published -> "published"
+            RestaurantPublicationState.Disabled -> "disabled"
+        },
+        openingPeriods = openingHours.days.flatMap { hours ->
+            hours.periods.mapIndexed { position, period ->
+                OpeningPeriodUpdateDto(
+                    weekday = hours.day.ordinal + 1,
+                    position = position,
+                    opensAt = period.opensAt.toDatabaseTime(),
+                    closesAt = period.closesAt.toDatabaseTime(),
+                )
+            }
+        },
+    )
+
+private fun LocalTime.toDatabaseTime(): String =
+    "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00"
+
 internal fun MenuDto.toDomain(): Menu = Menu(
     id = MenuId(id),
     restaurantId = RestaurantId(restaurantId),

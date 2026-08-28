@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.home.navigation.HomeKey
-import org.shareat.feature.profile.navigation.ProfileKey
+import org.shareat.feature.profile.ui.profile.ProfileKey
 
 data class TopLevelNavigationItem(
     val route: NavKey,

@@ -1,13 +1,13 @@
 package org.shareat.app.navigation.profile
 
 import org.shareat.app.navigation.Navigator
-import org.shareat.feature.profile.navigation.EditProfileKey
-import org.shareat.feature.profile.navigation.ProfileNavigation
+import org.shareat.feature.profile.ui.profile.ProfileNavigation
+import org.shareat.feature.profile.ui.settings.SettingsKey
 
 class ProfileNavigationImpl(
     private val navigator: Navigator,
 ) : ProfileNavigation {
-    override fun openEditProfile() {
-        navigator.navigate(EditProfileKey)
+    override fun openSettings() {
+        navigator.navigate(SettingsKey)
     }
 }

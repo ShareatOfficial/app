@@ -1,0 +1,37 @@
+package org.shareat.feature.profile.ui.profile
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import org.koin.compose.koinInject
+
+@Composable
+fun Profile(
+    modifier: Modifier = Modifier,
+    navigator: ProfileNavigation = koinInject(),
+) {
+    Surface(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(
+                16.dp,
+                Alignment.CenterVertically,
+            ),
+        ) {
+            Text("Profile", style = MaterialTheme.typography.headlineMedium)
+            Button(onClick = navigator::openSettings) {
+                Text("Settings")
+            }
+        }
+    }
+}

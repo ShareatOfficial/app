@@ -73,6 +73,8 @@ Aggregates only include public reviews with `Visible` moderation status. `Rating
 - `Offline` — a typed error, no real waiting.
 - `Unavailable` — a recoverable service failure.
 
+`RepositoryError.Unavailable(details: String?)` is the single fallback branch of the Supabase error mapping (`shared/data/.../supabase/SupabaseResult.kt`) and carries the exception class, HTTP status and server error code. Map known failures by code — `AuthErrorCode` for Auth, `SQLSTATE` for PostgREST — never by substring matching on the exception message; the message includes the request URL and headers, so text matching both misses real cases and risks leaking request metadata into user-facing errors.
+
 `fakeDataModule` binds interfaces to these implementations for previews/tests. `supabaseDataModule` binds the same contracts to Auth, PostgREST, and Storage for runtime — entities, interfaces, and consumers never change because of provider details.
 
 ## Supabase persistence

@@ -1,5 +1,5 @@
 begin;
-select plan(27);
+select plan(30);
 
 select throws_ok(
     $$insert into auth.users (id, email, raw_user_meta_data, is_sso_user, is_anonymous) values ('00000000-0000-4000-8000-000000000099', 'invalid@example.test', '{"account_role":"admin"}', false, false)$$,
@@ -92,11 +92,52 @@ select lives_ok(
     $$update public.restaurants set name = 'Stolen' where id = '30000000-0000-4000-8000-000000000003' returning id$$,
     'cross-owner update is safely filtered by RLS'
 );
+select lives_ok(
+    $$select public.update_restaurant_settings(
+        '30000000-0000-4000-8000-000000000002',
+        'Owner updated',
+        null,
+        'owner-updated@example.test',
+        null,
+        'Updated street',
+        'Valencia',
+        '46001',
+        'draft',
+        '[{"weekday":1,"position":0,"opens_at":"09:00:00","closes_at":"17:00:00"}]'::jsonb
+    )$$,
+    'owner may update restaurant settings and hours transactionally'
+);
+select throws_ok(
+    $$select public.update_restaurant_settings(
+        '30000000-0000-4000-8000-000000000003',
+        'Stolen through rpc',
+        null,
+        null,
+        null,
+        'Other street',
+        'Madrid',
+        '28003',
+        'draft',
+        '[]'::jsonb
+    )$$,
+    '42501',
+    'restaurant not found or not owned by current account',
+    'owner cannot update another restaurant through the settings function'
+);
 reset role;
 select is(
     (select name from public.restaurants where id = '30000000-0000-4000-8000-000000000003'),
     'Other draft',
     'cross-owner update did not change the row'
+);
+select results_eq(
+    $$select r.name, count(p.*)::bigint
+      from public.restaurants r
+      left join public.restaurant_opening_periods p on p.restaurant_id = r.id
+      where r.id = '30000000-0000-4000-8000-000000000002'
+      group by r.name$$,
+    $$values ('Owner updated'::text, 1::bigint)$$,
+    'settings function commits restaurant info and opening periods together'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);

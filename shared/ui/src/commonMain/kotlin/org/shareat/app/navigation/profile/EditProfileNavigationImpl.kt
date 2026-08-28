@@ -1,7 +1,7 @@
 package org.shareat.app.navigation.profile
 
 import org.shareat.app.navigation.Navigator
-import org.shareat.feature.profile.navigation.EditProfileNavigation
+import org.shareat.feature.profile.ui.editprofile.EditProfileNavigation
 
 class EditProfileNavigationImpl(
     private val navigator: Navigator,

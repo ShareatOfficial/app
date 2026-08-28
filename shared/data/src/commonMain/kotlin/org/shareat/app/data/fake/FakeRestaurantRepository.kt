@@ -36,4 +36,22 @@ class FakeRestaurantRepository(
             return RepositoryResult.Failure(RepositoryError.NotFound("RestaurantOwner", accountId.value))
         },
     )
+
+    override suspend fun updateRestaurant(restaurant: Restaurant): RepositoryResult<Restaurant> = scenario.result(
+        populated = {
+            val index = data.restaurants.indexOfFirst { it.id == restaurant.id }
+            if (index == -1) {
+                return RepositoryResult.Failure(
+                    RepositoryError.NotFound("Restaurant", restaurant.id.value),
+                )
+            }
+            data.restaurants[index] = restaurant
+            restaurant
+        },
+        empty = {
+            return RepositoryResult.Failure(
+                RepositoryError.NotFound("Restaurant", restaurant.id.value),
+            )
+        },
+    )
 }

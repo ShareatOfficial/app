@@ -52,4 +52,31 @@ class SupabaseMapperTest {
         val declaration = assertNotNull(dish.allergenDeclaration)
         assertEquals(setOf(EuAllergen.Milk, EuAllergen.CerealsContainingGluten), declaration.allergens)
     }
+
+    @Test
+    fun restaurantUpdateMapsAllOpeningPeriodsForTransactionalRpc() {
+        val restaurant = RestaurantDto(
+            id = "restaurant-id",
+            ownerAccountId = "owner-id",
+            name = "Shareat Test",
+            streetLine = "Street 1",
+            locality = "Madrid",
+            postalCode = "28001",
+            countryCode = "ES",
+            publicationState = "draft",
+        ).toDomain(
+            periods = listOf(
+                OpeningPeriodDto("restaurant-id", 1, 0, "09:00:00", "13:00:00"),
+                OpeningPeriodDto("restaurant-id", 1, 1, "17:00:00", "22:30:00"),
+            ),
+            publicImageUrl = { it },
+        )
+
+        val rpc = restaurant.toUpdateSettingsRpc()
+
+        assertEquals("restaurant-id", rpc.restaurantId)
+        assertEquals(2, rpc.openingPeriods.size)
+        assertEquals("09:00:00", rpc.openingPeriods.first().opensAt)
+        assertEquals("22:30:00", rpc.openingPeriods.last().closesAt)
+    }
 }
