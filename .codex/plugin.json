@@ -1,0 +1,54 @@
+{
+  "name": "android-skills",
+  "version": "1.0.10",
+  "description": "Android skills are Google's official dedicated repository of AI-optimized, modular instructions and resources, to help LLMs better understand and execute specific patterns that follow the best practices and guidance on Android development. Android skills follow the open-standard agent skills - markdown files (SKILL.md) that provide a technical specification of a task, and ground LLMs with information on specialized domains and workflows.",
+  "author": {
+    "name": "Google / Android",
+    "url": "https://github.com/android"
+  },
+  "repository": "https://github.com/android/skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "android",
+    "kotlin",
+    "jetpack-compose",
+    "skills"
+  ],
+  "skills": [
+    {
+      "source": {
+        "path": "../.skills/jetpack-compose/adaptive"
+      }
+    },
+    {
+      "source": {
+        "path": "../.skills/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose"
+      }
+    },
+    {
+      "source": {
+        "path": "../.skills/jetpack-compose/theming/styles"
+      }
+    },
+    {
+      "source": {
+        "path": "../.skills/shareat/screen-builder"
+      }
+    }
+  ],
+  "interface": {
+    "displayName": "Android Skills",
+    "shortDescription": "AI-optimized Android development skills from Google.",
+    "longDescription": "Android skills are Google's official dedicated repository of AI-optimized, modular instructions and resources, to help LLMs better understand and execute specific patterns that follow the best practices and guidance on Android development. Android skills follow the open-standard agent skills - markdown files (SKILL.md) that provide a technical specification of a task, and ground LLMs with information on specialized domains and workflows.",
+    "developerName": "Google / Android",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Skills"
+    ],
+    "websiteURL": "https://github.com/android/skills",
+    "defaultPrompt": [
+      "Help me upgrade my app to AGP 9.",
+      "Migrate this Camera1 code to CameraX."
+    ]
+  }
+}
