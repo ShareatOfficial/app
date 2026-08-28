@@ -3,9 +3,12 @@ package org.shareat.feature.profile.ui.settings
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
@@ -24,6 +27,9 @@ class SettingsViewModel(
     private val updateRestaurantInfoUseCase: UpdateRestaurantInfoUseCase,
     private val signOutUseCase: SignOutUseCase,
 ) : ViewModel() {
+    private val eventChannel = Channel<SettingsEvent>(capacity = Channel.BUFFERED)
+    internal val events: Flow<SettingsEvent> = eventChannel.receiveAsFlow()
+
     private val _uiState = MutableStateFlow<SettingsUiState>(
         SettingsUiState.User(isLoading = true),
     )
@@ -37,7 +43,7 @@ class SettingsViewModel(
 
     fun onUserAction(action: SettingsUserAction) {
         when (action) {
-            SettingsUserAction.EditProfile -> Unit
+            SettingsUserAction.EditProfile -> emitEvent(SettingsEvent.NavigateToEditProfile)
             SettingsUserAction.PasswordAndSecurity -> openPasswordAndSecurity()
             SettingsUserAction.Notifications -> openUserNotifications()
             SettingsUserAction.Privacy -> openPrivacy()
@@ -45,7 +51,7 @@ class SettingsViewModel(
             SettingsUserAction.ReviewHistory -> openReviewHistory()
             SettingsUserAction.DownloadData -> downloadData()
             SettingsUserAction.DeleteAccount -> deleteAccount()
-            SettingsUserAction.LogOut -> logOut()
+            SettingsUserAction.LogOut -> onLogOut()
         }
     }
 
@@ -77,7 +83,7 @@ class SettingsViewModel(
             SettingsRestaurantAction.Notifications -> openRestaurantNotifications()
             SettingsRestaurantAction.TeamAndPermissions -> openTeamAndPermissions()
             SettingsRestaurantAction.SaveChanges -> saveRestaurantChanges()
-            SettingsRestaurantAction.LogOut -> logOut()
+            SettingsRestaurantAction.LogOut -> onLogOut()
         }
     }
 
@@ -188,7 +194,9 @@ class SettingsViewModel(
         }
     }
 
-    private fun logOut() {
+    private fun onLogOut() {
+        if (_uiState.value.isLoading) return
+
         updateCurrentState {
             when (this) {
                 is SettingsUiState.User -> copy(isLoading = true, errorMessage = null)
@@ -197,11 +205,14 @@ class SettingsViewModel(
         }
         viewModelScope.launch {
             when (val result = signOutUseCase()) {
-                is RepositoryResult.Success -> updateCurrentState {
-                    when (this) {
-                        is SettingsUiState.User -> copy(isLoading = false)
-                        is SettingsUiState.Restaurant -> copy(isLoading = false)
+                is RepositoryResult.Success -> {
+                    updateCurrentState {
+                        when (this) {
+                            is SettingsUiState.User -> copy(isLoading = false)
+                            is SettingsUiState.Restaurant -> copy(isLoading = false)
+                        }
                     }
+                    eventChannel.send(SettingsEvent.LogoutSuccess)
                 }
 
                 is RepositoryResult.Failure -> updateCurrentState {
@@ -219,6 +230,10 @@ class SettingsViewModel(
                 }
             }
         }
+    }
+
+    private fun emitEvent(event: SettingsEvent) {
+        check(eventChannel.trySend(event).isSuccess) { "Unable to emit settings event." }
     }
 
     private fun updateOpeningHours(

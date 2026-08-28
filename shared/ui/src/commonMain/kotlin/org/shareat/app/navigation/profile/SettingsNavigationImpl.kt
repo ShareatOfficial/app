@@ -1,8 +1,8 @@
 package org.shareat.app.navigation.profile
 
 import org.shareat.app.navigation.Navigator
-import org.shareat.feature.profile.ui.settings.SettingsNavigation
 import org.shareat.feature.profile.ui.editprofile.EditProfileKey
+import org.shareat.feature.profile.ui.settings.SettingsNavigation
 
 class SettingsNavigationImpl(
     private val navigator: Navigator,
@@ -13,5 +13,9 @@ class SettingsNavigationImpl(
 
     override fun openEditProfile() {
         navigator.navigate(EditProfileKey)
+    }
+
+    override fun onLogoutSuccess() {
+        navigator.goHome()
     }
 }

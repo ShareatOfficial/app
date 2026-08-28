@@ -53,6 +53,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -73,18 +74,20 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                SettingsEvent.LogoutSuccess -> navigator.onLogoutSuccess()
+                SettingsEvent.NavigateToEditProfile -> navigator.openEditProfile()
+            }
+        }
+    }
     SettingsScreenStateless(
         uiState = uiState,
         modifier = modifier,
         callbacks = SettingsCallbacks(
             onBackClick = navigator::goBack,
-            onUserAction = { action ->
-                if (action == SettingsUserAction.EditProfile) {
-                    navigator.openEditProfile()
-                } else {
-                    viewModel.onUserAction(action)
-                }
-            },
+            onUserAction = viewModel::onUserAction,
             onRestaurantAction = viewModel::onRestaurantAction,
         ),
     )

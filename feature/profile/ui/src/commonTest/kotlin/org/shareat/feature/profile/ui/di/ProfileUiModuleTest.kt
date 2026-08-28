@@ -94,6 +94,7 @@ private data object WiringEditProfileNavigation : EditProfileNavigation {
 private data object WiringSettingsNavigation : SettingsNavigation {
     override fun goBack() = Unit
     override fun openEditProfile() = Unit
+    override fun onLogoutSuccess() = Unit
 }
 
 private class WiringAuthRepository(account: Account) : AuthRepository {

@@ -15,10 +15,12 @@ import org.shareat.feature.profile.ui.editprofile.EditProfileViewModel
 import org.shareat.feature.profile.ui.settings.SettingsViewModel
 
 val profileUiModule: Module = module {
+
     factory<LoadProfileSettingsUseCase> { LoadProfileSettingsUseCaseImpl(get(), get(), get()) }
     factory<UpdateRestaurantInfoUseCase> { UpdateRestaurantInfoUseCaseImpl(get()) }
     factory<UpdateCustomerProfileUseCase> { UpdateCustomerProfileUseCaseImpl(get()) }
     factory<SignOutUseCase> { SignOutUseCaseImpl(get()) }
+
     viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { EditProfileViewModel(get(), get()) }
 }

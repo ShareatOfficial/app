@@ -41,7 +41,11 @@ class Navigator(
             ?: error("The current route is not a LoginKey")
 
         currentStack.removeLast()
-        navigate(loginKey.redirectRoute)
+        loginKey.redirectRoute?.let(::navigate) ?: currentStack.removeLast()
+    }
+
+    fun goHome() {
+        state.resetToStartRoute()
     }
 
     private fun navigateToRoute(route: NavKey) {

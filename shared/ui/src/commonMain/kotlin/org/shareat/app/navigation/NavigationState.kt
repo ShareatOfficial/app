@@ -77,6 +77,15 @@ class NavigationState(
         } else {
             listOf(startRoute, topLevelRoute)
         }
+
+    fun resetToStartRoute() {
+        backStacks.forEach { (_, stack) ->
+            while (stack.size > 1) {
+                stack.removeLastOrNull()
+            }
+        }
+        topLevelRoute = startRoute
+    }
 }
 
 @Composable

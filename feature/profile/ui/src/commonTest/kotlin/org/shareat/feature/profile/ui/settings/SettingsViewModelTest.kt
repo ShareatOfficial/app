@@ -2,6 +2,7 @@ package org.shareat.feature.profile.ui.settings
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -14,7 +15,6 @@ import org.shareat.app.domain.model.AccountStatus
 import org.shareat.app.domain.model.CustomerProfile
 import org.shareat.app.domain.model.EmailAddress
 import org.shareat.app.domain.repository.RepositoryResult
-import org.shareat.feature.profile.domain.LoadProfileSettingsUseCase
 import org.shareat.feature.profile.domain.ProfileSettings
 import org.shareat.feature.profile.domain.SignOutUseCase
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoParams
@@ -50,15 +50,15 @@ class SettingsViewModelTest {
             AccountStatus.Active,
         )
         val viewModel = SettingsViewModel(
-            loadProfileSettingsUseCase = LoadProfileSettingsUseCase {
+            loadProfileSettingsUseCase = {
                 RepositoryResult.Success(
                     ProfileSettings.User(account, CustomerProfile(accountId, "Ana Rivera")),
                 )
             },
-            updateRestaurantInfoUseCase = UpdateRestaurantInfoUseCase {
+            updateRestaurantInfoUseCase = {
                 error("Restaurant update must not run for user settings")
             },
-            signOutUseCase = SignOutUseCase { RepositoryResult.Success(Unit) },
+            signOutUseCase = { RepositoryResult.Success(Unit) },
         )
 
         advanceUntilIdle()
@@ -86,7 +86,7 @@ class SettingsViewModelTest {
         var received: UpdateRestaurantInfoParams? = null
         val viewModel = viewModelFor(
             restaurant = restaurant,
-            update = UpdateRestaurantInfoUseCase { params ->
+            update = { params ->
                 received = params
                 RepositoryResult.Success(restaurant.copy(name = params.name))
             },
@@ -107,7 +107,7 @@ class SettingsViewModelTest {
         var updates = 0
         val viewModel = viewModelFor(
             restaurant = restaurant,
-            update = UpdateRestaurantInfoUseCase {
+            update = {
                 updates += 1
                 RepositoryResult.Success(restaurant)
             },
@@ -139,6 +139,17 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         assertEquals(1, signOutCalls)
+        assertEquals(SettingsEvent.LogoutSuccess, viewModel.events.first())
+    }
+
+    @Test
+    fun editProfileEmitsNavigationEvent() = runTest(dispatcher) {
+        val viewModel = viewModelFor(restaurantFixture())
+        advanceUntilIdle()
+
+        viewModel.onUserAction(SettingsUserAction.EditProfile)
+
+        assertEquals(SettingsEvent.NavigateToEditProfile, viewModel.events.first())
     }
 }
 
@@ -156,7 +167,7 @@ private fun viewModelFor(
         AccountStatus.Active,
     )
     return SettingsViewModel(
-        loadProfileSettingsUseCase = LoadProfileSettingsUseCase {
+        loadProfileSettingsUseCase = {
             RepositoryResult.Success(ProfileSettings.RestaurantOwner(account, restaurant))
         },
         updateRestaurantInfoUseCase = update,

@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LoginKey(
-    @Polymorphic val redirectRoute: NavKey,
+    @Polymorphic val redirectRoute: NavKey? = null,
 ) : NavKey
