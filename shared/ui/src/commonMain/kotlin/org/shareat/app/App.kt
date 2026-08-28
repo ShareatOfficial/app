@@ -9,7 +9,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +34,7 @@ import org.shareat.app.navscenedecorator.TopLevelNavigationRail
 import org.shareat.app.navscenedecorator.rememberResponsiveNavigationSceneDecoratorStrategy
 import org.shareat.app.theme.AppTheme
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingGateErrorScreen
+import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingScreen
 import kotlinx.coroutines.launch
 
 @OptIn(KoinExperimentalAPI::class)
@@ -71,12 +71,6 @@ fun App() {
                 parametersOf(navigationState)
             }
 
-            LaunchedEffect(restaurantProfileState, navigator) {
-                if (restaurantProfileState is RestaurantProfileGateState.OnboardingRequired) {
-                    navigator.requireRestaurantOnboarding()
-                }
-            }
-
             val koin = getKoin()
             remember(navigator) { koin.declare(navigator) }
 
@@ -89,13 +83,8 @@ fun App() {
             val entryProvider = koinEntryProvider<NavKey>()
 
             CompositionLocalProvider(LocalNavigator provides navigator) {
-                if (
-                    restaurantProfileState is RestaurantProfileGateState.OnboardingRequired &&
-                    !navigator.isRestaurantOnboardingVisible()
-                ) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+                if (restaurantProfileState is RestaurantProfileGateState.OnboardingRequired) {
+                    RestaurantOnboardingScreen()
                 } else {
                     NavDisplay(
                         entries = navigationState.toEntries(entryProvider),

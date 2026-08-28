@@ -29,6 +29,12 @@ kotlin {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
+        // Compose Multiplatform value resources must be published by this
+        // Android library so consuming apps can package the generated .cvr.
+        androidResources {
+            enable = true
+        }
+
         compilerOptions {
             jvmTarget = JvmTarget.JVM_11
         }
