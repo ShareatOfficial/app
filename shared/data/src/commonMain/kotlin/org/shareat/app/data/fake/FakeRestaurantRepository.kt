@@ -4,6 +4,7 @@ import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantPublicationState
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
@@ -34,6 +35,45 @@ class FakeRestaurantRepository(
         },
         empty = {
             return RepositoryResult.Failure(RepositoryError.NotFound("RestaurantOwner", accountId.value))
+        },
+    )
+
+    override suspend fun createRestaurantProfile(
+        ownerAccountId: AccountId,
+        draft: RestaurantProfileDraft,
+    ): RepositoryResult<Restaurant> = scenario.result(
+        populated = {
+            data.restaurants.firstOrNull { it.ownerAccountId == ownerAccountId }?.let {
+                return RepositoryResult.Success(it)
+            }
+            val restaurant = Restaurant(
+                id = RestaurantId("restaurant-${ownerAccountId.value}"),
+                ownerAccountId = ownerAccountId,
+                name = draft.name,
+                description = draft.description,
+                publicEmail = draft.publicEmail,
+                publicPhone = draft.publicPhone,
+                address = draft.address,
+                openingHours = draft.openingHours,
+                publicationState = RestaurantPublicationState.Draft,
+            )
+            data.restaurants += restaurant
+            restaurant
+        },
+        empty = {
+            val restaurant = Restaurant(
+                id = RestaurantId("restaurant-${ownerAccountId.value}"),
+                ownerAccountId = ownerAccountId,
+                name = draft.name,
+                description = draft.description,
+                publicEmail = draft.publicEmail,
+                publicPhone = draft.publicPhone,
+                address = draft.address,
+                openingHours = draft.openingHours,
+                publicationState = RestaurantPublicationState.Draft,
+            )
+            data.restaurants += restaurant
+            restaurant
         },
     )
 

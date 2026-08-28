@@ -11,9 +11,8 @@ import org.shareat.app.domain.repository.AuthRepository
 
 class SessionCoordinator(
     authRepository: AuthRepository,
+    scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
     val state: StateFlow<AuthSessionState> = authRepository.observeSession().stateIn(
         scope = scope,
         started = SharingStarted.Eagerly,

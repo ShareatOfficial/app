@@ -11,6 +11,7 @@ import org.shareat.app.domain.model.MenuId
 import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
 import org.shareat.app.domain.model.ReviewId
@@ -26,6 +27,10 @@ interface RestaurantRepository {
     suspend fun getPublishedRestaurants(): RepositoryResult<List<Restaurant>>
     suspend fun getRestaurant(id: RestaurantId): RepositoryResult<Restaurant>
     suspend fun getRestaurantForOwner(accountId: AccountId): RepositoryResult<Restaurant>
+    suspend fun createRestaurantProfile(
+        ownerAccountId: AccountId,
+        draft: RestaurantProfileDraft,
+    ): RepositoryResult<Restaurant>
     suspend fun updateRestaurant(restaurant: Restaurant): RepositoryResult<Restaurant>
 }
 

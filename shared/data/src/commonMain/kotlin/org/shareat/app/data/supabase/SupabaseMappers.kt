@@ -28,6 +28,7 @@ import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantPublicationState
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewId
 import org.shareat.app.domain.model.ReviewModerationStatus
@@ -109,6 +110,27 @@ internal fun Restaurant.toUpdateSettingsRpc(): UpdateRestaurantSettingsRpc =
                 OpeningPeriodUpdateDto(
                     weekday = hours.day.ordinal + 1,
                     position = position,
+                    opensAt = period.opensAt.toDatabaseTime(),
+                    closesAt = period.closesAt.toDatabaseTime(),
+                )
+            }
+        },
+    )
+
+internal fun RestaurantProfileDraft.toCreateProfileRpc(): CreateRestaurantProfileRpc =
+    CreateRestaurantProfileRpc(
+        name = name,
+        description = description,
+        publicEmail = publicEmail?.value,
+        publicPhone = publicPhone,
+        streetLine = address.streetLine,
+        locality = address.locality,
+        postalCode = address.postalCode,
+        region = address.region,
+        openingPeriods = openingHours.days.flatMap { hours ->
+            hours.periods.map { period ->
+                CreateOpeningPeriodDto(
+                    weekday = hours.day.ordinal + 1,
                     opensAt = period.opensAt.toDatabaseTime(),
                     closesAt = period.closesAt.toDatabaseTime(),
                 )

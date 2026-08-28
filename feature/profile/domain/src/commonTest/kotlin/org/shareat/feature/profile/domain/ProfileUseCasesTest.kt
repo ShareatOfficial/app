@@ -17,6 +17,7 @@ import org.shareat.app.domain.model.RegistrationCredentials
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantPublicationState
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.AccountRepository
 import org.shareat.app.domain.repository.AuthRepository
@@ -106,6 +107,50 @@ class ProfileUseCasesTest {
         assertIs<RepositoryResult.Success<Unit>>(result)
         assertEquals(1, auth.signOutCalls)
     }
+
+    @Test
+    fun createsDraftProfileForActiveRestaurantAccount() = runTest {
+        val dependencies = testDependencies(AccountRole.Restaurant)
+
+        val result = CreateRestaurantProfileUseCaseImpl(
+            dependencies.auth,
+            dependencies.accounts,
+            dependencies.restaurants,
+        )(
+            CreateRestaurantProfileParams(
+                name = "Nuevo local",
+                description = null,
+                publicEmail = null,
+                publicPhone = null,
+                address = PostalAddress("Calle Uno", "Madrid", "28001"),
+                openingHours = WeeklyOpeningHours(emptyList()),
+            ),
+        )
+
+        assertEquals("Nuevo local", assertIs<RepositoryResult.Success<Restaurant>>(result).value.name)
+    }
+
+    @Test
+    fun customerCannotCreateRestaurantProfile() = runTest {
+        val dependencies = testDependencies(AccountRole.Customer)
+
+        val result = CreateRestaurantProfileUseCaseImpl(
+            dependencies.auth,
+            dependencies.accounts,
+            dependencies.restaurants,
+        )(
+            CreateRestaurantProfileParams(
+                name = "No permitido",
+                description = null,
+                publicEmail = null,
+                publicPhone = null,
+                address = PostalAddress("Calle Uno", "Madrid", "28001"),
+                openingHours = WeeklyOpeningHours(emptyList()),
+            ),
+        )
+
+        assertEquals(RepositoryResult.Failure(RepositoryError.Forbidden), result)
+    }
 }
 
 private data class TestDependencies(
@@ -189,6 +234,22 @@ private class TestRestaurantRepository(
     override suspend fun getPublishedRestaurants() = RepositoryResult.Success(listOf(restaurant))
     override suspend fun getRestaurant(id: RestaurantId) = RepositoryResult.Success(restaurant)
     override suspend fun getRestaurantForOwner(accountId: AccountId) = RepositoryResult.Success(restaurant)
+    override suspend fun createRestaurantProfile(
+        ownerAccountId: AccountId,
+        draft: RestaurantProfileDraft,
+    ): RepositoryResult<Restaurant> {
+        restaurant = restaurant.copy(
+            ownerAccountId = ownerAccountId,
+            name = draft.name,
+            description = draft.description,
+            publicEmail = draft.publicEmail,
+            publicPhone = draft.publicPhone,
+            address = draft.address,
+            openingHours = draft.openingHours,
+            publicationState = RestaurantPublicationState.Draft,
+        )
+        return RepositoryResult.Success(restaurant)
+    }
     override suspend fun updateRestaurant(restaurant: Restaurant): RepositoryResult<Restaurant> {
         this.restaurant = restaurant
         return RepositoryResult.Success(restaurant)
