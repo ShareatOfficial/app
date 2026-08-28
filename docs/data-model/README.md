@@ -73,6 +73,8 @@ Los agregados incluyen únicamente reviews públicas con moderación `Visible`. 
 - `Offline`: error tipado sin esperas reales;
 - `Unavailable`: fallo recuperable del servicio.
 
+`RepositoryError.Unavailable` es la única rama de reserva del mapeo de errores de Supabase y transporta un `details` opcional con la clase de excepción, el código HTTP y el código de error del servidor. Sin ese diagnóstico un fallo de autenticación real (`email_not_confirmed`, clave de API inválida, error de red) quedaba indistinguible de una caída del servicio. Los errores conocidos de Auth y PostgREST se mapean por código (`AuthErrorCode`, `SQLSTATE`), no por coincidencia de texto en el mensaje.
+
 `fakeDataModule` enlaza las interfaces con estas implementaciones para previews y pruebas. `supabaseDataModule` enlaza los mismos contratos con Auth, PostgREST y Storage para runtime; las entidades, interfaces y consumidores no cambian por detalles del proveedor.
 
 ## Persistencia Supabase

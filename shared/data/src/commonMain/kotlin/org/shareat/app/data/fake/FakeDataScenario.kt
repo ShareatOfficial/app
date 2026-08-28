@@ -17,5 +17,5 @@ internal inline fun <T> FakeDataScenario.result(
     FakeDataScenario.Populated -> RepositoryResult.Success(populated())
     FakeDataScenario.Empty -> RepositoryResult.Success(empty())
     FakeDataScenario.Offline -> RepositoryResult.Failure(RepositoryError.Offline)
-    FakeDataScenario.Unavailable -> RepositoryResult.Failure(RepositoryError.Unavailable)
+    FakeDataScenario.Unavailable -> RepositoryResult.Failure(RepositoryError.Unavailable())
 }

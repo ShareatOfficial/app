@@ -131,6 +131,6 @@ class FakeReviewRepository(
     private fun FakeDataScenario.failureOrNull(): RepositoryResult.Failure? = when (this) {
         FakeDataScenario.Populated, FakeDataScenario.Empty -> null
         FakeDataScenario.Offline -> RepositoryResult.Failure(RepositoryError.Offline)
-        FakeDataScenario.Unavailable -> RepositoryResult.Failure(RepositoryError.Unavailable)
+        FakeDataScenario.Unavailable -> RepositoryResult.Failure(RepositoryError.Unavailable())
     }
 }

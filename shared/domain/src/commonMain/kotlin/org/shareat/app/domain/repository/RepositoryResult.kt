@@ -2,7 +2,7 @@ package org.shareat.app.domain.repository
 
 sealed interface RepositoryError {
     data object Offline : RepositoryError
-    data object Unavailable : RepositoryError
+    data class Unavailable(val details: String? = null) : RepositoryError
     data object Unauthenticated : RepositoryError
     data object Forbidden : RepositoryError
     data object InvalidCredentials : RepositoryError
