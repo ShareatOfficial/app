@@ -30,6 +30,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.feature.home.ui.home.composables.HomeSearchBar
 import org.shareat.feature.home.ui.home.composables.RestaurantCard
+import org.shareat.feature.home.ui.home.model.DishReviewUiState
+import org.shareat.feature.home.ui.home.model.HomeContentUiState
+import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
+import org.shareat.feature.home.ui.home.model.HomeUiState
+import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
+import org.shareat.feature.home.ui.home.model.toFeedSections
 import shareat.feature.home.ui.generated.resources.Res
 import shareat.feature.home.ui.generated.resources.recommended
 

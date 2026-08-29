@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import org.shareat.feature.home.ui.home.DishReviewUiState
+import org.shareat.feature.home.ui.home.model.DishReviewUiState
 
 private val RestaurantHeroHeight = 180.dp
 private const val RestaurantHeroOverlayHeightFraction = 0.75f

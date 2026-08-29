@@ -13,6 +13,11 @@ import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.home.domain.GetRestaurantsUseCase
 import org.shareat.feature.home.domain.RestaurantWithHighlights
+import org.shareat.feature.home.ui.home.model.DishReviewUiState
+import org.shareat.feature.home.ui.home.model.HomeContentUiState
+import org.shareat.feature.home.ui.home.model.HomeUiState
+import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
+import org.shareat.feature.home.ui.home.model.toFeedSections
 
 private const val HomePageOffset = 0
 private const val HomePageSize = 50

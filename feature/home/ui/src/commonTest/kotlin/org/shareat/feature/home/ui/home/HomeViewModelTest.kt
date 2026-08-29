@@ -27,8 +27,9 @@ import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.home.domain.DishReviewHighlight
-import org.shareat.feature.home.domain.GetRestaurantsUseCase
 import org.shareat.feature.home.domain.RestaurantWithHighlights
+import org.shareat.feature.home.ui.home.model.HomeContentUiState
+import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
