@@ -117,7 +117,7 @@ class ProfileUseCasesTest {
             dependencies.accounts,
             dependencies.restaurants,
         )(
-            CreateRestaurantProfileParams(
+            RestaurantProfileDraft(
                 name = "Nuevo local",
                 description = null,
                 publicEmail = null,
@@ -139,7 +139,7 @@ class ProfileUseCasesTest {
             dependencies.accounts,
             dependencies.restaurants,
         )(
-            CreateRestaurantProfileParams(
+            RestaurantProfileDraft(
                 name = "No permitido",
                 description = null,
                 publicEmail = null,

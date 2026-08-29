@@ -15,7 +15,7 @@ class CreateRestaurantProfileUseCaseImpl(
     private val restaurantRepository: RestaurantRepository,
 ) : CreateRestaurantProfileUseCase {
     override suspend fun invoke(
-        params: CreateRestaurantProfileParams,
+        restaurantProfile: RestaurantProfileDraft,
     ): RepositoryResult<org.shareat.app.domain.model.Restaurant> {
         val session = when (val result = authRepository.currentSession()) {
             is RepositoryResult.Success -> result.value
@@ -31,14 +31,7 @@ class CreateRestaurantProfileUseCaseImpl(
         }
         return restaurantRepository.createRestaurantProfile(
             ownerAccountId = account.id,
-            draft = RestaurantProfileDraft(
-                name = params.name,
-                description = params.description,
-                publicEmail = params.publicEmail,
-                publicPhone = params.publicPhone,
-                address = params.address,
-                openingHours = params.openingHours,
-            ),
+            draft = restaurantProfile,
         )
     }
 }

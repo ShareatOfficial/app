@@ -33,7 +33,11 @@ fun LoginScreen(
 
     LaunchedEffect(state.authenticated) {
         if (state.authenticated) {
-            navigator.onLoginSuccess()
+            if (state.registeredRestaurant) {
+                navigator.onRestaurantRegistrationSuccess()
+            } else {
+                navigator.onLoginSuccess()
+            }
         }
     }
 

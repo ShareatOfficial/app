@@ -24,6 +24,11 @@ sealed interface RestaurantProfileGateState {
     data class Failure(val error: RepositoryError) : RestaurantProfileGateState
 }
 
+/**
+ * Observes the authenticated account and determines whether it may use the app or must complete
+ * restaurant onboarding. The navigation scene decorator renders this state without coupling the
+ * root application composable to onboarding UI.
+ */
 class RestaurantProfileCoordinator(
     private val sessions: SessionCoordinator,
     private val auth: AuthRepository,
@@ -33,9 +38,6 @@ class RestaurantProfileCoordinator(
 ) {
     private val _state = MutableStateFlow<RestaurantProfileGateState>(RestaurantProfileGateState.Checking)
     val state: StateFlow<RestaurantProfileGateState> = _state.asStateFlow()
-
-    val requiresOnboarding: Boolean
-        get() = state.value is RestaurantProfileGateState.OnboardingRequired
 
     init {
         scope.launch {

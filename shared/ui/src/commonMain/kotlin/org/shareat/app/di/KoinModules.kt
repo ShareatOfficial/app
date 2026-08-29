@@ -12,7 +12,7 @@ private val applicationModule: Module = module {
     includes(navigationModule)
     single { SessionCoordinator(get()) }
     single { RestaurantProfileCoordinator(get(), get(), get(), get()) }
-    factory { parameters -> Navigator(parameters.get(), get(), get()) }
+    factory { parameters -> Navigator(parameters.get(), get()) }
 }
 
 val sharedModule: Module = module {

@@ -16,11 +16,11 @@ import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantPublicationState
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.ImageRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
-import org.shareat.feature.profile.domain.CreateRestaurantProfileParams
 import org.shareat.feature.profile.domain.CreateRestaurantProfileUseCase
 import org.shareat.feature.profile.domain.SignOutUseCase
 import kotlin.test.AfterTest
@@ -58,7 +58,7 @@ class RestaurantOnboardingViewModelTest {
 
     @Test
     fun optionalFieldsAndHoursAreMapped() = runTest(dispatcher) {
-        var received: CreateRestaurantProfileParams? = null
+        var received: RestaurantProfileDraft? = null
         val viewModel = viewModel(create = {
             received = it
             RepositoryResult.Success(restaurantFixture().copy(name = it.name))

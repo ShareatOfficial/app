@@ -18,11 +18,11 @@ import org.shareat.app.domain.model.LocalTime
 import org.shareat.app.domain.model.OpeningPeriod
 import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.RestaurantId
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.ImageRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
-import org.shareat.feature.profile.domain.CreateRestaurantProfileParams
 import org.shareat.feature.profile.domain.CreateRestaurantProfileUseCase
 import org.shareat.feature.profile.domain.SignOutUseCase
 
@@ -108,10 +108,10 @@ class RestaurantOnboardingViewModel(
         if (state.isSubmitting || state.isProcessingImage || state.createdRestaurantId != null) return
         val validation = validate(state)
         _uiState.value = validation.state
-        val params = validation.params ?: return
+        val restaurantProfile = validation.restaurantProfile ?: return
         _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
         viewModelScope.launch {
-            when (val result = createRestaurantProfile(params)) {
+            when (val result = createRestaurantProfile(restaurantProfile)) {
                 is RepositoryResult.Success -> {
                     _uiState.update {
                         it.copy(
@@ -183,7 +183,7 @@ class RestaurantOnboardingViewModel(
 
 private data class ValidationResult(
     val state: RestaurantOnboardingUiState,
-    val params: CreateRestaurantProfileParams?,
+    val restaurantProfile: RestaurantProfileDraft?,
 )
 
 private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
@@ -226,7 +226,7 @@ private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
     if (errors.hasErrors || updatedHours.any { it.error != null }) return ValidationResult(updatedState, null)
     return ValidationResult(
         updatedState,
-        CreateRestaurantProfileParams(
+        RestaurantProfileDraft(
             name = name,
             description = state.description.trim().ifEmpty { null },
             publicEmail = email.takeIf { it.isNotEmpty() }?.let(::EmailAddress),

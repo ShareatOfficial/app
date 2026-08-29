@@ -37,7 +37,7 @@ val profileNavigationModule = module {
     }
     factory<RestaurantOnboardingNavigation> { parameters ->
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
-        RestaurantOnboardingNavigationImpl(navigator)
+        RestaurantOnboardingNavigationImpl(navigator, get())
     }
 
     navigation<ProfileKey> { Profile() }

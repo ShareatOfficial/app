@@ -1,5 +1,6 @@
 package org.shareat.feature.profile.ui.onboarding
 
+/** Processes a selected restaurant hero image before upload. */
 fun interface RestaurantImageProcessor {
     suspend operator fun invoke(
         displayName: String,
@@ -7,6 +8,10 @@ fun interface RestaurantImageProcessor {
     ): Result<ProcessedRestaurantImage>
 }
 
+/**
+ * Shared declaration for the platform-specific FileKit-backed image processor. Each [actual]
+ * implementation uses the image APIs available on its target to validate and compress uploads.
+ */
 expect class FileKitRestaurantImageProcessor() : RestaurantImageProcessor
 
 internal fun detectRestaurantImageMimeType(bytes: ByteArray): String? = when {

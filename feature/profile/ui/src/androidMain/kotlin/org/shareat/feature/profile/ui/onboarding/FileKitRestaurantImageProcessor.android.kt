@@ -3,7 +3,9 @@ package org.shareat.feature.profile.ui.onboarding
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.ImageFormat
 import io.github.vinceglb.filekit.compressImage
+import kotlinx.coroutines.CancellationException
 
+/** Android [actual] implementation that uses FileKit to compress oversized restaurant images. */
 actual class FileKitRestaurantImageProcessor actual constructor() : RestaurantImageProcessor {
     override suspend fun invoke(
         displayName: String,
@@ -14,23 +16,28 @@ actual class FileKitRestaurantImageProcessor actual constructor() : RestaurantIm
 private suspend fun processAndCompressRestaurantImage(
     displayName: String,
     bytes: ByteArray,
-): Result<ProcessedRestaurantImage> = runCatching {
+): Result<ProcessedRestaurantImage> = try {
     require(bytes.isNotEmpty()) { "La imagen está vacía." }
     val originalMime = detectRestaurantImageMimeType(bytes)
         ?: throw IllegalArgumentException("Selecciona una imagen JPEG, PNG o WebP.")
     if (bytes.size <= MAX_RESTAURANT_IMAGE_BYTES) {
-        return@runCatching ProcessedRestaurantImage(displayName, bytes, originalMime)
+        Result.success(ProcessedRestaurantImage(displayName, bytes, originalMime))
+    } else {
+        val compressed = compressionAttempts.firstNotNullOfOrNull { attempt ->
+            FileKit.compressImage(
+                bytes = bytes,
+                quality = attempt.quality,
+                maxWidth = attempt.maxDimension,
+                maxHeight = attempt.maxDimension,
+                imageFormat = ImageFormat.JPEG,
+            ).takeIf { it.size <= MAX_RESTAURANT_IMAGE_BYTES }
+        } ?: throw IllegalArgumentException("No se pudo reducir la imagen por debajo de 500 KB.")
+        Result.success(ProcessedRestaurantImage(displayName, compressed, "image/jpeg"))
     }
-    val compressed = compressionAttempts.firstNotNullOfOrNull { attempt ->
-        FileKit.compressImage(
-            bytes = bytes,
-            quality = attempt.quality,
-            maxWidth = attempt.maxDimension,
-            maxHeight = attempt.maxDimension,
-            imageFormat = ImageFormat.JPEG,
-        ).takeIf { it.size <= MAX_RESTAURANT_IMAGE_BYTES }
-    } ?: throw IllegalArgumentException("No se pudo reducir la imagen por debajo de 500 KB.")
-    ProcessedRestaurantImage(displayName, compressed, "image/jpeg")
+} catch (error: CancellationException) {
+    throw error
+} catch (error: Throwable) {
+    Result.failure(error)
 }
 
 private val compressionAttempts = listOf(

@@ -29,7 +29,9 @@ import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.navigation.NavigationState
 import org.shareat.app.navigation.Navigator
+import org.shareat.app.navigation.login.LoginNavigationImpl
 import org.shareat.feature.home.navigation.HomeKey
+import org.shareat.feature.login.ui.LoginKey
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.profile.ui.profile.ProfileKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
@@ -40,21 +42,13 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class RestaurantProfileCoordinatorTest {
     @Test
-    fun restaurantWithoutProfileIsForcedIntoOnboardingAndCannotLeave() = runTest {
+    fun restaurantWithoutProfileRequiresOnboardingUntilItCompletes() = runTest {
         val fixture = fixture(restaurantResult = RepositoryResult.Failure(RepositoryError.NotFound("restaurant", "owner")))
         runCurrent()
 
         assertIs<RestaurantProfileGateState.OnboardingRequired>(fixture.gate.state.value)
-        fixture.navigator.navigate(SettingsKey)
-        assertEquals(ProfileKey, fixture.navigationState.topLevelRoute)
-        assertEquals(RestaurantOnboardingKey, fixture.navigationState.backStacks.getValue(ProfileKey).last())
-
-        fixture.navigator.goBack()
-        assertEquals(RestaurantOnboardingKey, fixture.navigationState.backStacks.getValue(ProfileKey).last())
-
-        fixture.navigator.completeRestaurantOnboarding()
+        fixture.gate.completeOnboarding()
         assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
-        assertEquals(SettingsKey, fixture.navigationState.backStacks.getValue(ProfileKey).last())
     }
 
     @Test
@@ -92,6 +86,20 @@ class RestaurantProfileCoordinatorTest {
         assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
     }
 
+    @Test
+    fun restaurantRegistrationNavigatesDirectlyToOnboarding() = runTest {
+        val fixture = fixture(role = AccountRole.Customer)
+        runCurrent()
+        fixture.navigationState.backStacks.getValue(HomeKey).add(LoginKey())
+
+        LoginNavigationImpl(fixture.navigator).onRestaurantRegistrationSuccess()
+
+        assertEquals(
+            RestaurantOnboardingKey,
+            fixture.navigationState.backStacks.getValue(HomeKey).last(),
+        )
+    }
+
     private fun TestScope.fixture(
         role: AccountRole = AccountRole.Restaurant,
         restaurantResult: RepositoryResult<Restaurant> = RepositoryResult.Failure(
@@ -125,7 +133,7 @@ class RestaurantProfileCoordinatorTest {
         return GateFixture(
             gate,
             navigationState,
-            Navigator(navigationState, sessions, gate),
+            Navigator(navigationState, sessions),
         )
     }
 }
