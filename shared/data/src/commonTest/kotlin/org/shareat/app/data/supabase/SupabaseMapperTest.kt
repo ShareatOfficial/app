@@ -4,6 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.shareat.app.domain.model.EuAllergen
+import org.shareat.app.domain.model.PostalAddress
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.Weekday
 
@@ -78,5 +80,18 @@ class SupabaseMapperTest {
         assertEquals(2, rpc.openingPeriods.size)
         assertEquals("09:00:00", rpc.openingPeriods.first().opensAt)
         assertEquals("22:30:00", rpc.openingPeriods.last().closesAt)
+    }
+
+    @Test
+    fun restaurantProfileRpcAlwaysIncludesOptionalTextParameters() {
+        val rpc = RestaurantProfileDraft(
+            name = "Shareat Test",
+            address = PostalAddress("Street 1", "Madrid", "28001"),
+        ).toCreateProfileRpc()
+
+        assertEquals("", rpc.description)
+        assertEquals("", rpc.publicEmail)
+        assertEquals("", rpc.publicPhone)
+        assertEquals("", rpc.region)
     }
 }
