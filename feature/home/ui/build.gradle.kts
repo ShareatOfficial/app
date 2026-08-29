@@ -7,9 +7,11 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.koin.compiler)
 }
 
 kotlin {
+    jvm()
     iosArm64()
     iosSimulatorArm64()
 
@@ -23,7 +25,7 @@ kotlin {
     }
 
     android {
-        namespace = "org.shareat.feature.home"
+        namespace = "org.shareat.feature.home.ui"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -33,17 +35,44 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
-            implementation(project(":shared:navigation"))
+        androidMain.dependencies {
+            implementation(libs.compose.uiTooling)
+        }
 
+        commonMain.dependencies {
+            implementation(project(":feature:home:domain"))
+            implementation(project(":shared:domain"))
+            implementation(project(":shared:navigation"))
+            implementation(
+                libs.androidx.lifecycle.viewmodelCompose
+            )
             implementation(libs.compose.foundation)
+            implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
-            implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(libs.compose.uiToolingPreview)
+
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.annotations)
+            implementation(project.dependencies.platform(libs.koin.bom))
 
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.kotlinx.serialization.core)
+            implementation(libs.kotlinx.coroutines.core)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
+        }
+
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.koin.test)
         }
     }
+}
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.uiTooling)
 }

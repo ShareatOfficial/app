@@ -28,7 +28,8 @@ dependencyResolutionManagement {
 }
 
 include(":androidApp")
-include(":feature:home")
+include(":feature:home:domain")
+include(":feature:home:ui")
 include(":feature:profile:domain")
 include(":feature:profile:ui")
 include(":feature:login:ui")
