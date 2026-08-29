@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
-import org.shareat.feature.home.domain.GetHomeRestaurantsUseCase
+import org.shareat.feature.home.domain.GetRestaurantsUseCase
 import org.shareat.feature.home.domain.RestaurantWithHighlights
 
 private const val HomePageOffset = 0
@@ -20,7 +20,7 @@ private const val HomePageSize = 50
 @Stable
 @KoinViewModel
 class HomeViewModel(
-    private val getHomeRestaurantsUseCase: GetHomeRestaurantsUseCase,
+    private val getRestaurantsUseCase: GetRestaurantsUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -43,7 +43,7 @@ class HomeViewModel(
         _uiState.update { it.copy(content = HomeContentUiState.Loading) }
         viewModelScope.launch {
             when (
-                val result = getHomeRestaurantsUseCase(offset = HomePageOffset, limit = HomePageSize)
+                val result = getRestaurantsUseCase(page = HomePageOffset, numberOfRestaurants = HomePageSize)
             ) {
                 is RepositoryResult.Success -> {
                     loadedRestaurants = result.value.map { it.toCardUiState() }

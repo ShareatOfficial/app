@@ -12,16 +12,16 @@ import org.shareat.app.domain.repository.ReviewRepository
 
 private const val MaxDishHighlightsPerRestaurant = 3
 
-class GetHomeRestaurantsUseCaseImpl(
+class GetRestaurantsUseCaseImpl(
     private val restaurantRepository: RestaurantRepository,
     private val dishRepository: DishRepository,
     private val reviewRepository: ReviewRepository,
-) : GetHomeRestaurantsUseCase {
+) : GetRestaurantsUseCase {
     override suspend fun invoke(
-        offset: Int,
-        limit: Int,
+        page: Int,
+        numberOfRestaurants: Int,
     ): RepositoryResult<List<RestaurantWithHighlights>> {
-//        return MockHomeRestaurantCatalog.result // Mock implementation Delete whenever supabase is ready
+//        return FakeHomeRestaurantCatalog.result // Mock implementation Delete whenever supabase is ready
         // repository might implement pagination
         val restaurants = when (val result = restaurantRepository.getPublishedRestaurants()) {
             is RepositoryResult.Success -> result.value

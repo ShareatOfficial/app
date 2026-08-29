@@ -53,7 +53,7 @@ private val dishTemplates = listOf(
 )
 
 /** Stand-in Home feed until the backend supports paginated, enriched restaurant listing. */
-internal object MockHomeRestaurantCatalog {
+internal object FakeHomeRestaurantCatalog {
     val result: RepositoryResult<List<RestaurantWithHighlights>> = RepositoryResult.Success(
         restaurantTemplates.mapIndexed { index, template -> template.toRestaurantWithHighlights(index) },
     )

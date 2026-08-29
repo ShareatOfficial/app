@@ -29,14 +29,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class GetHomeRestaurantsUseCaseImplTest {
+class GetRestaurantsUseCaseImplTest {
 
     @Test
     fun paginatesTheRealRestaurantsByOffsetAndLimit() = runTest {
         val restaurants = (0 until 5).map { restaurantFixture(id = "restaurant-$it", name = "Restaurant $it") }
         val useCase = useCaseFor(seed = restaurants)
 
-        val result = useCase(offset = 2, limit = 2)
+        val result = useCase(page = 2, numberOfRestaurants = 2)
 
         val page = assertIs<RepositoryResult.Success<List<RestaurantWithHighlights>>>(result).value
         assertEquals(listOf("restaurant-2", "restaurant-3"), page.map { it.restaurant.id.value })
@@ -61,7 +61,7 @@ class GetHomeRestaurantsUseCaseImplTest {
             ),
         )
 
-        val result = useCase(offset = 0, limit = 2)
+        val result = useCase(page = 0, numberOfRestaurants = 2)
 
         val page = assertIs<RepositoryResult.Success<List<RestaurantWithHighlights>>>(result).value
         assertEquals(listOf("Pulpo a la brasa"), page[0].dishHighlights.map { it.dish.name })
@@ -90,7 +90,7 @@ class GetHomeRestaurantsUseCaseImplTest {
             ),
         )
 
-        val result = useCase(offset = 0, limit = 1)
+        val result = useCase(page = 0, numberOfRestaurants = 1)
 
         val card = assertIs<RepositoryResult.Success<List<RestaurantWithHighlights>>>(result).value.single()
         assertEquals(3, card.dishHighlights.size)
@@ -108,7 +108,7 @@ class GetHomeRestaurantsUseCaseImplTest {
             ratingSummaryResult = { RepositoryResult.Failure(RepositoryError.Unavailable()) },
         )
 
-        val result = useCase(offset = 0, limit = 1)
+        val result = useCase(page = 0, numberOfRestaurants = 1)
 
         val card = assertIs<RepositoryResult.Success<List<RestaurantWithHighlights>>>(result).value.single()
         assertEquals(RatingSummary(averageTenths = null, ratingCount = 0), card.ratingSummary)
@@ -118,7 +118,7 @@ class GetHomeRestaurantsUseCaseImplTest {
     fun propagatesRestaurantRepositoryFailure() = runTest {
         val useCase = useCaseFor(restaurantsResult = { RepositoryResult.Failure(RepositoryError.Offline) })
 
-        val result = useCase(offset = 0, limit = 10)
+        val result = useCase(page = 0, numberOfRestaurants = 10)
 
         val failure = assertIs<RepositoryResult.Failure>(result)
         assertEquals(RepositoryError.Offline, failure.error)
@@ -128,7 +128,7 @@ class GetHomeRestaurantsUseCaseImplTest {
     fun emptySeedReturnsEmptyPage() = runTest {
         val useCase = useCaseFor(seed = emptyList())
 
-        val result = useCase(offset = 0, limit = 10)
+        val result = useCase(page = 0, numberOfRestaurants = 10)
 
         assertEquals(emptyList(), assertIs<RepositoryResult.Success<List<RestaurantWithHighlights>>>(result).value)
     }
@@ -139,7 +139,7 @@ class GetHomeRestaurantsUseCaseImplTest {
         reviewsByDish: Map<DishId, List<Review>> = emptyMap(),
         ratingSummaryResult: (() -> RepositoryResult<RatingSummary>)? = null,
         restaurantsResult: (() -> RepositoryResult<List<Restaurant>>)? = null,
-    ): GetHomeRestaurantsUseCase = GetHomeRestaurantsUseCaseImpl(
+    ): GetRestaurantsUseCase = GetRestaurantsUseCaseImpl(
         restaurantRepository = FakeRestaurantRepository(restaurantsResult ?: { RepositoryResult.Success(seed) }),
         dishRepository = FakeDishRepository(dishesByRestaurant),
         reviewRepository = FakeReviewRepository(

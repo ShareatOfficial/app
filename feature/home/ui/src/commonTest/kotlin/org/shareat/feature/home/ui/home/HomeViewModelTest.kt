@@ -27,7 +27,7 @@ import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.home.domain.DishReviewHighlight
-import org.shareat.feature.home.domain.GetHomeRestaurantsUseCase
+import org.shareat.feature.home.domain.GetRestaurantsUseCase
 import org.shareat.feature.home.domain.RestaurantWithHighlights
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -122,9 +122,9 @@ class HomeViewModelTest {
     }
 
     private fun viewModelFor(
-        result: (offset: Int, limit: Int) -> RepositoryResult<List<RestaurantWithHighlights>>,
+        result: (page: Int, numberOfRestaurants: Int) -> RepositoryResult<List<RestaurantWithHighlights>>,
     ): HomeViewModel = HomeViewModel(
-        getHomeRestaurantsUseCase = GetHomeRestaurantsUseCase { offset, limit -> result(offset, limit) },
+        getRestaurantsUseCase = { page, numberOfRestaurants -> result(page, numberOfRestaurants) },
     )
 }
 
