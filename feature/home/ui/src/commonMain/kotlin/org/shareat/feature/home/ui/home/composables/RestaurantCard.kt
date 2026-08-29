@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import coil3.compose.AsyncImage
 import org.shareat.feature.home.ui.home.DishReviewUiState
 
 private val RestaurantHeroHeight = 180.dp
+private const val RestaurantHeroOverlayHeightFraction = 0.75f
 
 @Composable
 internal fun RestaurantCard(
@@ -35,6 +37,8 @@ internal fun RestaurantCard(
     heroImageUrl: String?,
     heroImageDescription: String?,
     ratingLabel: String,
+    isOpen: Boolean,
+    address: String,
     dishReviews: List<DishReviewUiState>,
     showDishReviews: Boolean,
     modifier: Modifier = Modifier,
@@ -44,47 +48,14 @@ internal fun RestaurantCard(
         shape = RoundedCornerShape(20.dp),
     ) {
         Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(RestaurantHeroHeight),
-            ) {
-                AsyncImage(
-                    model = heroImageUrl,
-                    contentDescription = heroImageDescription,
-                    modifier = Modifier.fillMaxWidth().height(RestaurantHeroHeight),
-                    contentScale = ContentScale.Crop,
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(RestaurantHeroHeight)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f)),
-                            ),
-                        ),
-                )
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = name,
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    RatingBadge(ratingLabel = ratingLabel, contentColor = Color.White)
-                }
-            }
+            RestaurantHeroImage(
+                heroImageUrl = heroImageUrl,
+                heroImageDescription = heroImageDescription,
+                name = name,
+                ratingLabel = ratingLabel,
+                isOpen = isOpen,
+                address = address,
+            )
             if (showDishReviews && dishReviews.isNotEmpty()) {
                 Row(
                     modifier = Modifier
@@ -106,6 +77,85 @@ internal fun RestaurantCard(
     }
 }
 
+@Composable
+private fun RestaurantHeroImage(
+    heroImageUrl: String?,
+    heroImageDescription: String?,
+    name: String,
+    ratingLabel: String,
+    isOpen: Boolean,
+    address: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(RestaurantHeroHeight),
+    ) {
+        AsyncImage(
+            model = heroImageUrl,
+            contentDescription = heroImageDescription,
+            modifier = Modifier.fillMaxWidth().height(RestaurantHeroHeight),
+            contentScale = ContentScale.Crop,
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(RestaurantHeroOverlayHeightFraction)
+                .align(Alignment.BottomStart)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f)),
+                    ),
+                ),
+        ) {
+            RestaurantInfo(
+                name = name,
+                ratingLabel = ratingLabel,
+                isOpen = isOpen,
+                address = address,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun RestaurantInfo(
+    name: String,
+    ratingLabel: String,
+    isOpen: Boolean,
+    address: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = name,
+                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            RatingBadge(ratingLabel = ratingLabel, contentColor = Color.White)
+        }
+        OpenStatusBadge(isOpen = isOpen, contentColor = Color.White)
+        AddressBadge(address = address, contentColor = Color.White)
+    }
+}
+
 @Preview
 @Composable
 private fun RestaurantCardPreview() {
@@ -115,6 +165,8 @@ private fun RestaurantCardPreview() {
             heroImageUrl = null,
             heroImageDescription = null,
             ratingLabel = "4.8",
+            isOpen = true,
+            address = "Calle del Olmo, 18, Madrid",
             dishReviews = listOf(
                 DishReviewUiState(
                     dishName = "Pulpo a la brasa",
@@ -141,6 +193,8 @@ private fun RestaurantCardWithoutReviewsPreview() {
             heroImageUrl = null,
             heroImageDescription = null,
             ratingLabel = "New",
+            isOpen = false,
+            address = "Calle del Olmo, 18, Madrid",
             dishReviews = emptyList(),
             showDishReviews = false,
         )

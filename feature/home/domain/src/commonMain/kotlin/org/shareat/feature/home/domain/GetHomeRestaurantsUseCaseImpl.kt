@@ -21,7 +21,7 @@ class GetHomeRestaurantsUseCaseImpl(
         offset: Int,
         limit: Int,
     ): RepositoryResult<List<RestaurantWithHighlights>> {
-        return MockHomeRestaurantCatalog.result
+//        return MockHomeRestaurantCatalog.result // Mock implementation Delete whenever supabase is ready
         // repository might implement pagination
         val restaurants = when (val result = restaurantRepository.getPublishedRestaurants()) {
             is RepositoryResult.Success -> result.value
@@ -34,6 +34,7 @@ class GetHomeRestaurantsUseCaseImpl(
                     restaurant = restaurant,
                     ratingSummary = restaurant.ratingSummary(),
                     dishHighlights = restaurant.dishHighlights(),
+                    isOpen = true,
                 )
             },
         )

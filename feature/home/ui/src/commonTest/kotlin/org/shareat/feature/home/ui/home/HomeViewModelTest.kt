@@ -171,4 +171,5 @@ private fun restaurantWithHighlightsFixture(
             ),
         ),
     ),
+    isOpen = true,
 )

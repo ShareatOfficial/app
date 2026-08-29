@@ -70,6 +70,8 @@ private fun RestaurantWithHighlights.toCardUiState(): RestaurantCardUiState = Re
     heroImageUrl = restaurant.heroImage?.url,
     heroImageDescription = restaurant.heroImage?.alternativeText,
     ratingLabel = ratingSummary.averageTenths.toRatingLabel(),
+    isOpen = isOpen,
+    address = "${restaurant.address.streetLine}, ${restaurant.address.locality}",
     dishReviews = dishHighlights.map { highlight ->
         DishReviewUiState(
             dishName = highlight.dish.name,

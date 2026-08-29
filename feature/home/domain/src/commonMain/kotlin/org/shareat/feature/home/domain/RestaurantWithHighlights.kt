@@ -9,6 +9,7 @@ data class RestaurantWithHighlights(
     val restaurant: Restaurant,
     val ratingSummary: RatingSummary,
     val dishHighlights: List<DishReviewHighlight>,
+    val isOpen: Boolean,
 )
 
 data class DishReviewHighlight(

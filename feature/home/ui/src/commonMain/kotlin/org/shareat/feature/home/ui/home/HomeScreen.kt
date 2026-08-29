@@ -25,10 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.feature.home.ui.home.composables.HomeSearchBar
 import org.shareat.feature.home.ui.home.composables.RestaurantCard
+import shareat.feature.home.ui.generated.resources.Res
+import shareat.feature.home.ui.generated.resources.recommended
 
 private const val RestaurantGridColumns = 2
 private val HighlightsSectionShape = RoundedCornerShape(24.dp)
@@ -102,7 +105,7 @@ private fun HomeFeed(
         if (showRecommendedTitle) {
             item {
                 Text(
-                    text = "Recommended",
+                    text = stringResource(Res.string.recommended),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -147,6 +150,8 @@ private fun RestaurantHighlightsSection(restaurants: List<RestaurantCardUiState>
                             heroImageUrl = restaurant.heroImageUrl,
                             heroImageDescription = restaurant.heroImageDescription,
                             ratingLabel = restaurant.ratingLabel,
+                            isOpen = restaurant.isOpen,
+                            address = restaurant.address,
                             dishReviews = restaurant.dishReviews,
                             showDishReviews = false,
                             modifier = Modifier.weight(1f),
@@ -165,6 +170,8 @@ private fun RestaurantStandaloneCard(restaurant: RestaurantCardUiState) {
         heroImageUrl = restaurant.heroImageUrl,
         heroImageDescription = restaurant.heroImageDescription,
         ratingLabel = restaurant.ratingLabel,
+        isOpen = restaurant.isOpen,
+        address = restaurant.address,
         dishReviews = restaurant.dishReviews,
         showDishReviews = true,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -230,6 +237,8 @@ private object HomePreviewData {
             heroImageUrl = "https://images.example.com/restaurants/casa-naranja.jpg",
             heroImageDescription = "Interior de Casa Naranja",
             ratingLabel = "4.8",
+            isOpen = index % 3 != 0,
+            address = "Calle del Olmo, 18, Madrid",
             dishReviews = if (index % 2 == 0) dishReviews else emptyList(),
         )
     }

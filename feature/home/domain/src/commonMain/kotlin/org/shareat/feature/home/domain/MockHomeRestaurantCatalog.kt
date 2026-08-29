@@ -80,6 +80,7 @@ private fun RestaurantTemplate.toRestaurantWithHighlights(index: Int): Restauran
         restaurant = restaurant,
         ratingSummary = RatingSummary(averageTenths = 40 + index % 11, ratingCount = 10 + index),
         dishHighlights = dishTemplates.mapIndexed { dishIndex, dish -> dish.toHighlight(restaurant.id, index, dishIndex) },
+        isOpen = index % 3 != 0,
     )
 }
 
