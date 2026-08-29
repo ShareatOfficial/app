@@ -151,6 +151,16 @@ class SettingsViewModelTest {
 
         assertEquals(SettingsEvent.NavigateToEditProfile, viewModel.events.first())
     }
+
+    @Test
+    fun menuManagementEmitsNavigationEvent() = runTest(dispatcher) {
+        val viewModel = viewModelFor(restaurantFixture())
+        advanceUntilIdle()
+
+        viewModel.onRestaurantAction(SettingsRestaurantAction.MenuManagement)
+
+        assertEquals(SettingsEvent.NavigateToMenuManagement, viewModel.events.first())
+    }
 }
 
 private fun viewModelFor(

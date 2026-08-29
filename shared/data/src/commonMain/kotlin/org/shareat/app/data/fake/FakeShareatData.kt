@@ -38,13 +38,14 @@ class FakeShareatData internal constructor(
     internal val accounts: List<Account>,
     customerProfiles: List<CustomerProfile>,
     restaurants: List<Restaurant>,
-    internal val menus: List<Menu>,
+    menus: List<Menu>,
     internal val dishes: List<Dish>,
     internal val menuItems: List<MenuItem>,
     reviews: List<Review>,
 ) {
     internal val customerProfiles: MutableList<CustomerProfile> = customerProfiles.toMutableList()
     internal val restaurants: MutableList<Restaurant> = restaurants.toMutableList()
+    internal val menus: MutableList<Menu> = menus.toMutableList()
     internal val reviews: MutableList<Review> = reviews.toMutableList()
 
     companion object {

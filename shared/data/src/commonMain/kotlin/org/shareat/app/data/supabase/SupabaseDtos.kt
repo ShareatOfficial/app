@@ -102,6 +102,14 @@ internal data class MenuDto(
 )
 
 @Serializable
+internal data class MenuInsertDto(
+    @SerialName("restaurant_id") val restaurantId: String,
+    val name: String,
+    val description: String? = null,
+    @SerialName("publication_state") val publicationState: String = "draft",
+)
+
+@Serializable
 internal data class DishDto(
     val id: String,
     @SerialName("restaurant_id") val restaurantId: String,

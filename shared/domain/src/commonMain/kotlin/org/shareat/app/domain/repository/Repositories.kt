@@ -6,6 +6,7 @@ import org.shareat.app.domain.model.CustomerProfile
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.Menu
+import org.shareat.app.domain.model.MenuDraft
 import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.MenuId
 import org.shareat.app.domain.model.RatingSummary
@@ -38,6 +39,10 @@ interface MenuRepository {
     suspend fun getMenus(restaurantId: RestaurantId): RepositoryResult<List<Menu>>
     suspend fun getPublishedMenu(restaurantId: RestaurantId): RepositoryResult<MenuDetails>
     suspend fun getMenu(id: MenuId): RepositoryResult<MenuDetails>
+    suspend fun createDraftMenu(
+        restaurantId: RestaurantId,
+        draft: MenuDraft,
+    ): RepositoryResult<Menu>
 }
 
 interface DishRepository {

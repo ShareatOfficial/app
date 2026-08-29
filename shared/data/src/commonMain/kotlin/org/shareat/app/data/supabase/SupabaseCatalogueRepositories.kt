@@ -14,6 +14,7 @@ import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.Menu
 import org.shareat.app.domain.model.MenuDetails
+import org.shareat.app.domain.model.MenuDraft
 import org.shareat.app.domain.model.MenuId
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
@@ -197,6 +198,21 @@ internal class SupabaseMenuRepository(
             filter { eq("id", id.value) }
         }.decodeList<MenuDto>().singleOrNull() ?: throw DomainNotFound("menu", id.value)
         loadMenuDetails(menu)
+    }
+
+    override suspend fun createDraftMenu(
+        restaurantId: RestaurantId,
+        draft: MenuDraft,
+    ): RepositoryResult<Menu> = supabaseResult {
+        client.from("menus").insert(
+            MenuInsertDto(
+                restaurantId = restaurantId.value,
+                name = draft.name,
+                description = draft.description,
+            ),
+        ) {
+            select()
+        }.decodeList<MenuDto>().single().toDomain()
     }
 
     private suspend fun loadMenuDetails(menu: MenuDto): MenuDetails {

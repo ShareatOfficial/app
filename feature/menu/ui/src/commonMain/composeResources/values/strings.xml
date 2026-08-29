@@ -1,0 +1,17 @@
+<resources>
+    <string name="menu_title">Mi carta</string>
+    <string name="menu_loading">Cargando carta…</string>
+    <string name="menu_empty_title">Crea tu primera carta</string>
+    <string name="menu_empty_body">Tu carta se guardará como borrador. Podrás añadir platos y publicarla después.</string>
+    <string name="menu_name">Nombre de la carta *</string>
+    <string name="menu_description">Descripción (opcional)</string>
+    <string name="menu_create">Crear carta en borrador</string>
+    <string name="menu_creating">Creando…</string>
+    <string name="menu_existing_badge">Carta guardada</string>
+    <string name="menu_existing_title">Tu carta está preparada</string>
+    <string name="menu_existing_body">Añade platos en el siguiente paso para poder publicarla.</string>
+    <string name="menu_retry">Reintentar</string>
+    <string name="menu_back">Volver</string>
+    <string name="menu_name_required">Introduce el nombre de la carta.</string>
+    <string name="menu_name_too_long">El nombre no puede superar 120 caracteres.</string>
+</resources>

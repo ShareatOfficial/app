@@ -17,6 +17,17 @@ data class Menu(
     init { require(name.isNotBlank()) }
 }
 
+/** The editable values required to create the restaurant's single MVP menu. */
+data class MenuDraft(
+    val name: String,
+    val description: String? = null,
+) {
+    init {
+        require(name.isNotBlank())
+        require(description == null || description.isNotBlank())
+    }
+}
+
 enum class EuAllergen {
     Celery,
     CerealsContainingGluten,

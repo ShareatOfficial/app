@@ -1,6 +1,8 @@
 package org.shareat.app.data.fake
 
 import org.shareat.app.domain.model.MenuDetails
+import org.shareat.app.domain.model.Menu
+import org.shareat.app.domain.model.MenuDraft
 import org.shareat.app.domain.model.MenuDish
 import org.shareat.app.domain.model.MenuId
 import org.shareat.app.domain.model.MenuPublicationState
@@ -41,6 +43,31 @@ class FakeMenuRepository(
             return RepositoryResult.Failure(RepositoryError.NotFound("Menu", id.value))
         },
     )
+
+    override suspend fun createDraftMenu(
+        restaurantId: RestaurantId,
+        draft: MenuDraft,
+    ): RepositoryResult<Menu> = when (scenario) {
+        FakeDataScenario.Offline -> RepositoryResult.Failure(RepositoryError.Offline)
+        FakeDataScenario.Unavailable -> RepositoryResult.Failure(RepositoryError.Unavailable())
+        FakeDataScenario.Empty,
+        FakeDataScenario.Populated,
+        -> {
+            if (data.menus.any { it.restaurantId == restaurantId }) {
+                RepositoryResult.Failure(RepositoryError.AlreadyExists("menu"))
+            } else {
+                RepositoryResult.Success(
+                    Menu(
+                        id = MenuId("menu-${restaurantId.value}"),
+                        restaurantId = restaurantId,
+                        name = draft.name,
+                        description = draft.description,
+                        publicationState = MenuPublicationState.Draft,
+                    ).also(data.menus::add),
+                )
+            }
+        }
+    }
 
     private fun details(menuId: MenuId): MenuDetails {
         val menu = data.menus.first { it.id == menuId }
