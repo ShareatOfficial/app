@@ -120,13 +120,17 @@ internal fun Restaurant.toUpdateSettingsRpc(): UpdateRestaurantSettingsRpc =
 internal fun RestaurantProfileDraft.toCreateProfileRpc(): CreateRestaurantProfileRpc =
     CreateRestaurantProfileRpc(
         name = name,
-        description = description,
-        publicEmail = publicEmail?.value,
-        publicPhone = publicPhone,
+        // PostgREST resolves RPC overloads from the JSON keys it receives. Send
+        // empty values for every optional text parameter so none can be omitted
+        // by a serializer configured with explicitNulls = false. The SQL RPC
+        // converts these values back to NULL with nullif(btrim(...), '').
+        description = description.orEmpty(),
+        publicEmail = publicEmail?.value.orEmpty(),
+        publicPhone = publicPhone.orEmpty(),
         streetLine = address.streetLine,
         locality = address.locality,
         postalCode = address.postalCode,
-        region = address.region,
+        region = address.region.orEmpty(),
         openingPeriods = openingHours.days.flatMap { hours ->
             hours.periods.map { period ->
                 CreateOpeningPeriodDto(
