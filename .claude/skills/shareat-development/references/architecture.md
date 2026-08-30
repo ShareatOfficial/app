@@ -14,16 +14,19 @@ Each feature is three Gradle modules:
 :feature:<name>:ui
 ```
 
-The shared base mirrors this, plus one extra leaf module for shared navigation contracts:
+The shared base mirrors this, plus two extra leaf modules: one for shared navigation contracts, one for shared UI.
 
 ```
 :shared:domain
 :shared:data
 :shared:navigation
+:shared:designsystem
 :shared:ui
 ```
 
 `:shared:navigation` applies no Compose plugin and depends on nothing else in the project. It holds only navigation contracts that multiple features and `:shared:ui` need in common — today just the `RequiresLogin` marker interface — so that a feature can declare a key requiring login without depending back on `:shared:ui` (which would be circular, since `:shared:ui` already depends on every feature). Keep it that way deliberately: `Navigator`, `NavigationState`, and each feature's `*NavigationImpl`/`*NavigationModule` stay in `:shared:ui`, not here — they reference concrete feature Composables, and pulling them into `:shared:navigation` would make it depend on the same features that depend on it, recreating the cycle it exists to avoid. See the "Decided" note in `navigation.md`.
+
+`:shared:designsystem` applies the Compose plugin but depends on nothing else — no `domain`, no `data`, no Koin, no feature module. It holds presentation-only visual building blocks shared across features (today, `Modifier.shimmerEffect` for loading skeletons). Any `:feature:<name>:ui` module can depend on it directly, the same way it already depends on `:shared:navigation`. See `ui.md`.
 
 `:shared:ui` is the app's composition module: it assembles features, navigation, and dependencies for Android, iOS, and web, and produces the `Shared` framework iOS consumes.
 

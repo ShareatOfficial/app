@@ -30,7 +30,7 @@ import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.navigation.NavigationState
 import org.shareat.app.navigation.Navigator
 import org.shareat.app.navigation.login.LoginNavigationImpl
-import org.shareat.feature.home.navigation.HomeKey
+import org.shareat.feature.home.ui.navigation.HomeKey
 import org.shareat.feature.login.ui.LoginKey
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.profile.ui.profile.ProfileKey

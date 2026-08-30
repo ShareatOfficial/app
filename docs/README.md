@@ -10,6 +10,7 @@ Esta carpeta es la fuente de verdad para explicar las decisiones técnicas y có
 | Arquitectura | [Arquitectura por feature](./architecture/README.md) | Módulos `data`, `domain` y `ui`, dependencias y flujo de datos |
 | Datos | [Modelo de dominio](./data-model/README.md) | Entidades, relaciones y contratos de repositorio del MVP |
 | Navegación | [Navegación](./navigation/README.md) | Contratos por pantalla, `NavKey` y entry builders |
+| UI | [Estados de carga y skeletons](./ui/README.md) | `:shared:designsystem`, `shimmerEffect` y el patrón de skeleton por pantalla |
 | Inyección | [Koin](./dependency-injection/README.md) | Composition root, módulos y selección de repositorios |
 | Calidad | [Pruebas y mocks](./testing/README.md) | Repositorios mock y pruebas de repositorios, use cases y ViewModels |
 | Backend | [Supabase local](./supabase/README.md) | Migraciones, Auth, RLS, Storage y flujo local/alojado |

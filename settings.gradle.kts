@@ -28,7 +28,8 @@ dependencyResolutionManagement {
 }
 
 include(":androidApp")
-include(":feature:home")
+include(":feature:home:domain")
+include(":feature:home:ui")
 include(":feature:profile:domain")
 include(":feature:profile:ui")
 include(":feature:login:ui")
@@ -38,5 +39,6 @@ include(":feature:menu:ui")
 include(":shared:domain")
 include(":shared:data")
 include(":shared:navigation")
+include(":shared:designsystem")
 include(":shared:ui")
 include(":webApp")

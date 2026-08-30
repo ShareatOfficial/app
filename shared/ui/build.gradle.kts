@@ -63,7 +63,7 @@ kotlin {
             implementation(project(":shared:data"))
             implementation(project(":shared:navigation"))
 
-            implementation(project(":feature:home"))
+            implementation(project(":feature:home:ui"))
             implementation(project(":feature:profile:ui"))
             implementation(project(":feature:login:ui"))
             implementation(project(":feature:menu:ui"))
@@ -84,6 +84,9 @@ kotlin {
 
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.coroutines.core)
+
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
 
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
