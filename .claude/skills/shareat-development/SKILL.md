@@ -1,6 +1,6 @@
 ---
 name: shareat-development
-description: "Guides Claude when reading, writing, reviewing, or planning code in the Shareat (also called ShareEat) Kotlin Multiplatform repository, the restaurant discovery and review app with Android, iOS, and web clients, Koin dependency injection, Navigation 3, and a Supabase backend. Load this whenever working inside this project, including implementing or modifying a feature module, wiring dependency injection, adding a screen or navigation intent, writing repository/use case/ViewModel/mock code, adding JUnit tests, touching Supabase migrations/RLS/Storage, or answering questions about the app's architecture, data model, MVP scope, or product rules. Trigger on mentions of \"Shareat\", \"ShareEat\", the feature module pattern feature-name-domain/data/ui, `:shared:domain`/`:shared:data`/`:shared:ui`, Koin modules, `NavKey`/`Navigator`, `FakeShareatData`, `MockRepository`, or `supabase/migrations`, even if the user doesn't name this skill explicitly."
+description: "Guides Claude when reading, writing, reviewing, or planning code in the Shareat (also called ShareEat) Kotlin Multiplatform repository, the restaurant discovery and review app with Android, iOS, and web clients, Koin dependency injection, Navigation 3, and a Supabase backend. Load this whenever working inside this project, including implementing or modifying a feature module, wiring dependency injection, adding a screen or navigation intent, writing repository/use case/ViewModel/mock code, adding JUnit tests, touching Supabase migrations/RLS/Storage, or answering questions about the app's architecture, data model, MVP scope, or product rules. Trigger on mentions of \"Shareat\", \"ShareEat\", the feature module pattern feature-name-domain/data/ui, `:shared:domain`/`:shared:data`/`:shared:ui`/`:shared:designsystem`, Koin modules, `NavKey`/`Navigator`, `FakeShareatData`, `MockRepository`, `supabase/migrations`, or a loading state/skeleton/shimmer for a screen, even if the user doesn't name this skill explicitly."
 ---
 
 # Shareat development
@@ -16,15 +16,19 @@ Shareat is a Kotlin Multiplatform app (Android, iOS, web) where customers discov
 ## Repo shape
 
 ```
-androidApp/   iosApp/   webApp/         # platform entry points
-shared/{domain,data,navigation,ui}/     # shared KMP base; :shared:navigation is a tiny leaf module
-                                         # for shared navigation contracts (e.g. RequiresLogin);
-                                         # :shared:ui is the composition root
-feature/<name>/{domain,data,ui}/        # per-feature modules (some features are still single-module
-                                         # while they're being split — check settings.gradle.kts for
-                                         # what actually exists before assuming all three are present)
-supabase/{migrations,tests,seed.sql}/   # backend: Postgres migrations, pgTAP tests, local seed
-docs/                                   # source-of-truth guides this skill summarizes
+androidApp/   iosApp/   webApp/                  # platform entry points
+shared/{domain,data,navigation,designsystem,ui}/ # shared KMP base; :shared:navigation is a tiny leaf
+                                                  # module for shared navigation contracts (e.g.
+                                                  # RequiresLogin); :shared:designsystem is a tiny
+                                                  # Compose-only leaf for shared visual effects (e.g.
+                                                  # Modifier.shimmerEffect); :shared:ui is the
+                                                  # composition root
+feature/<name>/{domain,data,ui}/                 # per-feature modules (some features are still
+                                                  # single-module while they're being split — check
+                                                  # settings.gradle.kts for what actually exists
+                                                  # before assuming all three are present)
+supabase/{migrations,tests,seed.sql}/            # backend: Postgres migrations, pgTAP tests, local seed
+docs/                                            # source-of-truth guides this skill summarizes
 ```
 
 Package root for shared Kotlin code is `org.shareat.app`.
@@ -55,6 +59,7 @@ Read the one(s) relevant to your change — don't load all of them speculatively
 - `references/data-model.md` — domain entities (Account, Restaurant, Menu/Dish/MenuItem, Review, etc.), their relationships, `FakeShareatData`/`FakeDataScenario`, and the Supabase persistence mapping.
 - `references/dependency-injection.md` — Koin module structure, `single`/`factory`/`viewModel` scope rules, the fake-vs-Supabase module selection, and testing overrides.
 - `references/navigation.md` — how a feature declares a navigation interface, how the app module implements it with `NavKey` and Koin Navigation 3 entries, and the top-level-vs-subscreen split.
+- `references/ui.md` — the rule that a `Loading` ui state renders a skeleton shaped like the loaded screen, `:shared:designsystem`'s `Modifier.shimmerEffect`, and how to build a feature's skeleton components on top of it.
 - `references/testing.md` — mock repository conventions, deterministic scenarios, what to test at each layer (repository/use case/ViewModel), and the local Supabase test flow (pgTAP, JVM contract tests).
 - `references/supabase.md` — security boundaries (publishable key only, RLS, Storage limits), the local dev loop, and the safe deployment sequence.
 - `references/product.md` — MVP scope, product rules (reviews, ratings, menu visibility, moderation, monetisation), and what's explicitly post-MVP. Use this when a request would add scope the product definition puts outside the MVP, or when unsure whether a rule is a product decision vs. a technical one.
@@ -67,6 +72,7 @@ Read the one(s) relevant to your change — don't load all of them speculatively
 - A disabled/draft/unpublished menu, dish, or review never reaches a public read path or a public aggregate.
 - Every repository interface method is `suspend`, so a mock implementation can be replaced by a remote one without touching callers.
 - New Gradle modules for a feature are registered in `settings.gradle.kts`.
+- A screen's `Loading` ui state renders a skeleton shaped like its own loaded content (reusing `Modifier.shimmerEffect` from `:shared:designsystem`), never a bare spinner — see `references/ui.md`.
 - No comments by default — this is the default, not a fallback to reach for. Name classes, functions, and variables well enough (and apply SOLID — especially single responsibility — well enough) that the code reads without narration. This also covers module-placement/dependency-direction rationale ("lives here to avoid a circular dependency") — that belongs in the PR description or `docs/`, not a code comment. The only exception is logic that is itself genuinely tricky (a non-obvious algorithm, a workaround for a specific bug/platform quirk, a subtle invariant) — and even then, at most a two-line `//` comment, never a `/** KDoc */` block, explaining the *why*, not the *what*.
 
 ## Keeping this skill and `docs/` in sync

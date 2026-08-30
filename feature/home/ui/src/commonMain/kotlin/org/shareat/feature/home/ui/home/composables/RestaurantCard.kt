@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
+import org.shareat.shared.designsystem.shimmerEffect
 
 private val RestaurantHeroHeight = 180.dp
 private const val RestaurantHeroOverlayHeightFraction = 0.75f
@@ -198,5 +199,48 @@ private fun RestaurantCardWithoutReviewsPreview() {
             dishReviews = emptyList(),
             showDishReviews = false,
         )
+    }
+}
+
+@Composable
+internal fun RestaurantCardSkeleton(modifier: Modifier = Modifier) {
+    val shimmerColor = MaterialTheme.colorScheme.onSurface
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(RestaurantHeroHeight)
+                    .shimmerEffect(shimmerColor),
+            )
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(16.dp)
+                        .shimmerEffect(shimmerColor, RoundedCornerShape(4.dp)),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f)
+                        .height(12.dp)
+                        .shimmerEffect(shimmerColor, RoundedCornerShape(4.dp)),
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun RestaurantCardSkeletonPreview() {
+    MaterialTheme {
+        RestaurantCardSkeleton()
     }
 }

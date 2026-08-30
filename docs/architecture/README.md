@@ -14,16 +14,19 @@ Cada nueva feature se divide en tres módulos Gradle:
 :feature:<nombre>:ui
 ```
 
-La base compartida también está separada en tres módulos Gradle, más un módulo hoja adicional para contratos de navegación compartidos:
+La base compartida también está separada en tres módulos Gradle, más dos módulos hoja adicionales: uno para contratos de navegación compartidos y otro para UI compartida:
 
 ```text
 :shared:domain
 :shared:data
 :shared:navigation
+:shared:designsystem
 :shared:ui
 ```
 
 `:shared:navigation` no aplica plugins Compose y no depende de ningún otro módulo del proyecto. Contiene únicamente contratos de navegación (hoy, el marcador `RequiresLogin`) que varias features y `:shared:ui` necesitan compartir sin crear una dependencia circular entre una feature y el módulo de app. Ver [Navegación](../navigation/README.md). Se mantiene deliberadamente mínimo: no debe crecer para incluir `Navigator`, `NavigationState` ni los `*NavigationImpl`/`*NavigationModule` de cada feature — esos referencian pantallas Compose concretas de cada feature y, si vivieran aquí, recrearían el mismo ciclo de dependencias que este módulo existe para evitar. Ver la sección "Decisión registrada" en [Navegación](../navigation/README.md).
+
+`:shared:designsystem` aplica el plugin Compose pero no depende de `domain`, `data`, Koin ni de ninguna feature — solo de las librerías de Compose. Contiene efectos y componentes visuales puramente de presentación que varias features necesitan por igual (hoy, `Modifier.shimmerEffect` para skeletons de carga). Cualquier `:feature:<nombre>:ui` puede depender de él directamente, igual que ya depende de `:shared:navigation`. Ver [Estados de carga y skeletons](../ui/README.md).
 
 `:shared:ui` es el módulo de composición de la aplicación. Ensambla features, navegación y dependencias para Android, iOS y web, y produce el framework `Shared` que consume iOS.
 

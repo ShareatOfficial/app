@@ -3,9 +3,12 @@ package org.shareat.feature.home.ui.home
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
@@ -21,7 +24,9 @@ import org.shareat.feature.home.ui.home.model.toFeedSections
 
 private const val HomePageOffset = 0
 private const val HomePageSize = 50
+private const val SearchDebounceMillis = 300L
 
+@OptIn(FlowPreview::class)
 @Stable
 @KoinViewModel
 class HomeViewModel(
@@ -30,14 +35,27 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val searchQuery = MutableStateFlow("")
+
     private var loadedRestaurants: List<RestaurantCardUiState> = emptyList()
 
     init {
         loadHome()
+        observeSearchQuery()
     }
 
     fun onSearchQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query, content = filteredContent(query)) }
+        _uiState.update { it.copy(searchQuery = query) }
+        searchQuery.value = query
+    }
+
+    private fun observeSearchQuery() {
+        viewModelScope.launch {
+            searchQuery
+                .drop(1)
+                .debounce(SearchDebounceMillis)
+                .collect { query -> _uiState.update { it.copy(content = filteredContent(query)) } }
+        }
     }
 
     fun onRetryClick() {

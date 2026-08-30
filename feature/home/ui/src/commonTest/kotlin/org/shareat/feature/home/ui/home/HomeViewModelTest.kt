@@ -84,12 +84,32 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("naranja")
+        advanceUntilIdle()
         val matching = assertIs<HomeContentUiState.Loaded>(viewModel.uiState.value.content)
         assertEquals(1, matching.sections.size)
 
         viewModel.onSearchQueryChanged("sushi")
+        advanceUntilIdle()
         val empty = assertIs<HomeContentUiState.Loaded>(viewModel.uiState.value.content)
         assertTrue(empty.sections.isEmpty())
+    }
+
+    @Test
+    fun searchQueryUpdatesImmediatelyButFilteringWaitsForDebounce() = runTest(dispatcher) {
+        val viewModel = viewModelFor { _, _ ->
+            RepositoryResult.Success(listOf(restaurantWithHighlightsFixture(name = "Casa Naranja")))
+        }
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChanged("sushi")
+
+        assertEquals("sushi", viewModel.uiState.value.searchQuery)
+        val stillUnfiltered = assertIs<HomeContentUiState.Loaded>(viewModel.uiState.value.content)
+        assertEquals(1, stillUnfiltered.sections.size)
+
+        advanceUntilIdle()
+        val filtered = assertIs<HomeContentUiState.Loaded>(viewModel.uiState.value.content)
+        assertTrue(filtered.sections.isEmpty())
     }
 
     @Test

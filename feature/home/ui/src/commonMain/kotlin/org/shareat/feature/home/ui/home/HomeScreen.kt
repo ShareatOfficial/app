@@ -1,19 +1,15 @@
 package org.shareat.feature.home.ui.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -22,7 +18,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
@@ -30,6 +25,9 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.feature.home.ui.home.composables.HomeSearchBar
 import org.shareat.feature.home.ui.home.composables.RestaurantCard
+import org.shareat.feature.home.ui.home.composables.RestaurantCardSkeleton
+import org.shareat.feature.home.ui.home.composables.RestaurantHighlightsSection
+import org.shareat.feature.home.ui.home.composables.RestaurantHighlightsSectionSkeleton
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
 import org.shareat.feature.home.ui.home.model.HomeContentUiState
 import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
@@ -38,9 +36,6 @@ import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
 import org.shareat.feature.home.ui.home.model.toFeedSections
 import shareat.feature.home.ui.generated.resources.Res
 import shareat.feature.home.ui.generated.resources.recommended
-
-private const val RestaurantGridColumns = 2
-private val HighlightsSectionShape = RoundedCornerShape(24.dp)
 
 @Composable
 fun HomeScreen(
@@ -74,7 +69,7 @@ private fun HomeScreenStateless(
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 when (val content = uiState.content) {
                     HomeContentUiState.Loading ->
-                        HomeLoading(modifier = Modifier.align(Alignment.Center))
+                        HomeLoading(modifier = Modifier.align(Alignment.TopStart))
 
                     is HomeContentUiState.Error -> HomeError(
                         message = content.message,
@@ -133,43 +128,6 @@ private fun HomeFeed(
 }
 
 @Composable
-private fun RestaurantHighlightsSection(restaurants: List<RestaurantCardUiState>) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(HighlightsSectionShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            restaurants.chunked(RestaurantGridColumns).forEach { rowRestaurants ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    rowRestaurants.forEach { restaurant ->
-                        RestaurantCard(
-                            name = restaurant.name,
-                            heroImageUrl = restaurant.heroImageUrl,
-                            heroImageDescription = restaurant.heroImageDescription,
-                            ratingLabel = restaurant.ratingLabel,
-                            isOpen = restaurant.isOpen,
-                            address = restaurant.address,
-                            dishReviews = restaurant.dishReviews,
-                            showDishReviews = false,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun RestaurantStandaloneCard(restaurant: RestaurantCardUiState) {
     RestaurantCard(
         name = restaurant.name,
@@ -186,7 +144,13 @@ private fun RestaurantStandaloneCard(restaurant: RestaurantCardUiState) {
 
 @Composable
 private fun HomeLoading(modifier: Modifier = Modifier) {
-    CircularProgressIndicator(modifier = modifier)
+    Column(
+        modifier = modifier.fillMaxWidth().padding(top = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        RestaurantHighlightsSectionSkeleton()
+        RestaurantCardSkeleton(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
+    }
 }
 
 @Composable

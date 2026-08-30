@@ -47,6 +47,7 @@ kotlin {
             implementation(project(":feature:home:domain"))
             implementation(project(":shared:domain"))
             implementation(project(":shared:navigation"))
+            implementation(project(":shared:designsystem"))
             implementation(
                 libs.androidx.lifecycle.viewmodelCompose
             )
