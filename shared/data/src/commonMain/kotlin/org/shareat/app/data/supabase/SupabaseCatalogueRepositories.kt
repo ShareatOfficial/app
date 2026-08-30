@@ -11,10 +11,12 @@ import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.CustomerProfile
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishId
+import org.shareat.app.domain.model.DishDraft
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.Menu
 import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.MenuId
+import org.shareat.app.domain.model.RestaurantMenuDraft
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantProfileDraft
@@ -152,6 +154,24 @@ internal class SupabaseDishRepository(
         dishes.map { it.toDomain(allergens[it.id].orEmpty(), ::dishImageUrl) }
     }
 
+    override suspend fun saveDish(draft: DishDraft): RepositoryResult<Dish> = supabaseResult {
+        val id = client.postgrest.rpc(
+            function = "save_restaurant_dish",
+            parameters = draft.toSaveRpc(),
+        ).decodeAs<String>()
+        val dto = client.from("dishes").select { filter { eq("id", id) } }
+            .decodeList<DishDto>().singleOrNull() ?: throw DomainNotFound("dish", id)
+        dto.toDomain(loadAllergens(setOf(id))[id].orEmpty(), ::dishImageUrl)
+    }
+
+    override suspend fun archiveDish(id: DishId): RepositoryResult<Unit> = supabaseResult {
+        client.postgrest.rpc(function = "archive_restaurant_dish", parameters = mapOf("p_dish_id" to id.value))
+    }
+
+    override suspend fun deleteDish(id: DishId): RepositoryResult<Unit> = supabaseResult {
+        client.postgrest.rpc(function = "delete_restaurant_dish", parameters = mapOf("p_dish_id" to id.value))
+    }
+
     internal suspend fun loadDishes(ids: Set<String>): List<Dish> {
         if (ids.isEmpty()) return emptyList()
         val visibleDishes = client.from("dishes").select().decodeList<DishDto>().filter { it.id in ids }
@@ -197,6 +217,22 @@ internal class SupabaseMenuRepository(
             filter { eq("id", id.value) }
         }.decodeList<MenuDto>().singleOrNull() ?: throw DomainNotFound("menu", id.value)
         loadMenuDetails(menu)
+    }
+
+    override suspend fun saveMenu(draft: RestaurantMenuDraft): RepositoryResult<MenuDetails> = supabaseResult {
+        val id = client.postgrest.rpc(
+            function = "save_restaurant_menu",
+            parameters = draft.toSaveRpc(),
+        ).decodeAs<String>()
+        val menu = client.from("menus").select { filter { eq("id", id) } }
+            .decodeList<MenuDto>().singleOrNull() ?: throw DomainNotFound("menu", id)
+        loadMenuDetails(menu)
+    }
+
+    override suspend fun deleteMenu(id: MenuId): RepositoryResult<Unit> = supabaseResult {
+        val rows = client.from("menus").delete { filter { eq("id", id.value) } }
+            .decodeList<MenuDto>()
+        if (rows.isEmpty()) throw DomainForbidden()
     }
 
     private suspend fun loadMenuDetails(menu: MenuDto): MenuDetails {

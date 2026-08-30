@@ -66,6 +66,7 @@ kotlin {
             implementation(project(":feature:home"))
             implementation(project(":feature:profile:ui"))
             implementation(project(":feature:login:ui"))
+            implementation(project(":feature:menu:ui"))
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

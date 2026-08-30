@@ -12,25 +12,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.shareat.app.domain.model.DailyOpeningHours
 import org.shareat.app.domain.model.EmailAddress
-import org.shareat.app.domain.model.ImageTarget
-import org.shareat.app.domain.model.ImageUpload
 import org.shareat.app.domain.model.LocalTime
 import org.shareat.app.domain.model.OpeningPeriod
 import org.shareat.app.domain.model.PostalAddress
-import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.WeeklyOpeningHours
-import org.shareat.app.domain.repository.ImageRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.profile.domain.CreateRestaurantProfileUseCase
 import org.shareat.feature.profile.domain.SignOutUseCase
 
 class RestaurantOnboardingViewModel(
-    private val createRestaurantProfile: CreateRestaurantProfileUseCase,
-    private val images: ImageRepository,
-    private val imageProcessor: RestaurantImageProcessor,
-    private val signOut: SignOutUseCase,
+    private val createRestaurantProfileUseCase: CreateRestaurantProfileUseCase,
+    private val signOutUseCase: SignOutUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RestaurantOnboardingUiState())
     val uiState: StateFlow<RestaurantOnboardingUiState> = _uiState.asStateFlow()
@@ -48,7 +42,6 @@ class RestaurantOnboardingViewModel(
             is RestaurantOnboardingAction.CityChanged -> edit { copy(city = action.value) }
             is RestaurantOnboardingAction.PostcodeChanged -> edit { copy(postcode = action.value) }
             is RestaurantOnboardingAction.ProvinceChanged -> edit { copy(province = action.value) }
-            is RestaurantOnboardingAction.ImageAltTextChanged -> edit { copy(imageAlternativeText = action.value) }
             is RestaurantOnboardingAction.DayEnabledChanged -> updateHours(action.day) {
                 copy(enabled = action.enabled, opensAt = "11:00", closesAt = "22:00", error = null)
             }
@@ -58,98 +51,27 @@ class RestaurantOnboardingViewModel(
             is RestaurantOnboardingAction.ClosesAtChanged -> updateHours(action.day) {
                 copy(closesAt = action.value, error = null)
             }
-            RestaurantOnboardingAction.RemoveImage -> edit {
-                copy(image = null, imageAlternativeText = "")
-            }
             RestaurantOnboardingAction.Submit -> submit()
-            RestaurantOnboardingAction.RetryImageUpload -> retryImageUpload()
-            RestaurantOnboardingAction.ContinueWithoutImage -> complete()
             RestaurantOnboardingAction.Logout -> logout()
-        }
-    }
-
-    fun onImageSelected(displayName: String, bytes: ByteArray) {
-        if (_uiState.value.isProcessingImage || _uiState.value.isSubmitting) return
-        _uiState.update { it.copy(isProcessingImage = true, errorMessage = null) }
-        viewModelScope.launch {
-            imageProcessor(displayName, bytes).fold(
-                onSuccess = { image ->
-                    _uiState.update {
-                        it.copy(
-                            image = image,
-                            isProcessingImage = false,
-                            errors = it.errors.copy(image = null),
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _uiState.update {
-                        it.copy(
-                            image = null,
-                            isProcessingImage = false,
-                            errors = it.errors.copy(
-                                image = error.message ?: "No se pudo procesar la imagen.",
-                            ),
-                        )
-                    }
-                },
-            )
-        }
-    }
-
-    fun onImagePickerError(message: String?) {
-        _uiState.update {
-            it.copy(errors = it.errors.copy(image = message ?: "No se pudo abrir el selector de imágenes."))
         }
     }
 
     private fun submit() {
         val state = _uiState.value
-        if (state.isSubmitting || state.isProcessingImage || state.createdRestaurantId != null) return
+        if (state.isSubmitting) return
         val validation = validate(state)
         _uiState.value = validation.state
         val restaurantProfile = validation.restaurantProfile ?: return
         _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
         viewModelScope.launch {
-            when (val result = createRestaurantProfile(restaurantProfile)) {
+            when (val result = createRestaurantProfileUseCase(restaurantProfile)) {
                 is RepositoryResult.Success -> {
-                    _uiState.update {
-                        it.copy(
-                            isSubmitting = false,
-                            createdRestaurantId = result.value.id.value,
-                        )
-                    }
-                    if (_uiState.value.image == null) complete() else uploadImage(result.value.id)
+                    _uiState.update { it.copy(isSubmitting = false) }
+                    complete()
                 }
                 is RepositoryResult.Failure -> _uiState.update {
                     it.copy(isSubmitting = false, errorMessage = result.error.toSpanishMessage())
                 }
-            }
-        }
-    }
-
-    private fun retryImageUpload() {
-        val restaurantId = _uiState.value.createdRestaurantId?.let(::RestaurantId) ?: return
-        if (_uiState.value.isSubmitting) return
-        viewModelScope.launch { uploadImage(restaurantId) }
-    }
-
-    private suspend fun uploadImage(restaurantId: RestaurantId) {
-        val state = _uiState.value
-        val image = state.image ?: return complete()
-        _uiState.update { it.copy(isSubmitting = true, imageUploadFailed = false, errorMessage = null) }
-        val alt = state.imageAlternativeText.trim().ifEmpty { null }
-        when (val result = images.replaceImage(
-            ImageTarget.RestaurantHero(restaurantId),
-            ImageUpload(image.bytes, image.mimeType, alt),
-        )) {
-            is RepositoryResult.Success -> complete()
-            is RepositoryResult.Failure -> _uiState.update {
-                it.copy(
-                    isSubmitting = false,
-                    imageUploadFailed = true,
-                    errorMessage = result.error.toSpanishMessage(),
-                )
             }
         }
     }
@@ -162,7 +84,7 @@ class RestaurantOnboardingViewModel(
         if (_uiState.value.isSubmitting) return
         _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
         viewModelScope.launch {
-            when (val result = signOut()) {
+            when (val result = signOutUseCase()) {
                 is RepositoryResult.Success -> eventChannel.send(RestaurantOnboardingEvent.LogoutSuccess)
                 is RepositoryResult.Failure -> _uiState.update {
                     it.copy(isSubmitting = false, errorMessage = result.error.toSpanishMessage())
@@ -204,7 +126,6 @@ private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
         email = if (email.isNotEmpty() && !email.matches(Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))) {
             "Introduce un correo válido."
         } else null,
-        image = state.errors.image,
     )
     val mappedHours = mutableListOf<DailyOpeningHours>()
     val updatedHours = state.hours.map { hours ->

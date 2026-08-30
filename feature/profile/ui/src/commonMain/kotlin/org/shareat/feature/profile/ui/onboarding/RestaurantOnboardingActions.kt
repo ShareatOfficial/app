@@ -11,14 +11,10 @@ sealed interface RestaurantOnboardingAction {
     data class CityChanged(val value: String) : RestaurantOnboardingAction
     data class PostcodeChanged(val value: String) : RestaurantOnboardingAction
     data class ProvinceChanged(val value: String) : RestaurantOnboardingAction
-    data class ImageAltTextChanged(val value: String) : RestaurantOnboardingAction
     data class DayEnabledChanged(val day: Weekday, val enabled: Boolean) : RestaurantOnboardingAction
     data class OpensAtChanged(val day: Weekday, val value: String) : RestaurantOnboardingAction
     data class ClosesAtChanged(val day: Weekday, val value: String) : RestaurantOnboardingAction
-    data object RemoveImage : RestaurantOnboardingAction
     data object Submit : RestaurantOnboardingAction
-    data object RetryImageUpload : RestaurantOnboardingAction
-    data object ContinueWithoutImage : RestaurantOnboardingAction
     data object Logout : RestaurantOnboardingAction
 }
 

@@ -17,17 +17,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ExitToApp
-import androidx.compose.material.icons.outlined.AddPhotoAlternate
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -39,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -47,11 +42,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
-import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.readBytes
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -65,16 +55,6 @@ fun RestaurantOnboardingScreen(
     viewModel: RestaurantOnboardingViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
-    val scope = rememberCoroutineScope()
-    val picker = rememberFilePickerLauncher(
-        type = FileKitType.Image,
-        onResult = { file ->
-            if (file != null) scope.launch {
-                viewModel.onImageSelected(file.name, file.readBytes())
-            }
-        },
-    )
-
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
@@ -84,19 +64,17 @@ fun RestaurantOnboardingScreen(
         }
     }
 
-    RestaurantOnboardingContent(
+    StatelessRestaurantOnboardingScreen(
         state = state,
         onAction = viewModel::onAction,
-        onPickImage = picker::launch,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun RestaurantOnboardingContent(
+internal fun StatelessRestaurantOnboardingScreen(
     state: RestaurantOnboardingUiState,
     onAction: (RestaurantOnboardingAction) -> Unit,
-    onPickImage: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -117,34 +95,16 @@ internal fun RestaurantOnboardingContent(
         bottomBar = {
             Surface(shadowElevation = 8.dp) {
                 Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                    if (state.imageUploadFailed) {
-                        Row(
-                            modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            OutlinedButton(
-                                modifier = Modifier.weight(1f),
-                                enabled = !state.isSubmitting,
-                                onClick = { onAction(RestaurantOnboardingAction.ContinueWithoutImage) },
-                            ) { Text(stringResource(Res.string.onboarding_continue_without_image)) }
-                            Button(
-                                modifier = Modifier.weight(1f),
-                                enabled = !state.isSubmitting,
-                                onClick = { onAction(RestaurantOnboardingAction.RetryImageUpload) },
-                            ) { Text(stringResource(Res.string.onboarding_retry_image)) }
-                        }
-                    } else {
-                        Button(
-                            modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth().height(52.dp),
-                            enabled = !state.isSubmitting && !state.isProcessingImage,
-                            onClick = { onAction(RestaurantOnboardingAction.Submit) },
-                        ) {
-                            if (state.isSubmitting) {
-                                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                                Spacer(Modifier.size(8.dp))
-                                Text(stringResource(Res.string.onboarding_saving))
-                            } else Text(stringResource(Res.string.onboarding_create))
-                        }
+                    Button(
+                        modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth().height(52.dp),
+                        enabled = !state.isSubmitting,
+                        onClick = { onAction(RestaurantOnboardingAction.Submit) },
+                    ) {
+                        if (state.isSubmitting) {
+                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                            Spacer(Modifier.size(8.dp))
+                            Text(stringResource(Res.string.onboarding_saving))
+                        } else Text(stringResource(Res.string.onboarding_create))
                     }
                 }
             }
@@ -163,44 +123,6 @@ internal fun RestaurantOnboardingContent(
                         Text(stringResource(Res.string.onboarding_title), style = MaterialTheme.typography.headlineLarge)
                         Spacer(Modifier.height(8.dp))
                         Text(stringResource(Res.string.onboarding_subtitle), style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-                item {
-                    OnboardingSection(stringResource(Res.string.onboarding_image)) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                        ) {
-                            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    Icon(
-                                        if (state.image == null) Icons.Outlined.AddPhotoAlternate else Icons.Outlined.CheckCircle,
-                                        contentDescription = null,
-                                    )
-                                    Column(Modifier.weight(1f)) {
-                                        Text(state.image?.displayName ?: stringResource(Res.string.onboarding_optional))
-                                        Text(stringResource(Res.string.onboarding_image_help), style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(onClick = onPickImage, enabled = !state.isProcessingImage) {
-                                        Text(stringResource(if (state.image == null) Res.string.onboarding_select_image else Res.string.onboarding_change_image))
-                                    }
-                                    if (state.image != null) TextButton(onClick = { onAction(RestaurantOnboardingAction.RemoveImage) }) {
-                                        Text(stringResource(Res.string.onboarding_remove_image))
-                                    }
-                                }
-                                if (state.isProcessingImage) Text(stringResource(Res.string.onboarding_image_processing))
-                                state.errors.image?.let { ErrorText(it) }
-                                OutlinedTextField(
-                                    value = state.imageAlternativeText,
-                                    onValueChange = { onAction(RestaurantOnboardingAction.ImageAltTextChanged(it)) },
-                                    label = { Text(stringResource(Res.string.onboarding_image_alt)) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    enabled = state.image != null,
-                                )
-                            }
-                        }
                     }
                 }
                 item {
@@ -258,12 +180,7 @@ internal fun RestaurantOnboardingContent(
                 item {
                     Column(Modifier.widthIn(max = 1040.dp).fillMaxWidth()) {
                         state.errorMessage?.let { ErrorText(it) }
-                        if (state.imageUploadFailed) {
-                            Text(stringResource(Res.string.onboarding_image_error_title), fontWeight = FontWeight.Bold)
-                            Text(stringResource(Res.string.onboarding_image_error_body))
-                        } else {
-                            Text(stringResource(Res.string.onboarding_draft_notice), style = MaterialTheme.typography.bodyMedium)
-                        }
+                        Text(stringResource(Res.string.onboarding_draft_notice), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
@@ -364,19 +281,16 @@ private fun weekdayLabel(day: Weekday): String = stringResource(when (day) {
 private fun ErrorText(message: String) = Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
 
 @Preview(name = "Onboarding mobile", widthDp = 390, heightDp = 844)
-@Composable private fun MobilePreview() = RestaurantOnboardingContent(RestaurantOnboardingUiState(), {}, {})
+@Composable private fun MobilePreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
 
 @Preview(name = "Onboarding foldable", widthDp = 673, heightDp = 900)
-@Composable private fun FoldablePreview() = RestaurantOnboardingContent(RestaurantOnboardingUiState(), {}, {})
+@Composable private fun FoldablePreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
 
 @Preview(name = "Onboarding tablet", widthDp = 900, heightDp = 1000)
-@Composable private fun TabletPreview() = RestaurantOnboardingContent(RestaurantOnboardingUiState(name = "Casa Naranja"), {}, {})
+@Composable private fun TabletPreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(name = "Casa Naranja"), {})
 
 @Preview(name = "Onboarding desktop", widthDp = 1280, heightDp = 900)
-@Composable private fun DesktopPreview() = RestaurantOnboardingContent(RestaurantOnboardingUiState(name = "Casa Naranja"), {}, {})
+@Composable private fun DesktopPreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(name = "Casa Naranja"), {})
 
 @Preview(name = "Onboarding validation", widthDp = 390, heightDp = 844)
-@Composable private fun ValidationPreview() = RestaurantOnboardingContent(RestaurantOnboardingUiState(errors = OnboardingFieldErrors(name = "Introduce el nombre.", street = "Introduce la dirección.")), {}, {})
-
-@Preview(name = "Onboarding image error", widthDp = 390, heightDp = 844)
-@Composable private fun ImageErrorPreview() = RestaurantOnboardingContent(RestaurantOnboardingUiState(createdRestaurantId = "restaurant", imageUploadFailed = true), {}, {})
+@Composable private fun ValidationPreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(errors = OnboardingFieldErrors(name = "Introduce el nombre.", street = "Introduce la dirección.")), {})

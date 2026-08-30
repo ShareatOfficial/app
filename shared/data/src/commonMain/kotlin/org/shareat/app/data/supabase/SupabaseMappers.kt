@@ -17,6 +17,7 @@ import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.IsoTimestamp
 import org.shareat.app.domain.model.LocalTime
 import org.shareat.app.domain.model.Menu
+import org.shareat.app.domain.model.MenuItemDraft
 import org.shareat.app.domain.model.MenuDish
 import org.shareat.app.domain.model.MenuId
 import org.shareat.app.domain.model.MenuPublicationState
@@ -29,6 +30,8 @@ import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.RestaurantProfileDraft
+import org.shareat.app.domain.model.RestaurantMenuDraft
+import org.shareat.app.domain.model.DishDraft
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewId
 import org.shareat.app.domain.model.ReviewModerationStatus
@@ -180,7 +183,58 @@ internal fun MenuItemDto.toDomain(dish: Dish): MenuDish = MenuDish(
     dish = dish,
     price = Money(priceMinorUnits, Currency.Euro),
     position = position,
+    isEnabled = isEnabled,
 )
+
+internal fun RestaurantMenuDraft.toSaveRpc(): SaveRestaurantMenuRpc = SaveRestaurantMenuRpc(
+    restaurantId = restaurantId.value,
+    menuId = menuId?.value,
+    name = name.trim(),
+    description = description?.trim()?.ifEmpty { null },
+    publicationState = publicationState.toDatabaseValue(),
+    items = items.sortedBy(MenuItemDraft::position).mapIndexed { position, item ->
+        MenuItemUpdateDto(
+            dishId = item.dishId.value,
+            priceMinorUnits = item.price.minorUnits,
+            position = position,
+            isEnabled = item.isEnabled,
+        )
+    },
+)
+
+internal fun DishDraft.toSaveRpc(): SaveRestaurantDishRpc = SaveRestaurantDishRpc(
+    restaurantId = restaurantId.value,
+    dishId = id?.value,
+    name = name.trim(),
+    description = description?.trim()?.ifEmpty { null },
+    isEnabled = isEnabled,
+    allergenIds = allergenDeclaration?.allergens.orEmpty().map(EuAllergen::toDatabaseValue),
+    allergenNote = allergenDeclaration?.note?.trim()?.ifEmpty { null },
+)
+
+private fun MenuPublicationState.toDatabaseValue(): String = when (this) {
+    MenuPublicationState.Draft -> "draft"
+    MenuPublicationState.Published -> "published"
+    MenuPublicationState.Unpublished -> "unpublished"
+    MenuPublicationState.Disabled -> "disabled"
+}
+
+private fun EuAllergen.toDatabaseValue(): String = when (this) {
+    EuAllergen.Celery -> "celery"
+    EuAllergen.CerealsContainingGluten -> "cereals_containing_gluten"
+    EuAllergen.Crustaceans -> "crustaceans"
+    EuAllergen.Eggs -> "eggs"
+    EuAllergen.Fish -> "fish"
+    EuAllergen.Lupin -> "lupin"
+    EuAllergen.Milk -> "milk"
+    EuAllergen.Molluscs -> "molluscs"
+    EuAllergen.Mustard -> "mustard"
+    EuAllergen.Nuts -> "nuts"
+    EuAllergen.Peanuts -> "peanuts"
+    EuAllergen.Sesame -> "sesame"
+    EuAllergen.Soybeans -> "soybeans"
+    EuAllergen.SulphurDioxideAndSulphites -> "sulphur_dioxide_and_sulphites"
+}
 
 internal fun ReviewDto.toDomain(): Review = Review(
     id = ReviewId(id),

@@ -10,14 +10,6 @@
     <string name="onboarding_location">Dirección</string>
     <string name="onboarding_hours">Horario semanal</string>
     <string name="onboarding_hours_help">Opcional. Activa solo los días que quieras configurar.</string>
-    <string name="onboarding_image">Foto de portada</string>
-    <string name="onboarding_optional">Opcional</string>
-    <string name="onboarding_image_help">JPEG, PNG o WebP · máximo 500 KB</string>
-    <string name="onboarding_select_image">Seleccionar imagen</string>
-    <string name="onboarding_change_image">Cambiar imagen</string>
-    <string name="onboarding_remove_image">Eliminar</string>
-    <string name="onboarding_image_processing">Procesando imagen…</string>
-    <string name="onboarding_image_alt">Texto alternativo</string>
     <string name="onboarding_name">Nombre del restaurante *</string>
     <string name="onboarding_description">Descripción</string>
     <string name="onboarding_email">Correo público</string>
@@ -31,10 +23,6 @@
     <string name="onboarding_not_configured">Sin configurar</string>
     <string name="onboarding_opens">Abre</string>
     <string name="onboarding_closes">Cierra</string>
-    <string name="onboarding_image_error_title">El perfil ya está creado</string>
-    <string name="onboarding_image_error_body">No se pudo subir la foto. Puedes reintentarlo o continuar sin foto; el formulario no se enviará otra vez.</string>
-    <string name="onboarding_retry_image">Reintentar foto</string>
-    <string name="onboarding_continue_without_image">Continuar sin foto</string>
     <string name="onboarding_retry">Reintentar</string>
     <string name="onboarding_gate_error_title">No pudimos comprobar tu perfil</string>
     <string name="onboarding_gate_error_body">Comprueba tu conexión y vuelve a intentarlo. No asumiremos que el perfil falta mientras el servicio no responda.</string>
