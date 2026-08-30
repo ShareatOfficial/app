@@ -6,10 +6,10 @@ Usar Koin para ensamblar implementaciones en el borde de la aplicación y permit
 
 ## Principios
 
-- `domain` permanece libre de Koin y de cualquier service locator.
-- Las clases reciben sus dependencias por constructor.
+- Las entidades, use cases y repositorios de `domain` permanecen libres de Koin y de cualquier service locator: reciben sus dependencias por constructor, nunca las resuelven ellos mismos.
+- `domain` puede publicar un módulo Koin propio (en un paquete `di` separado, p. ej. `org.shareat.feature.<name>.domain.di`) que enlaza sus interfaces de use case con su implementación (`factory<XxxUseCase> { XxxUseCaseImpl(...) }`). Esto mantiene a `ui` agnóstico de qué clase implementa cada use case — `ui` solo depende de la interfaz.
 - `data` publica las definiciones de sus repositorios y fuentes de datos.
-- `ui` publica las definiciones de sus ViewModels y, cuando corresponda, use cases.
+- `ui` publica las definiciones de sus ViewModels, e incluye (`includes(...)`) el módulo Koin de `domain` cuando ese feature expone uno, en vez de instanciar la implementación del use case directamente.
 - `:shared:ui` actúa como composition root: inicia Koin una vez, combina módulos y elige el modo de datos del entorno.
 - No se obtiene una dependencia globalmente desde una entidad, use case o repositorio.
 
@@ -49,7 +49,7 @@ No se debe arrancar un contenedor global de Koin para probar una regla de domini
 
 - [x] Todas las dependencias obligatorias entran por constructor.
 - [x] Solo el composition root selecciona fake o Supabase.
-- [x] No hay imports de Koin en `domain`.
+- [x] `ui` incluye el módulo `di` de `domain` en vez de referenciar la clase `XxxUseCaseImpl` directamente.
 - [x] Existe una prueba de resolución para los grafos de datos.
 - [x] Los scopes tienen una vida útil justificada.
 

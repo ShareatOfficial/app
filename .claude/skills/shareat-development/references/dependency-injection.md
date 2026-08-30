@@ -6,10 +6,10 @@ Assemble implementations at the app's edge with Koin, so mock vs. remote reposit
 
 ## Principles
 
-- `domain` stays free of Koin and any service locator.
-- Classes receive dependencies through their constructor.
+- `domain`'s entities, use cases, and repositories stay free of Koin and any service locator — they receive dependencies through their constructor, never resolve them themselves.
+- `domain` may publish its own Koin module, isolated in a separate `di` package (e.g. `org.shareat.feature.<name>.domain.di`), that binds a use case interface to its impl (`factory<XxxUseCase> { XxxUseCaseImpl(...) }`). This keeps `ui` agnostic of which class implements a use case — `ui` depends only on the interface.
 - `data` publishes its repository and data-source definitions.
-- `ui` publishes its ViewModel definitions, and use case definitions when relevant.
+- `ui` publishes its ViewModel definitions, and `includes(...)` the feature's `domain` DI module when one exists, instead of instantiating the use case impl itself.
 - `:shared:ui` is the composition root: it starts Koin exactly once, combines modules, and picks the environment's data mode.
 - Nothing pulls a dependency globally from inside an entity, use case, or repository.
 
@@ -49,7 +49,7 @@ Don't start a global Koin container just to test a domain rule or an isolated Vi
 
 - [ ] All required dependencies come in through the constructor.
 - [ ] Only the composition root selects fake vs. Supabase.
-- [ ] No Koin imports in `domain`.
+- [ ] `ui` includes `domain`'s `di` module instead of referencing the `XxxUseCaseImpl` class directly.
 - [ ] A resolution test exists for the data graphs.
 - [ ] Every scope has a justified lifetime.
 

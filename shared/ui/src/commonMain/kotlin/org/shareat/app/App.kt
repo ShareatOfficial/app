@@ -21,7 +21,7 @@ import org.koin.core.parameter.parametersOf
 import org.shareat.app.navigation.LocalNavigator
 import org.shareat.app.auth.SessionCoordinator
 import org.shareat.app.navigation.Navigator
-import org.shareat.feature.home.navigation.HomeKey
+import org.shareat.feature.home.ui.navigation.HomeKey
 import org.shareat.feature.profile.ui.profile.ProfileKey
 import org.shareat.app.navigation.rememberNavigationState
 import org.shareat.app.navigation.toEntries
