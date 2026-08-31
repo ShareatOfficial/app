@@ -14,6 +14,7 @@ Esta carpeta es la fuente de verdad para explicar las decisiones técnicas y có
 | Inyección | [Koin](./dependency-injection/README.md) | Composition root, módulos y selección de repositorios |
 | Calidad | [Pruebas y mocks](./testing/README.md) | Repositorios mock y pruebas de repositorios, use cases y ViewModels |
 | Backend | [Supabase local](./supabase/README.md) | Migraciones, Auth, RLS, Storage y flujo local/alojado |
+| Marca | [Assets de marca](./brand-assets/README.md) | Iconos, logotipos, launcher icons y convenciones de uso |
 
 ## Convención para nuevas guías
 
