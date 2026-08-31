@@ -37,7 +37,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,6 +45,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.Weekday
+import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.profile.ui.generated.resources.Res
 import shareat.feature.profile.ui.generated.resources.*
 
@@ -79,7 +79,9 @@ internal fun StatelessRestaurantOnboardingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Shareat", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text("Shareat", style = MaterialTheme.typography.titleLarge)
+                },
                 actions = {
                     TextButton(
                         enabled = !state.isSubmitting,
@@ -249,7 +251,11 @@ private fun OnboardingField(
 private fun OpeningHoursRow(hours: OnboardingOpeningHours, onAction: (RestaurantOnboardingAction) -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(weekdayLabel(hours.day), modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+            Text(
+                text = weekdayLabel(hours.day),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.titleSmall,
+            )
             if (!hours.enabled) Text(stringResource(Res.string.onboarding_not_configured), style = MaterialTheme.typography.bodySmall)
             Switch(checked = hours.enabled, onCheckedChange = { onAction(RestaurantOnboardingAction.DayEnabledChanged(hours.day, it)) })
         }
@@ -281,16 +287,55 @@ private fun weekdayLabel(day: Weekday): String = stringResource(when (day) {
 private fun ErrorText(message: String) = Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
 
 @Preview(name = "Onboarding mobile", widthDp = 390, heightDp = 844)
-@Composable private fun MobilePreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
+@Composable
+private fun MobilePreview() {
+    ShareatTheme {
+        StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
+    }
+}
 
 @Preview(name = "Onboarding foldable", widthDp = 673, heightDp = 900)
-@Composable private fun FoldablePreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
+@Composable
+private fun FoldablePreview() {
+    ShareatTheme {
+        StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
+    }
+}
 
 @Preview(name = "Onboarding tablet", widthDp = 900, heightDp = 1000)
-@Composable private fun TabletPreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(name = "Casa Naranja"), {})
+@Composable
+private fun TabletPreview() {
+    ShareatTheme {
+        StatelessRestaurantOnboardingScreen(
+            RestaurantOnboardingUiState(name = "Casa Naranja"),
+            {},
+        )
+    }
+}
 
 @Preview(name = "Onboarding desktop", widthDp = 1280, heightDp = 900)
-@Composable private fun DesktopPreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(name = "Casa Naranja"), {})
+@Composable
+private fun DesktopPreview() {
+    ShareatTheme {
+        StatelessRestaurantOnboardingScreen(
+            RestaurantOnboardingUiState(name = "Casa Naranja"),
+            {},
+        )
+    }
+}
 
 @Preview(name = "Onboarding validation", widthDp = 390, heightDp = 844)
-@Composable private fun ValidationPreview() = StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(errors = OnboardingFieldErrors(name = "Introduce el nombre.", street = "Introduce la dirección.")), {})
+@Composable
+private fun ValidationPreview() {
+    ShareatTheme {
+        StatelessRestaurantOnboardingScreen(
+            RestaurantOnboardingUiState(
+                errors = OnboardingFieldErrors(
+                    name = "Introduce el nombre.",
+                    street = "Introduce la dirección.",
+                ),
+            ),
+            {},
+        )
+    }
+}

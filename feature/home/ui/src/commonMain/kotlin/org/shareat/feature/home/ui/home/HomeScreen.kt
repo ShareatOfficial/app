@@ -18,7 +18,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,6 +33,7 @@ import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
 import org.shareat.feature.home.ui.home.model.HomeUiState
 import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
 import org.shareat.feature.home.ui.home.model.toFeedSections
+import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.home.ui.generated.resources.Res
 import shareat.feature.home.ui.generated.resources.recommended
 
@@ -59,7 +59,10 @@ private fun HomeScreenStateless(
     onSearchQueryChanged: (String) -> Unit = {},
     onRetryClick: () -> Unit = {},
 ) {
-    Surface(modifier = modifier.fillMaxSize()) {
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
         Column(modifier = Modifier.fillMaxSize()) {
             HomeSearchBar(
                 query = uiState.searchQuery,
@@ -108,7 +111,6 @@ private fun HomeFeed(
                 Text(
                     text = stringResource(Res.string.recommended),
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
@@ -228,7 +230,7 @@ private object HomePreviewData {
 @HomeFormFactorPreviews
 @Composable
 private fun HomeScreenLoadingPreview() {
-    MaterialTheme {
+    ShareatTheme {
         HomeScreenStateless(uiState = HomePreviewData.loading)
     }
 }
@@ -236,7 +238,7 @@ private fun HomeScreenLoadingPreview() {
 @HomeFormFactorPreviews
 @Composable
 private fun HomeScreenContentPreview() {
-    MaterialTheme {
+    ShareatTheme {
         HomeScreenStateless(uiState = HomePreviewData.content)
     }
 }
@@ -244,7 +246,7 @@ private fun HomeScreenContentPreview() {
 @HomeFormFactorPreviews
 @Composable
 private fun HomeScreenSearchingPreview() {
-    MaterialTheme {
+    ShareatTheme {
         HomeScreenStateless(uiState = HomePreviewData.searching)
     }
 }
@@ -252,7 +254,7 @@ private fun HomeScreenSearchingPreview() {
 @HomeFormFactorPreviews
 @Composable
 private fun HomeScreenEmptyPreview() {
-    MaterialTheme {
+    ShareatTheme {
         HomeScreenStateless(uiState = HomePreviewData.empty)
     }
 }
@@ -260,7 +262,7 @@ private fun HomeScreenEmptyPreview() {
 @HomeFormFactorPreviews
 @Composable
 private fun HomeScreenErrorPreview() {
-    MaterialTheme {
+    ShareatTheme {
         HomeScreenStateless(uiState = HomePreviewData.error)
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -74,9 +75,11 @@ internal fun LoginWelcome(
 @Preview
 @Composable
 private fun LoginWelcomePreview() {
-    LoginWelcome(
-        onSignInClick = {},
-        onRegisterClick = {},
-        onBrowseAsGuestClick = {},
-    )
+    ShareatTheme {
+        LoginWelcome(
+            onSignInClick = {},
+            onRegisterClick = {},
+            onBrowseAsGuestClick = {},
+        )
+    }
 }

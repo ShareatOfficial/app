@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 private const val RestaurantGridColumns = 2
 private const val HighlightsSkeletonCount = 4
@@ -88,7 +89,7 @@ private fun HighlightsContainer(
 @Preview
 @Composable
 private fun RestaurantHighlightsSectionPreview() {
-    MaterialTheme {
+    ShareatTheme {
         RestaurantHighlightsSection(
             restaurants = (0 until 4).map { index ->
                 RestaurantCardUiState(
@@ -109,7 +110,7 @@ private fun RestaurantHighlightsSectionPreview() {
 @Preview
 @Composable
 private fun RestaurantHighlightsSectionSkeletonPreview() {
-    MaterialTheme {
+    ShareatTheme {
         RestaurantHighlightsSectionSkeleton()
     }
 }

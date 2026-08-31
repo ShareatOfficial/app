@@ -40,6 +40,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":feature:login:domain"))
+            implementation(project(":shared:designsystem"))
             implementation(project(":shared:domain"))
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

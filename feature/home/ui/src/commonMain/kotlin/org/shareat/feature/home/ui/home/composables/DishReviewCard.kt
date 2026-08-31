@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 private val DishReviewCardWidth = 220.dp
 
@@ -64,7 +65,7 @@ internal fun DishReviewCard(
 @Preview
 @Composable
 private fun DishReviewCardPreview() {
-    MaterialTheme {
+    ShareatTheme {
         DishReviewCard(
             dishName = "Pulpo a la brasa",
             comment = "Tiernísimo y con el punto justo de humo.",

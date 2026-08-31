@@ -18,21 +18,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
-private val OpenStatusBackgroundColor = Color(0xFF2E7D32)
-private val ClosedStatusBackgroundColor = Color(0xFFC62828)
 private val OpenStatusBadgeShape = RoundedCornerShape(12.dp)
 
 @Composable
 internal fun OpenStatusBadge(
     isOpen: Boolean,
     modifier: Modifier = Modifier,
-    contentColor: Color = Color.White,
+    contentColor: Color = if (isOpen) {
+        MaterialTheme.colorScheme.onTertiary
+    } else {
+        MaterialTheme.colorScheme.onError
+    },
 ) {
+    val containerColor = if (isOpen) {
+        MaterialTheme.colorScheme.tertiary
+    } else {
+        MaterialTheme.colorScheme.error
+    }
     Row(
         modifier = modifier
             .clip(OpenStatusBadgeShape)
-            .background(if (isOpen) OpenStatusBackgroundColor else ClosedStatusBackgroundColor)
+            .background(containerColor)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -54,7 +62,7 @@ internal fun OpenStatusBadge(
 @Preview
 @Composable
 private fun OpenStatusBadgeOpenPreview() {
-    MaterialTheme {
+    ShareatTheme {
         OpenStatusBadge(isOpen = true)
     }
 }
@@ -62,7 +70,7 @@ private fun OpenStatusBadgeOpenPreview() {
 @Preview
 @Composable
 private fun OpenStatusBadgeClosedPreview() {
-    MaterialTheme {
+    ShareatTheme {
         OpenStatusBadge(isOpen = false)
     }
 }

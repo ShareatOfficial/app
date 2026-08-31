@@ -1,17 +1,17 @@
-package org.shareat.app.theme
+package org.shareat.shared.designsystem.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import org.jetbrains.compose.resources.Font
-import shareat.shared.ui.generated.resources.Res
-import shareat.shared.ui.generated.resources.Fraunces_72pt_Bold
-import shareat.shared.ui.generated.resources.Fraunces_72pt_Regular
-import shareat.shared.ui.generated.resources.Fraunces_72pt_SemiBold
-import shareat.shared.ui.generated.resources.Inter_18pt_Bold
-import shareat.shared.ui.generated.resources.Inter_18pt_Medium
-import shareat.shared.ui.generated.resources.Inter_18pt_Regular
-import shareat.shared.ui.generated.resources.Inter_18pt_SemiBold
+import shareat.shared.designsystem.generated.resources.Fraunces_72pt_Bold
+import shareat.shared.designsystem.generated.resources.Fraunces_72pt_Regular
+import shareat.shared.designsystem.generated.resources.Fraunces_72pt_SemiBold
+import shareat.shared.designsystem.generated.resources.Inter_18pt_Bold
+import shareat.shared.designsystem.generated.resources.Inter_18pt_Medium
+import shareat.shared.designsystem.generated.resources.Inter_18pt_Regular
+import shareat.shared.designsystem.generated.resources.Inter_18pt_SemiBold
+import shareat.shared.designsystem.generated.resources.Res
 
 @Composable
 internal fun InterFontFamily(): FontFamily = FontFamily(

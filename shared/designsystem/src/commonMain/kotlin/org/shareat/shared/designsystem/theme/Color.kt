@@ -1,4 +1,4 @@
-package org.shareat.app.theme
+package org.shareat.shared.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 

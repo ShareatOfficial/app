@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.feature.login.ui.components.AuthTextField
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 private const val MIN_PASSWORD_LENGTH = 8
 
@@ -202,39 +203,43 @@ private val AccountRole.roleHint: String
 @Preview
 @Composable
 private fun RegisterScreenCustomerPreview() {
-    RegisterScreen(
-        email = "ada@shareat.org",
-        password = "hunter2000",
-        displayName = "Ada",
-        selectedRole = AccountRole.Customer,
-        isLoading = false,
-        errorMessage = null,
-        onEmailFieldChange = {},
-        onPasswordFieldChange = {},
-        onDisplayNameFieldChange = {},
-        onRoleChange = {},
-        onRegisterClick = {},
-        onSignInInsteadClick = {},
-        onBackClick = {},
-    )
+    ShareatTheme {
+        RegisterScreen(
+            email = "ada@shareat.org",
+            password = "hunter2000",
+            displayName = "Ada",
+            selectedRole = AccountRole.Customer,
+            isLoading = false,
+            errorMessage = null,
+            onEmailFieldChange = {},
+            onPasswordFieldChange = {},
+            onDisplayNameFieldChange = {},
+            onRoleChange = {},
+            onRegisterClick = {},
+            onSignInInsteadClick = {},
+            onBackClick = {},
+        )
+    }
 }
 
 @Preview
 @Composable
 private fun RegisterScreenRestaurantPreview() {
-    RegisterScreen(
-        email = "hola@casanaranja.es",
-        password = "hunter2000",
-        displayName = "",
-        selectedRole = AccountRole.Restaurant,
-        isLoading = false,
-        errorMessage = null,
-        onEmailFieldChange = {},
-        onPasswordFieldChange = {},
-        onDisplayNameFieldChange = {},
-        onRoleChange = {},
-        onRegisterClick = {},
-        onSignInInsteadClick = {},
-        onBackClick = {},
-    )
+    ShareatTheme {
+        RegisterScreen(
+            email = "hola@casanaranja.es",
+            password = "hunter2000",
+            displayName = "",
+            selectedRole = AccountRole.Restaurant,
+            isLoading = false,
+            errorMessage = null,
+            onEmailFieldChange = {},
+            onPasswordFieldChange = {},
+            onDisplayNameFieldChange = {},
+            onRoleChange = {},
+            onRegisterClick = {},
+            onSignInInsteadClick = {},
+            onBackClick = {},
+        )
+    }
 }
