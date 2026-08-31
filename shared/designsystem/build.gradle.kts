@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
+            implementation(libs.compose.components.resources)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -51,5 +52,6 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "shareat.shared.designsystem.generated.resources"
+    packageOfResClass = "org.shareat.shared.designsystem.generated.resources"
+    publicResClass = true
 }
