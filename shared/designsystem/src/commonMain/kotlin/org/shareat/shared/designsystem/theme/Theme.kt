@@ -1,10 +1,13 @@
-package org.shareat.app.theme
+package org.shareat.shared.designsystem.theme
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
-internal val AppLightColorScheme = lightColorScheme(
+internal val ShareatLightColorScheme = lightColorScheme(
     primary = primaryLight,
     onPrimary = onPrimaryLight,
     primaryContainer = primaryContainerLight,
@@ -43,10 +46,18 @@ internal val AppLightColorScheme = lightColorScheme(
 )
 
 @Composable
-internal fun AppTheme(content: @Composable () -> Unit) {
+fun ShareatTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = AppLightColorScheme,
-        typography = AppTypography(),
-        content = content,
-    )
+        colorScheme = ShareatLightColorScheme,
+        typography = shareatTypography(),
+    ) {
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+        ) {
+            ProvideTextStyle(
+                value = MaterialTheme.typography.bodyLarge,
+                content = content,
+            )
+        }
+    }
 }

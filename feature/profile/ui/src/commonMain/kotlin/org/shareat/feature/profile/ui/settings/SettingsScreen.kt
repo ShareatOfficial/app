@@ -60,11 +60,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @Composable
 fun SettingsScreen(
@@ -107,7 +107,8 @@ private fun SettingsScreenStateless(
     callbacks: SettingsCallbacks = SettingsCallbacks(),
 ) {
     Surface(
-        modifier = modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             SettingsTopBar(
@@ -200,10 +201,10 @@ private fun UserSettings(
         }
 
         Card(
-            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             ),
         ) {
             SettingsItem(
@@ -244,10 +245,10 @@ private fun UserSettings(
         }
 
         Card(
-            modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             ),
         ) {
             SettingsItem(
@@ -645,7 +646,6 @@ private fun RestaurantSectionCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
                 )
             }
             content()
@@ -736,7 +736,7 @@ private fun SettingsStatusText(
         color = if (isError) {
             MaterialTheme.colorScheme.error
         } else {
-            MaterialTheme.colorScheme.primary
+            MaterialTheme.colorScheme.tertiary
         },
     )
 }
@@ -796,7 +796,7 @@ private fun SettingsDivider() {
 @Preview
 @Composable
 private fun UserSettingsScreenPreview() {
-    MaterialTheme {
+    ShareatTheme {
         SettingsScreenStateless(uiState = SettingsUiState.User())
     }
 }
@@ -804,7 +804,7 @@ private fun UserSettingsScreenPreview() {
 @Preview
 @Composable
 private fun RestaurantSettingsScreenPreview() {
-    MaterialTheme {
+    ShareatTheme {
         SettingsScreenStateless(uiState = SettingsUiState.Restaurant())
     }
 }
@@ -812,7 +812,7 @@ private fun RestaurantSettingsScreenPreview() {
 @Preview
 @Composable
 private fun SettingsItemPreview() {
-    MaterialTheme {
+    ShareatTheme {
         SettingsItem(
             leadingIcon = Icons.Outlined.ManageAccounts,
             text = "Edit profile",

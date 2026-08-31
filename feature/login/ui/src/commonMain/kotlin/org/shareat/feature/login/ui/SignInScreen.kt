@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.shareat.feature.login.ui.components.AuthTextField
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -120,53 +121,59 @@ internal fun SignInScreen(
 @Preview
 @Composable
 private fun SignInScreenPreview() {
-    SignInScreen(
-        email = "ada@shareat.org",
-        password = "hunter2000",
-        isLoading = false,
-        errorMessage = null,
-        recoverySent = false,
-        onEmailFieldChange = {},
-        onPasswordFieldChange = {},
-        onSignInClick = {},
-        onForgotPasswordClick = {},
-        onCreateAccountClick = {},
-        onBackClick = {},
-    )
+    ShareatTheme {
+        SignInScreen(
+            email = "ada@shareat.org",
+            password = "hunter2000",
+            isLoading = false,
+            errorMessage = null,
+            recoverySent = false,
+            onEmailFieldChange = {},
+            onPasswordFieldChange = {},
+            onSignInClick = {},
+            onForgotPasswordClick = {},
+            onCreateAccountClick = {},
+            onBackClick = {},
+        )
+    }
 }
 
 @Preview
 @Composable
 private fun SignInScreenLoadingPreview() {
-    SignInScreen(
-        email = "ada@shareat.org",
-        password = "hunter2000",
-        isLoading = true,
-        errorMessage = null,
-        recoverySent = false,
-        onEmailFieldChange = {},
-        onPasswordFieldChange = {},
-        onSignInClick = {},
-        onForgotPasswordClick = {},
-        onCreateAccountClick = {},
-        onBackClick = {},
-    )
+    ShareatTheme {
+        SignInScreen(
+            email = "ada@shareat.org",
+            password = "hunter2000",
+            isLoading = true,
+            errorMessage = null,
+            recoverySent = false,
+            onEmailFieldChange = {},
+            onPasswordFieldChange = {},
+            onSignInClick = {},
+            onForgotPasswordClick = {},
+            onCreateAccountClick = {},
+            onBackClick = {},
+        )
+    }
 }
 
 @Preview
 @Composable
 private fun SignInScreenErrorPreview() {
-    SignInScreen(
-        email = "ada@shareat.org",
-        password = "nope",
-        isLoading = false,
-        errorMessage = "The email or password is incorrect.",
-        recoverySent = false,
-        onEmailFieldChange = {},
-        onPasswordFieldChange = {},
-        onSignInClick = {},
-        onForgotPasswordClick = {},
-        onCreateAccountClick = {},
-        onBackClick = {},
-    )
+    ShareatTheme {
+        SignInScreen(
+            email = "ada@shareat.org",
+            password = "nope",
+            isLoading = false,
+            errorMessage = "The email or password is incorrect.",
+            recoverySent = false,
+            onEmailFieldChange = {},
+            onPasswordFieldChange = {},
+            onSignInClick = {},
+            onForgotPasswordClick = {},
+            onCreateAccountClick = {},
+            onBackClick = {},
+        )
+    }
 }

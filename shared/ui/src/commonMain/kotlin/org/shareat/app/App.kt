@@ -22,12 +22,12 @@ import org.shareat.app.navscenedecorator.TopLevelNavigationBar
 import org.shareat.app.navscenedecorator.TopLevelNavigationRail
 import org.shareat.app.navscenedecorator.rememberRestaurantProfileGateSceneDecoratorStrategy
 import org.shareat.app.navscenedecorator.rememberResponsiveNavigationSceneDecoratorStrategy
-import org.shareat.app.theme.AppTheme
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun App() {
-    AppTheme {
+    ShareatTheme {
         SharedTransitionLayout {
             val navigationState = rememberNavigationState(
                 startRoute = HomeKey,

@@ -45,11 +45,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @Composable
 fun EditProfileScreen(
@@ -108,7 +108,6 @@ private fun EditProfileScreenStateless(
                     text = "Personal details",
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -232,7 +231,6 @@ private fun EditProfileTopBar(
             text = "Edit profile",
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
         )
         TextButton(onClick = onSaveClick, enabled = canSave) {
             if (isSaving) {
@@ -261,7 +259,6 @@ private fun ProfileAvatar(
                 Text(
                     text = initials,
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
                 )
             }
             Surface(
@@ -325,7 +322,7 @@ private fun LanguageField(
 @Preview
 @Composable
 private fun EditProfileScreenPreview() {
-    MaterialTheme {
+    ShareatTheme {
         EditProfileScreenStateless(
             uiState = EditProfileUiState(
                 fullName = "Alex Rivera",

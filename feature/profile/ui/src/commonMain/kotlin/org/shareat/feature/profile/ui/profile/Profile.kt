@@ -19,7 +19,10 @@ fun Profile(
     modifier: Modifier = Modifier,
     navigator: ProfileNavigation = koinInject(),
 ) {
-    Surface(modifier = modifier.fillMaxSize()) {
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

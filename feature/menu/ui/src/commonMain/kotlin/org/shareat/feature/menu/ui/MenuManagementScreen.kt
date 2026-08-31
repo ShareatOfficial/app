@@ -40,7 +40,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -100,7 +99,7 @@ private fun Editor(state: MenuManagementUiState.Editor, onAction: (MenuManagemen
         }
         item {
             Card { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Menu details", fontWeight = FontWeight.Bold)
+                Text("Menu details", style = MaterialTheme.typography.titleMedium)
                 OutlinedTextField(state.name, { onAction(MenuManagementAction.NameChanged(it)) }, Modifier.fillMaxWidth(), label = { Text("Menu name") }, enabled = !state.isSaving)
                 OutlinedTextField(state.description, { onAction(MenuManagementAction.DescriptionChanged(it)) }, Modifier.fillMaxWidth(), label = { Text("Description (optional)") }, enabled = !state.isSaving, minLines = 2)
                 SaveButtons(state, onAction)
@@ -110,7 +109,7 @@ private fun Editor(state: MenuManagementUiState.Editor, onAction: (MenuManagemen
         items(state.items, key = { it.dish.id.value }) { item ->
             Card { Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) { Text(item.dish.name, fontWeight = FontWeight.Bold); item.dish.description?.let { Text(it, style = MaterialTheme.typography.bodySmall) } }
+                    Column(Modifier.weight(1f)) { Text(item.dish.name, style = MaterialTheme.typography.titleSmall); item.dish.description?.let { Text(it, style = MaterialTheme.typography.bodySmall) } }
                     IconButton(onClick = { onAction(MenuManagementAction.EditDish(item.dish.id)) }) { Icon(Icons.Outlined.Edit, "Edit dish") }
                     IconButton(onClick = { onAction(MenuManagementAction.RemoveDish(item.dish.id)) }) { Icon(Icons.Outlined.RemoveCircleOutline, "Remove from menu") }
                 }
@@ -174,7 +173,7 @@ private fun DishEditor(editor: DishEditorState, onAction: (MenuManagementAction)
                 item { OutlinedButton(onClick = { onAction(MenuManagementAction.RemoveImage) }) { Text("Remove photo") } }
             }
             item { Row(verticalAlignment = Alignment.CenterVertically) { Text("Available", Modifier.weight(1f)); Switch(editor.enabled, { onAction(MenuManagementAction.DishEnabledChanged(it)) }) } }
-            item { Text("Allergens", fontWeight = FontWeight.Bold) }
+            item { Text("Allergens", style = MaterialTheme.typography.titleMedium) }
             items(EuAllergen.entries) { allergen -> Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(allergen in editor.allergens, { onAction(MenuManagementAction.AllergenChanged(allergen, it)) }); Text(allergen.label()) } }
             item { OutlinedTextField(editor.allergenNote, { onAction(MenuManagementAction.AllergenNoteChanged(it)) }, Modifier.fillMaxWidth(), label = { Text("Allergen note (optional)") }) }
             editor.error?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error) } }

@@ -19,15 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
 import org.shareat.shared.designsystem.shimmerEffect
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 private val RestaurantHeroHeight = 180.dp
 private const val RestaurantHeroOverlayHeightFraction = 0.75f
@@ -106,7 +105,10 @@ private fun RestaurantHeroImage(
                 .align(Alignment.BottomStart)
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f)),
+                        colors = listOf(
+                            MaterialTheme.colorScheme.scrim.copy(alpha = 0f),
+                            MaterialTheme.colorScheme.scrim.copy(alpha = 0.75f),
+                        ),
                     ),
                 ),
         ) {
@@ -132,6 +134,7 @@ private fun RestaurantInfo(
     address: String,
     modifier: Modifier = Modifier,
 ) {
+    val overlayContentColor = MaterialTheme.colorScheme.inverseOnSurface
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -143,24 +146,23 @@ private fun RestaurantInfo(
         ) {
             Text(
                 text = name,
-                color = Color.White,
+                color = overlayContentColor,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            RatingBadge(ratingLabel = ratingLabel, contentColor = Color.White)
+            RatingBadge(ratingLabel = ratingLabel, contentColor = overlayContentColor)
         }
-        OpenStatusBadge(isOpen = isOpen, contentColor = Color.White)
-        AddressBadge(address = address, contentColor = Color.White)
+        OpenStatusBadge(isOpen = isOpen)
+        AddressBadge(address = address, contentColor = overlayContentColor)
     }
 }
 
 @Preview
 @Composable
 private fun RestaurantCardPreview() {
-    MaterialTheme {
+    ShareatTheme {
         RestaurantCard(
             name = "Casa Naranja",
             heroImageUrl = null,
@@ -188,7 +190,7 @@ private fun RestaurantCardPreview() {
 @Preview
 @Composable
 private fun RestaurantCardWithoutReviewsPreview() {
-    MaterialTheme {
+    ShareatTheme {
         RestaurantCard(
             name = "Casa Naranja",
             heroImageUrl = null,
@@ -240,7 +242,7 @@ internal fun RestaurantCardSkeleton(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun RestaurantCardSkeletonPreview() {
-    MaterialTheme {
+    ShareatTheme {
         RestaurantCardSkeleton()
     }
 }

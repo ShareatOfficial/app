@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @Composable
 internal fun RatingBadge(
@@ -42,7 +43,7 @@ internal fun RatingBadge(
 @Preview
 @Composable
 private fun RatingBadgePreview() {
-    MaterialTheme {
+    ShareatTheme {
         RatingBadge(ratingLabel = "4.8")
     }
 }

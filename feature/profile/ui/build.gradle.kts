@@ -47,6 +47,7 @@ kotlin {
 
         commonMain.dependencies {
             implementation(project(":feature:profile:domain"))
+            implementation(project(":shared:designsystem"))
             implementation(project(":shared:domain"))
             implementation(project(":shared:navigation"))
             implementation(

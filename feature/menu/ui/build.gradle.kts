@@ -25,6 +25,7 @@ kotlin {
         androidMain.dependencies { implementation(libs.compose.uiTooling) }
         commonMain.dependencies {
             implementation(project(":feature:menu:domain"))
+            implementation(project(":shared:designsystem"))
             implementation(project(":shared:domain"))
             implementation(project(":shared:navigation"))
             implementation(libs.androidx.lifecycle.viewmodelCompose)

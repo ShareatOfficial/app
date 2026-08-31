@@ -1,4 +1,4 @@
-package org.shareat.app.theme
+package org.shareat.shared.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 import kotlin.test.Test
@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 class ThemeTest {
     @Test
     fun lightColorSchemeMatchesMaterialThemeBuilderExport() {
-        with(AppLightColorScheme) {
+        with(ShareatLightColorScheme) {
             assertEquals(Color(0xFF8F4C36), primary)
             assertEquals(Color(0xFFFFFFFF), onPrimary)
             assertEquals(Color(0xFFFFDBD0), primaryContainer)

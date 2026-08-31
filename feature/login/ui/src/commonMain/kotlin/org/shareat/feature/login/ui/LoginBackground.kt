@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
@@ -63,8 +62,8 @@ internal fun LoginBackground(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black,
-                            Color.Transparent
+                            MaterialTheme.colorScheme.scrim,
+                            MaterialTheme.colorScheme.scrim.copy(alpha = 0f),
                         )
                     )
                 )
@@ -74,15 +73,15 @@ internal fun LoginBackground(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
+                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
         )
 
         // Blends the seam between the photography and the panel below it.
         Box(
             modifier = Modifier.fillMaxSize().background(
                 Brush.verticalGradient(
-                    0.0f to Color.Transparent,
-                    0.55f to Color.Transparent,
+                    0.0f to MaterialTheme.colorScheme.scrim.copy(alpha = 0f),
+                    0.55f to MaterialTheme.colorScheme.scrim.copy(alpha = 0f),
                     1.0f to MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f),
                 ),
             ),

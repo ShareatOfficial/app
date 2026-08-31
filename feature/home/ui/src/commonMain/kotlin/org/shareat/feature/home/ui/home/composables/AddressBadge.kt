@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @Composable
 internal fun AddressBadge(
@@ -47,7 +48,7 @@ internal fun AddressBadge(
 @Preview
 @Composable
 private fun AddressBadgePreview() {
-    MaterialTheme {
+    ShareatTheme {
         AddressBadge(address = "Calle del Olmo, 18, Madrid")
     }
 }
