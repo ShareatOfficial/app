@@ -91,3 +91,22 @@ data class Restaurant(
         require(publicPhone == null || publicPhone.isNotBlank())
     }
 }
+
+/** Information accepted when an authenticated owner creates their first restaurant profile. */
+data class RestaurantProfileDraft(
+    val name: String,
+    val description: String? = null,
+    val publicEmail: EmailAddress? = null,
+    val publicPhone: String? = null,
+    val address: PostalAddress,
+    val openingHours: WeeklyOpeningHours = WeeklyOpeningHours(emptyList()),
+) {
+    init {
+        require(name.isNotBlank())
+        require(description == null || description.isNotBlank())
+        require(publicPhone == null || publicPhone.isNotBlank())
+        require(address.countryCode == "ES")
+        require(address.coordinates == null)
+        require(openingHours.days.all { it.periods.size <= 1 })
+    }
+}

@@ -26,6 +26,7 @@ data class LoginUiState(
     val errorMessage: String? = null,
     val recoverySent: Boolean = false,
     val authenticated: Boolean = false,
+    val registeredRestaurant: Boolean = false,
     val step: LoginStep = LoginStep.Welcome
 )
 
@@ -90,7 +91,12 @@ class LoginViewModel(
             }
             _uiState.update {
                 when (result) {
-                    is RepositoryResult.Success -> it.copy(isLoading = false, authenticated = true)
+                    is RepositoryResult.Success -> it.copy(
+                        isLoading = false,
+                        authenticated = true,
+                        registeredRestaurant = snapshot.isRegistration &&
+                            snapshot.registrationRole == AccountRole.Restaurant,
+                    )
                     is RepositoryResult.Failure -> it.copy(
                         isLoading = false,
                         errorMessage = result.error.toUserMessage(),

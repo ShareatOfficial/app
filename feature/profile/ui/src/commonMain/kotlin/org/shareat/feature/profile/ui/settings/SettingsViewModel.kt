@@ -153,7 +153,7 @@ class SettingsViewModel(
     private fun openSpecialDatesAndHolidays(): Nothing = TODO("To be implemented")
     private fun addSplitHours(): Nothing = TODO("To be implemented")
     private fun openReservationsAndOrderLinks(): Nothing = TODO("To be implemented")
-    private fun openMenuManagement(): Nothing = TODO("To be implemented")
+    private fun openMenuManagement() = emitEvent(SettingsEvent.NavigateToMenuManagement)
     private fun openPhotosAndMedia(): Nothing = TODO("To be implemented")
     private fun openRestaurantNotifications(): Nothing = TODO("To be implemented")
     private fun openTeamAndPermissions(): Nothing = TODO("To be implemented")

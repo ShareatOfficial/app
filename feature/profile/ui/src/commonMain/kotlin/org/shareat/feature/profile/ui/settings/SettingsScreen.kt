@@ -79,6 +79,7 @@ fun SettingsScreen(
             when (event) {
                 SettingsEvent.LogoutSuccess -> navigator.onLogoutSuccess()
                 SettingsEvent.NavigateToEditProfile -> navigator.openEditProfile()
+                SettingsEvent.NavigateToMenuManagement -> navigator.openMenuManagement()
             }
         }
     }

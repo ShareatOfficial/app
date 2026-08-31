@@ -66,6 +66,7 @@ kotlin {
             implementation(project(":feature:home:ui"))
             implementation(project(":feature:profile:ui"))
             implementation(project(":feature:login:ui"))
+            implementation(project(":feature:menu:ui"))
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -96,6 +97,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
             implementation(libs.koin.test)
         }
         jsMain.dependencies {

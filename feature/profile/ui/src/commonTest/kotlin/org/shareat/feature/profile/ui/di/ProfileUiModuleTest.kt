@@ -19,6 +19,7 @@ import org.shareat.app.domain.model.CustomerProfile
 import org.shareat.app.domain.model.EmailAddress
 import org.shareat.app.domain.model.RegistrationCredentials
 import org.shareat.app.domain.model.Restaurant
+import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.AccountRepository
 import org.shareat.app.domain.repository.AuthRepository
@@ -26,6 +27,7 @@ import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.feature.profile.ui.profile.ProfileNavigation
+import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingNavigation
 import org.shareat.feature.profile.ui.editprofile.EditProfileNavigation
 import org.shareat.feature.profile.ui.editprofile.EditProfileUiState
 import org.shareat.feature.profile.ui.editprofile.EditProfileViewModel
@@ -71,6 +73,7 @@ class ProfileUiModuleTest {
                     single<ProfileNavigation> { WiringProfileNavigation }
                     single<EditProfileNavigation> { WiringEditProfileNavigation }
                     single<SettingsNavigation> { WiringSettingsNavigation }
+                    single<RestaurantOnboardingNavigation> { WiringRestaurantOnboardingNavigation }
                 },
                 profileUiModule,
             )
@@ -94,6 +97,12 @@ private data object WiringEditProfileNavigation : EditProfileNavigation {
 private data object WiringSettingsNavigation : SettingsNavigation {
     override fun goBack() = Unit
     override fun openEditProfile() = Unit
+    override fun openMenuManagement() = Unit
+    override fun onLogoutSuccess() = Unit
+}
+
+private data object WiringRestaurantOnboardingNavigation : RestaurantOnboardingNavigation {
+    override fun onCompleted() = Unit
     override fun onLogoutSuccess() = Unit
 }
 
@@ -125,6 +134,10 @@ private class WiringRestaurantRepository(
     override suspend fun getPublishedRestaurants() = RepositoryResult.Success(listOf(restaurant))
     override suspend fun getRestaurant(id: RestaurantId) = RepositoryResult.Success(restaurant)
     override suspend fun getRestaurantForOwner(accountId: AccountId) = RepositoryResult.Success(restaurant)
+    override suspend fun createRestaurantProfile(
+        ownerAccountId: AccountId,
+        draft: RestaurantProfileDraft,
+    ) = RepositoryResult.Success(restaurant.copy(name = draft.name))
     override suspend fun updateRestaurant(restaurant: Restaurant): RepositoryResult<Restaurant> {
         this.restaurant = restaurant
         return RepositoryResult.Success(restaurant)

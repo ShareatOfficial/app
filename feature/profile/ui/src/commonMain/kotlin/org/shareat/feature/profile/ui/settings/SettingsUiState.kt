@@ -50,7 +50,7 @@ data class OpeningHoursUiState(
 private fun defaultOpeningHours() = OpeningDay.entries.map { day ->
     OpeningHoursUiState(
         day = day,
-        isOpen = day != OpeningDay.Monday,
+        isOpen = true,
         closingTime = when (day) {
             OpeningDay.Friday, OpeningDay.Saturday -> "23:00"
             OpeningDay.Sunday -> "21:00"

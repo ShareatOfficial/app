@@ -65,6 +65,26 @@ internal data class UpdateRestaurantSettingsRpc(
 )
 
 @Serializable
+internal data class CreateRestaurantProfileRpc(
+    @SerialName("p_name") val name: String,
+    @SerialName("p_description") val description: String,
+    @SerialName("p_public_email") val publicEmail: String,
+    @SerialName("p_public_phone") val publicPhone: String,
+    @SerialName("p_street_line") val streetLine: String,
+    @SerialName("p_locality") val locality: String,
+    @SerialName("p_postal_code") val postalCode: String,
+    @SerialName("p_region") val region: String,
+    @SerialName("p_opening_periods") val openingPeriods: List<CreateOpeningPeriodDto>,
+)
+
+@Serializable
+internal data class CreateOpeningPeriodDto(
+    val weekday: Int,
+    @SerialName("opens_at") val opensAt: String,
+    @SerialName("closes_at") val closesAt: String,
+)
+
+@Serializable
 internal data class OpeningPeriodUpdateDto(
     val weekday: Int,
     val position: Int,
@@ -109,6 +129,35 @@ internal data class MenuItemDto(
     val currency: String,
     val position: Int,
     @SerialName("is_enabled") val isEnabled: Boolean,
+)
+
+@Serializable
+internal data class SaveRestaurantMenuRpc(
+    @SerialName("p_restaurant_id") val restaurantId: String,
+    @SerialName("p_menu_id") val menuId: String? = null,
+    @SerialName("p_name") val name: String,
+    @SerialName("p_description") val description: String? = null,
+    @SerialName("p_publication_state") val publicationState: String,
+    @SerialName("p_items") val items: List<MenuItemUpdateDto>,
+)
+
+@Serializable
+internal data class MenuItemUpdateDto(
+    @SerialName("dish_id") val dishId: String,
+    @SerialName("price_minor_units") val priceMinorUnits: Long,
+    val position: Int,
+    @SerialName("is_enabled") val isEnabled: Boolean,
+)
+
+@Serializable
+internal data class SaveRestaurantDishRpc(
+    @SerialName("p_restaurant_id") val restaurantId: String,
+    @SerialName("p_dish_id") val dishId: String? = null,
+    @SerialName("p_name") val name: String,
+    @SerialName("p_description") val description: String? = null,
+    @SerialName("p_is_enabled") val isEnabled: Boolean,
+    @SerialName("p_allergen_ids") val allergenIds: List<String>,
+    @SerialName("p_allergen_note") val allergenNote: String? = null,
 )
 
 @Serializable

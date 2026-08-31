@@ -78,4 +78,5 @@ data class MenuDish(
     val dish: Dish,
     val price: Money,
     val position: Int,
+    val isEnabled: Boolean = true,
 )
