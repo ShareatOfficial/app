@@ -63,6 +63,7 @@ Read the one(s) relevant to your change — don't load all of them speculatively
 - `references/testing.md` — mock repository conventions, deterministic scenarios, what to test at each layer (repository/use case/ViewModel), and the local Supabase test flow (pgTAP, JVM contract tests).
 - `references/supabase.md` — security boundaries (publishable key only, RLS, Storage limits), the local dev loop, and the safe deployment sequence.
 - `references/product.md` — MVP scope, product rules (reviews, ratings, menu visibility, moderation, monetisation), and what's explicitly post-MVP. Use this when a request would add scope the product definition puts outside the MVP, or when unsure whether a rule is a product decision vs. a technical one.
+- `references/brand-assets.md` — shared icon and logotype SVGs in `:shared:designsystem`, naming conventions, `Res.drawable.*` usage, and platform launcher icon locations.
 
 ## Reviewable rules that cut across every layer
 
