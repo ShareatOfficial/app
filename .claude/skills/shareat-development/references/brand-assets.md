@@ -26,8 +26,8 @@ Shareat brand icons and logotypes are centralized in `:shared:designsystem` as C
 ## Usage
 
 ```kotlin
-import org.shareat.shared.designsystem.generated.resources.Res
-import org.shareat.shared.designsystem.generated.resources.ic_shareat_circle_white
+import shareat.shared.designsystem.generated.resources.Res
+import shareat.shared.designsystem.generated.resources.ic_shareat_circle_white
 import org.jetbrains.compose.resources.painterResource
 
 Image(

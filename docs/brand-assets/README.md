@@ -28,8 +28,8 @@ Los assets de marca viven en `:shared:designsystem` como recursos SVG de Compose
 ## Patrón de uso en Compose
 
 ```kotlin
-import org.shareat.shared.designsystem.generated.resources.Res
-import org.shareat.shared.designsystem.generated.resources.ic_shareat_circle_white
+import shareat.shared.designsystem.generated.resources.Res
+import shareat.shared.designsystem.generated.resources.ic_shareat_circle_white
 import org.jetbrains.compose.resources.painterResource
 
 Image(

@@ -52,6 +52,6 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "org.shareat.shared.designsystem.generated.resources"
+    packageOfResClass = "shareat.shared.designsystem.generated.resources"
     publicResClass = true
 }
