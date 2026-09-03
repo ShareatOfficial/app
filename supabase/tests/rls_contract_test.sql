@@ -1,5 +1,5 @@
 begin;
-select plan(30);
+select plan(26);
 
 select throws_ok(
     $$insert into auth.users (id, email, raw_user_meta_data, is_sso_user, is_anonymous) values ('00000000-0000-4000-8000-000000000099', 'invalid@example.test', '{"account_role":"admin"}', false, false)$$,
@@ -19,14 +19,9 @@ insert into public.restaurants (
     ('30000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001', 'Draft', 'Street 2', 'Madrid', '28002', 'draft'),
     ('30000000-0000-4000-8000-000000000003', '20000000-0000-4000-8000-000000000003', 'Other draft', 'Street 3', 'Madrid', '28003', 'draft');
 
-insert into public.menus (id, restaurant_id, name, publication_state) values
-    ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'Published menu', 'published'),
-    ('40000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000003', 'Other draft menu', 'draft');
 insert into public.dishes (id, restaurant_id, name, is_enabled) values
     ('50000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'Visible dish', true),
     ('50000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000003', 'Other dish', true);
-insert into public.menu_items (menu_id, dish_id, restaurant_id, price_minor_units, position) values
-    ('40000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 1200, 0);
 
 select is(
     (select role from public.accounts where id = '10000000-0000-4000-8000-000000000001'),
@@ -52,14 +47,6 @@ select throws_ok(
     $$insert into public.restaurants (owner_account_id, name, street_line, locality, postal_code) values ('20000000-0000-4000-8000-000000000001', 'Duplicate', 'Street', 'Madrid', '28001')$$,
     '23505'
 );
-select throws_ok(
-    $$insert into public.menus (restaurant_id, name) values ('30000000-0000-4000-8000-000000000001', 'Duplicate menu')$$,
-    '23505'
-);
-select throws_ok(
-    $$insert into public.menu_items (menu_id, dish_id, restaurant_id, price_minor_units, position) values ('40000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000001', 900, 1)$$,
-    '23503'
-);
 
 set local role anon;
 select is(
@@ -68,14 +55,9 @@ select is(
     'anonymous sees only published restaurants'
 );
 select is(
-    (select count(*) from public.menus where id::text like '40000000-%'),
-    1::bigint,
-    'anonymous sees only the published menu'
-);
-select is(
     (select count(*) from public.dishes where id::text like '50000000-%'),
     1::bigint,
-    'anonymous sees only enabled dishes on public menus'
+    'anonymous sees only enabled dishes from public restaurants'
 );
 reset role;
 
@@ -178,10 +160,6 @@ select set_config('request.jwt.claim.sub', '20000000-0000-4000-8000-000000000001
 set local role authenticated;
 select throws_ok(
     $$insert into public.reviews (author_account_id, restaurant_id, rating) values ('20000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 5)$$,
-    '42501'
-);
-select throws_ok(
-    $$insert into public.menu_items (menu_id, dish_id, restaurant_id, price_minor_units, position) values ('40000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000001', 900, 1)$$,
     '42501'
 );
 select lives_ok(

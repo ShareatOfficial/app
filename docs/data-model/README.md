@@ -33,19 +33,9 @@ En el MVP una cuenta de restaurante administra exactamente un restaurante. El co
 
 Las excepciones por festivos o cierres puntuales se añadirán más adelante sin convertir el horario semanal en texto libre.
 
-## Menús y platos
+## Platos
 
-Un plato pertenece al catálogo de un restaurante y puede aparecer en varios menús. La relación es muchos-a-muchos mediante `MenuItem`:
-
-```text
-Restaurant 1 — 1 Menu (MVP)
-Restaurant 1 — N Dish
-Menu       N — N Dish  (MenuItem)
-```
-
-El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`. El precio, la posición y la disponibilidad dentro de un menú pertenecen a `MenuItem`, porque pueden variar entre menús.
-
-El precio usa unidades menores (`Money.minorUnits`): `1_800` representa 18,00 EUR. No se usa `Double` para valores monetarios.
+Un plato pertenece al catálogo de un restaurante. El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`.
 
 Cada plato admite una imagen opcional en el MVP. Los alérgenos usan el catálogo de 14 grupos de la UE, una nota opcional y una fuente que deja claro que la información procede del restaurante.
 
@@ -81,7 +71,7 @@ Los agregados incluyen únicamente reviews públicas con moderación `Visible`. 
 
 Las migraciones versionadas viven en `supabase/migrations`. La identidad de `accounts.id` coincide con `auth.users.id`; el trigger de registro valida una única vez `customer|restaurant`, crea `accounts` y crea `customer_profiles` cuando corresponde. La autorización posterior consulta tablas protegidas por RLS, nunca metadata mutable del JWT.
 
-La relación N-N menú/plato se materializa en `menu_items`, que incluye `restaurant_id` y claves foráneas compuestas para impedir asociaciones entre restaurantes. Los agregados de rating son vistas `security_invoker` que solo consideran reviews públicas y visibles.
+Los agregados de rating son vistas `security_invoker` que solo consideran reviews públicas y visibles.
 
 ## Reglas revisables
 

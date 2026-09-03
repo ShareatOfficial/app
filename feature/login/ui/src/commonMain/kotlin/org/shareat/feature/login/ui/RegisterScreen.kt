@@ -197,7 +197,7 @@ private val AccountRole.label: String
 private val AccountRole.roleHint: String
     get() = when (this) {
         AccountRole.Customer -> "Discover restaurants and review the dishes you try."
-        AccountRole.Restaurant -> "Publish your restaurant profile and manage one menu."
+        AccountRole.Restaurant -> "Publish your restaurant profile."
     }
 
 @Preview

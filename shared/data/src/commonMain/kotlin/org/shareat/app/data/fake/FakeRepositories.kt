@@ -2,7 +2,6 @@ package org.shareat.app.data.fake
 
 import org.shareat.app.domain.repository.AccountRepository
 import org.shareat.app.domain.repository.DishRepository
-import org.shareat.app.domain.repository.MenuRepository
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.domain.repository.ReviewRepository
 
@@ -10,7 +9,6 @@ import org.shareat.app.domain.repository.ReviewRepository
 data class FakeRepositories(
     val accounts: AccountRepository,
     val restaurants: RestaurantRepository,
-    val menus: MenuRepository,
     val dishes: DishRepository,
     val reviews: ReviewRepository,
 ) {
@@ -24,7 +22,6 @@ data class FakeRepositories(
         ): FakeRepositories = FakeRepositories(
             accounts = FakeAccountRepository(data, scenario),
             restaurants = FakeRestaurantRepository(data, scenario),
-            menus = FakeMenuRepository(data, scenario),
             dishes = FakeDishRepository(data, scenario),
             reviews = FakeReviewRepository(data, scenario),
         )

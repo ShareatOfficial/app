@@ -15,11 +15,6 @@ import org.shareat.app.domain.model.GeoCoordinates
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.IsoTimestamp
 import org.shareat.app.domain.model.LocalTime
-import org.shareat.app.domain.model.Menu
-import org.shareat.app.domain.model.MenuId
-import org.shareat.app.domain.model.MenuItem
-import org.shareat.app.domain.model.MenuPublicationState
-import org.shareat.app.domain.model.Money
 import org.shareat.app.domain.model.OpeningPeriod
 import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.Rating
@@ -38,16 +33,12 @@ class FakeShareatData internal constructor(
     internal val accounts: List<Account>,
     customerProfiles: List<CustomerProfile>,
     restaurants: List<Restaurant>,
-    menus: List<Menu>,
     dishes: List<Dish>,
-    menuItems: List<MenuItem>,
     reviews: List<Review>,
 ) {
     internal val customerProfiles: MutableList<CustomerProfile> = customerProfiles.toMutableList()
     internal val restaurants: MutableList<Restaurant> = restaurants.toMutableList()
-    internal val menus: MutableList<Menu> = menus.toMutableList()
     internal val dishes: MutableList<Dish> = dishes.toMutableList()
-    internal val menuItems: MutableList<MenuItem> = menuItems.toMutableList()
     internal val reviews: MutableList<Review> = reviews.toMutableList()
 
     companion object {
@@ -56,9 +47,7 @@ class FakeShareatData internal constructor(
             accounts = emptyList(),
             customerProfiles = emptyList(),
             restaurants = emptyList(),
-            menus = emptyList(),
             dishes = emptyList(),
-            menuItems = emptyList(),
             reviews = emptyList(),
         )
     }
@@ -69,7 +58,6 @@ object FakeIds {
     val secondCustomerAccount = AccountId("account-customer-diego")
     val restaurantAccount = AccountId("account-restaurant-casa-naranja")
     val restaurant = RestaurantId("restaurant-casa-naranja")
-    val menu = MenuId("menu-casa-naranja")
     val octopus = DishId("dish-charred-octopus")
     val croquettes = DishId("dish-iberian-croquettes")
 }
@@ -144,15 +132,6 @@ private fun previewData(): FakeShareatData {
             publicationState = RestaurantPublicationState.Published,
         ),
     )
-    val menus = listOf(
-        Menu(
-            id = FakeIds.menu,
-            restaurantId = FakeIds.restaurant,
-            name = "Carta principal",
-            description = "Platos pensados para compartir.",
-            publicationState = MenuPublicationState.Published,
-        ),
-    )
     val dishes = listOf(
         Dish(
             id = FakeIds.octopus,
@@ -183,10 +162,6 @@ private fun previewData(): FakeShareatData {
             ),
             isEnabled = true,
         ),
-    )
-    val menuItems = listOf(
-        MenuItem(FakeIds.menu, FakeIds.octopus, Money(1_800), position = 0, isEnabled = true),
-        MenuItem(FakeIds.menu, FakeIds.croquettes, Money(1_200), position = 1, isEnabled = true),
     )
     val reviews = listOf(
         Review(
@@ -226,5 +201,5 @@ private fun previewData(): FakeShareatData {
             updatedAt = IsoTimestamp("2026-08-10T08:35:00Z"),
         ),
     )
-    return FakeShareatData(accounts, profiles, restaurants, menus, dishes, menuItems, reviews)
+    return FakeShareatData(accounts, profiles, restaurants, dishes, reviews)
 }

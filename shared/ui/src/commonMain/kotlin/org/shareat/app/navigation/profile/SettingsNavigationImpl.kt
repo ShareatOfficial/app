@@ -3,7 +3,6 @@ package org.shareat.app.navigation.profile
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.profile.ui.editprofile.EditProfileKey
 import org.shareat.feature.profile.ui.settings.SettingsNavigation
-import org.shareat.feature.menu.ui.MenuManagementKey
 
 class SettingsNavigationImpl(
     private val navigator: Navigator,
@@ -14,10 +13,6 @@ class SettingsNavigationImpl(
 
     override fun openEditProfile() {
         navigator.navigate(EditProfileKey)
-    }
-
-    override fun openMenuManagement() {
-        navigator.navigate(MenuManagementKey)
     }
 
     override fun onLogoutSuccess() {
