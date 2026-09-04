@@ -18,15 +18,10 @@ import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingNavigation
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingScreen
 import org.shareat.app.navscenedecorator.HIDE_NAVIGATION_METADATA
-import org.shareat.feature.menu.ui.MenuManagementKey
-import org.shareat.feature.menu.ui.MenuManagementNavigation
-import org.shareat.feature.menu.ui.MenuManagementScreen
-import org.shareat.feature.menu.ui.di.menuUiModule
 
 @OptIn(KoinExperimentalAPI::class)
 val profileNavigationModule = module {
     includes(profileUiModule)
-    includes(menuUiModule)
 
     factory<ProfileNavigation> { parameters ->
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
@@ -44,16 +39,10 @@ val profileNavigationModule = module {
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
         RestaurantOnboardingNavigationImpl(navigator, get())
     }
-    factory<MenuManagementNavigation> { parameters ->
-        val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
-        MenuManagementNavigationImpl(navigator)
-    }
-
     navigation<ProfileKey> { Profile() }
     navigation<SettingsKey> { SettingsScreen() }
     navigation<EditProfileKey> { EditProfileScreen() }
     navigation<RestaurantOnboardingKey>(
         metadata = mapOf(HIDE_NAVIGATION_METADATA to true),
     ) { RestaurantOnboardingScreen() }
-    navigation<MenuManagementKey> { MenuManagementScreen() }
 }

@@ -59,15 +59,17 @@ kotlin {
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
+
             implementation(project(":shared:domain"))
             implementation(project(":shared:data"))
             implementation(project(":shared:designsystem"))
             implementation(project(":shared:navigation"))
 
             implementation(project(":feature:home:ui"))
-            implementation(project(":feature:profile:ui"))
+            implementation(project(":feature:settings:ui"))
             implementation(project(":feature:login:ui"))
-            implementation(project(":feature:menu:ui"))
+            implementation(project(":feature:restaurantHome"))
+            implementation(project(":feature:review"))
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

@@ -1,21 +1,21 @@
 begin;
-select plan(18);
+select plan(16);
 
 select is(
     (select count(*) from pg_tables where schemaname = 'public' and tablename in (
-        'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods', 'menus',
-        'dishes', 'allergens', 'dish_allergens', 'menu_items', 'reviews'
+        'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods',
+        'dishes', 'allergens', 'dish_allergens', 'reviews'
     )),
-    10::bigint,
-    'all ten public tables exist'
+    8::bigint,
+    'all eight public tables exist'
 );
 
 select is(
     (select count(*) from pg_tables where schemaname = 'public' and rowsecurity and tablename in (
-        'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods', 'menus',
-        'dishes', 'allergens', 'dish_allergens', 'menu_items', 'reviews'
+        'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods',
+        'dishes', 'allergens', 'dish_allergens', 'reviews'
     )),
-    10::bigint,
+    8::bigint,
     'RLS is enabled on every public table'
 );
 
@@ -40,8 +40,6 @@ select ok(
 );
 
 select has_index('public', 'restaurants', 'restaurants_owner_account_id_key', 'one restaurant per owner');
-select has_index('public', 'menus', 'menus_restaurant_id_key', 'one menu per restaurant');
-select has_index('public', 'menu_items', 'menu_items_menu_id_position_key', 'menu positions are unique');
 select has_index('public', 'reviews', 'reviews_author_restaurant_uidx', 'restaurant reviews are unique per author');
 select has_index('public', 'reviews', 'reviews_author_dish_uidx', 'dish reviews are unique per author');
 

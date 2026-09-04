@@ -2,7 +2,7 @@ package org.shareat.shared.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-internal val primaryLight = Color(0xFF8F4C36)
+internal val primaryLight = Color(0xFFFF4F00)
 internal val onPrimaryLight = Color(0xFFFFFFFF)
 internal val primaryContainerLight = Color(0xFFFFDBD0)
 internal val onPrimaryContainerLight = Color(0xFF723521)

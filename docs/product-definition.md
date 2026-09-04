@@ -4,23 +4,23 @@
 
 ## 1. Product objective
 
-Shareat aims to make it easy for people to discover restaurants, explore their menus, and keep a personal record of the dishes and restaurants they have tried. At the same time, it gives restaurants a simple way to publish and maintain their digital menus and learn what customers think.
+Shareat aims to make it easy for people to discover restaurants and keep a personal record of the dishes and restaurants they have tried. At the same time, it gives restaurants a simple way to publish their profile and learn what customers think.
 
 The initial value proposition is:
 
-- For customers: find restaurants and dishes, consult menus, rate experiences, and revisit their own reviews.
-- For restaurants: create a profile, publish a menu, and receive structured customer feedback.
-- For visitors without an account: browse restaurants and menus with as little friction as possible.
+- For customers: find restaurants and dishes, rate experiences, and revisit their own reviews.
+- For restaurants: create a profile and receive structured customer feedback.
+- For visitors without an account: browse restaurants with as little friction as possible.
 
 ### Expected business result
 
-Validate that customers are willing to review individual dishes—not only restaurants—and that restaurants see enough value in maintaining a public menu to pay a monthly subscription.
+Validate that customers are willing to review individual dishes—not only restaurants.
 
 ## 2. Users and main use cases
 
 ### Primary launch user
 
-The primary MVP user is a customer in Spain who wants to discover restaurants, consult a structured menu, and rate restaurants or individual dishes. Restaurants are the supply-side user: the pilot will onboard as many willing restaurants as the team can support rather than waiting for a fixed minimum cohort.
+The primary MVP user is a customer in Spain who wants to discover restaurants and rate restaurants or individual dishes. Restaurants are the supply-side user: the pilot will onboard as many willing restaurants as the team can support rather than waiting for a fixed minimum cohort.
 
 The pilot scope is:
 
@@ -36,7 +36,7 @@ No authentication is required for public browsing.
 
 - View the restaurant list.
 - Search or filter restaurants when the feature is available.
-- View restaurant information, menus, dishes, and public reviews.
+- View restaurant information, dishes, and public reviews.
 - Open shared content through deep links.
 
 ### Customer
@@ -55,9 +55,6 @@ Authentication is required for personal or write operations.
 ### Restaurant
 
 - Register, sign in, and manage its profile.
-- Create, update, publish, disable, and delete menus and dishes.
-- Offer more than one menu, such as vegetarian, weekend, or seasonal menus.
-- Generate a QR code that opens an active menu.
 - Receive notifications and, in a paid tier, consult value-added analytics.
 - Request or obtain verification of the restaurant profile.
 
@@ -68,11 +65,10 @@ Restaurants cannot rate dishes or restaurants.
 ### Included in the initial product direction
 
 - Restaurant and customer accounts.
-- Restaurant profiles, menus, and dishes.
+- Restaurant profiles and dishes.
 - Restaurant and dish reviews.
-- Restaurant discovery and public menu browsing.
+- Restaurant discovery and public dish browsing.
 - A personal review history.
-- A monthly restaurant subscription for publishing and keeping a menu public.
 
 ### Explicitly outside the MVP
 
@@ -81,7 +77,6 @@ Restaurants cannot rate dishes or restaurants.
 - Instagram-like activity experience.
 - Public collaborative or Spotify-like lists.
 - Advanced map search.
-- Multiple menus per restaurant.
 
 ### Agreed MVP rules
 
@@ -89,7 +84,7 @@ Restaurants cannot rate dishes or restaurants.
 - **Review authorship:** only customer accounts can create ratings and reviews.
 - **Review targets:** a review targets either one restaurant or one dish.
 - **Personal entries:** customer-created restaurants outside the official catalogue are post-MVP.
-- **Menu visibility:** only enabled menus and dishes are visible to visitors.
+- **Dish visibility:** only enabled dishes from published restaurants are visible to visitors.
 - **Ratings:** integer scale from 1 to 5, with one review per customer and target. The customer can edit or delete it.
 - **Review aggregate:** arithmetic mean of public ratings, rounded to one decimal, displayed with the public rating count. Private reviews are excluded.
 - **Comments and visibility:** a rating may include an optional comment. The author chooses whether the whole review is public or private. A private review is visible only to its author.
@@ -103,15 +98,10 @@ Restaurants cannot rate dishes or restaurants.
 - Restaurant registration and sign-in.
 - Customer registration and sign-in.
 - Restaurant list.
-- Restaurant detail with its profile, menu, and dishes.
-- A restaurant can create and publish one menu.
-- The MVP menu is entered as structured data; each dish requires a name and price, while its description, image, and allergens are optional.
+- Restaurant detail with its profile and dishes.
 - A customer can rate and optionally review a restaurant.
 - A customer can rate and optionally review a dish.
 - A customer can see their own reviews.
-- A first monetisation experiment.
-
-> **Monetisation experiment:** a restaurant pays a monthly subscription to publish and keep its menu public. Billing does not restrict sign-in, account recovery, subscription management, data export, privacy settings, or account deletion. When the paid period ends, the menu becomes unpublished but remains editable and exportable by its owner. Price, trial length, and billing provider are implementation decisions due before billing work starts.
 
 ### Post-MVP — next candidates
 
@@ -122,14 +112,13 @@ Restaurants cannot rate dishes or restaurants.
 - Filters for favourites, eaten dishes, and rated content.
 - Restaurant types or categories.
 - Personal entry for a restaurant not yet on Shareat.
-- QR menu.
 
 ### Post-MVP — later candidates
 
 - Restaurant search on a map.
 - Public personal lists for restaurants and dishes.
 - Multiple menus per restaurant.
-- Menu import from images or PDF. Images remain available as optional dish media in the MVP, but they are not parsed into menu data.
+- Images remain available as optional dish media in the MVP.
 - Push notifications.
 - Deep links and native sharing for a dish, restaurant, list, or profile.
 
@@ -138,7 +127,7 @@ Restaurants cannot rate dishes or restaurants.
 - Social feed.
 - Follow/unfollow.
 - Followers and following lists.
-- Instagram-like feed based on followed users and menu changes.
+- Instagram-like feed based on followed users and restaurant activity.
 
 ## 5. Screens and critical flows
 
@@ -148,22 +137,18 @@ Restaurants cannot rate dishes or restaurants.
 | --- | --- | --- |
 | Access | Welcome / sign-in / registration | Enter as customer or restaurant; allow public browsing |
 | Discovery | Home | Show the restaurant list and entry point to search/filtering |
-| Restaurant | Restaurant detail | Show profile, rating summary, menus, dishes, and reviews |
-| Restaurant | Menu detail | Show active menu information and its dishes |
+| Restaurant | Restaurant detail | Show profile, rating summary, dishes, and reviews |
 | Customer | Customer profile | View and edit customer information |
 | Customer | Review history | See reviews created by the signed-in customer |
 | Review | Restaurant review form | Add or edit a restaurant rating and comment |
 | Review | Dish review form | Add or edit a dish rating and comment |
 | Restaurant admin | Restaurant profile | View and edit restaurant information |
-| Restaurant admin | My menu | See menu status and manage its dishes |
-| Restaurant admin | Create/edit menu | Create or update the menu and publish it |
-| Restaurant admin | Create/edit dish | Manage dish data within the menu |
 
 ### Critical customer flow
 
 1. Open the app without signing in.
 2. Browse the restaurant list.
-3. Open a restaurant, one of its menus, and a dish.
+3. Open a restaurant and a dish.
 4. Choose to rate the restaurant or dish.
 5. Register or sign in if necessary.
 6. Submit the rating and optional comment.
@@ -173,10 +158,7 @@ Restaurants cannot rate dishes or restaurants.
 
 1. Register or sign in as a restaurant.
 2. Complete the restaurant profile.
-3. Create a menu.
-4. Add at least one dish.
-5. Publish the menu.
-6. Confirm that a visitor can view it from the restaurant detail.
+3. Confirm that a visitor can view the profile from the restaurant detail.
 
 ### States required on every flow
 
@@ -198,8 +180,7 @@ Restaurants cannot rate dishes or restaurants.
 ### Restaurant catalogue
 
 - The system lists public restaurants and opens a restaurant detail.
-- A restaurant owns its profile, menus, and dishes.
-- A published menu contains one or more dishes.
+- A restaurant owns its profile and dishes.
 - Draft or disabled content is not shown publicly.
 
 ### Reviews
@@ -213,13 +194,6 @@ Restaurants cannot rate dishes or restaurants.
 - A customer can view their own reviews even if a target is later disabled, subject to retention policy.
 - Public reviews appear immediately and can be reported. Moderator actions require a reason and an audit entry.
 
-### Menu publishing
-
-- A restaurant manually creates one structured menu in the MVP.
-- A dish requires a name and price. Description, image, and allergen declarations are optional.
-- The restaurant can keep the menu as a draft or publish it while its subscription is active.
-- Importing a whole menu from an image or PDF is post-MVP. The future import must produce editable structured dishes rather than making an inaccessible file the only menu representation.
-
 ### Personal organisation
 
 - Favourites, eaten status, personal lists, and private restaurants are separate concepts and should not be represented by a single generic flag.
@@ -227,7 +201,7 @@ Restaurants cannot rate dishes or restaurants.
 
 ### Notifications and sharing
 
-Potential notification events include a new restaurant nearby, a new restaurant review, a new follower, or a relevant menu change. Each event requires consent, frequency controls, and a deep-link destination. The exact MVP event set is not yet agreed.
+Potential notification events include a new restaurant nearby, a new restaurant review, or a new follower. Each event requires consent, frequency controls, and a deep-link destination. The exact MVP event set is not yet agreed.
 
 ## 7. Preliminary data model
 
@@ -236,9 +210,7 @@ This is a product model, not a final database schema.
 - **Account:** identity, role, status, verification state.
 - **CustomerProfile:** display name, avatar, preferences, privacy settings.
 - **Restaurant:** owner account, name, description, address/location, category, verification state, publication state.
-- **Menu:** restaurant, name, description, schedule/type, enabled state, publication timestamps.
 - **Dish:** restaurant, name, description, image, allergen data, enabled state.
-- **MenuItem:** menu, dish, price, position, enabled state; join entity that permits a dish to appear in more than one menu.
 - **Review:** customer, target type, target ID, rating, comment, moderation state, timestamps.
 - **Favourite:** customer and restaurant/dish target.
 - **DishHistory:** customer, dish, eaten state and date.
@@ -252,7 +224,7 @@ This is a product model, not a final database schema.
 - **Security:** secure session/token storage, server-side authorisation, rate limiting, input validation, secrets outside source control, and protection against account enumeration.
 - **Privacy:** collect only data needed for the documented purpose and record consent where required. Customers and restaurants can export their account and authored content in a portable format and request account deletion without a subscription. Account access is disabled immediately; active personal data is deleted or irreversibly anonymised within 30 days, and encrypted backup copies expire within 90 days. Public reviews disappear immediately on deletion; a restricted moderation copy may be retained for up to 30 days for appeals or abuse investigation, unless a documented legal obligation requires a longer hold.
 - **Accessibility:** semantic labels, scalable text, sufficient contrast, keyboard/focus support where applicable, and no flow that relies on colour alone.
-- **Performance:** on a supported mid-range device and a stable 4G connection, the 75th percentile for initial usable content and restaurant/menu detail is at most 3 seconds; visible feedback after an interaction appears within 100 ms; list scrolling targets 60 frames per second; and a delivered dish image is at most 500 KB. A recoverable timeout state appears within 10 seconds on a slow or failed network.
+- **Performance:** on a supported mid-range device and a stable 4G connection, the 75th percentile for initial usable content and restaurant detail is at most 3 seconds; visible feedback after an interaction appears within 100 ms; list scrolling targets 60 frames per second; and a delivered dish image is at most 500 KB. A recoverable timeout state appears within 10 seconds on a slow or failed network.
 - **Reliability:** graceful error handling, retry policy, idempotent writes, backups, and a recovery plan.
 - **Compatibility:** Android API 24 (Android 7.0) and later; iOS 18.2 and later; and the current and immediately previous major versions of Chrome, Firefox, Safari, and Edge at release time. Phone layouts are required; tablet and desktop-web layouts must remain usable but do not require dedicated MVP optimisation.
 - **Localisation:** Spanish is the launch language; user-facing copy must not be hard-coded so more languages can be added post-MVP.
@@ -317,11 +289,10 @@ These are technical follow-ups, not unresolved MVP product scope. Their owners a
 
 The MVP is functionally complete when all of the following are demonstrable in a staging-like environment:
 
-1. A visitor can browse the restaurant list and a published menu without signing in.
+1. A visitor can browse the restaurant list and published dishes without signing in.
 2. A new customer can register, sign in, sign out, and recover access.
 3. A new restaurant can register, sign in, and manage only its own content.
-4. A restaurant can create a menu with a dish and publish it.
-5. Published restaurant, menu, and dish data is visible to visitors; drafts are not.
+4. Published restaurant and dish data is visible to visitors; drafts are not.
 6. A customer can submit a valid restaurant rating and a valid dish rating.
 7. A restaurant account cannot create a review, including through the API.
 8. The customer can see the reviews they authored.
@@ -348,8 +319,7 @@ The MVP is functionally complete when all of the following are demonstrable in a
 ### Phase 2 — Restaurant publishing
 
 - Restaurant profile.
-- One menu and dish CRUD.
-- Draft/enabled/published states.
+- Dish catalogue and visibility states.
 
 ### Phase 3 — Customer reviews
 
@@ -401,11 +371,9 @@ Final targets require a baseline and measurement window. Candidate metrics are:
 
 - Visitor-to-registration conversion after attempting a protected action.
 - Customer activation: first valid rating/review created.
-- Restaurant activation: first menu with at least one dish published.
-- Percentage of registered restaurants with an active menu.
 - Review completion rate and median time to submit.
 - Weekly active customers and restaurants.
-- Menu/detail load success and latency.
+- Restaurant/detail load success and latency.
 - Crash-free sessions and failed write rate.
 - Review report/abuse rate.
 - Conversion or revenue for the selected monetisation experiment.
@@ -464,9 +432,6 @@ Final targets require a baseline and measurement window. Candidate metrics are:
 | Public access | Anonymous browsing; authentication for write and personal actions | Entire team |
 | Reviews | Integer 1–5; one per customer/target; editable/deletable; optional comment; public/private choice; immediate public publication with reporting | Entire team |
 | Aggregation | Arithmetic mean of visible public ratings, one decimal, with rating count | Entire team |
-| MVP menu | One manually entered structured menu; dish name and price required; description, image, and allergens optional | Entire team |
-| Menu files | Whole-menu image/PDF import is post-MVP | Entire team |
-| Monetisation | Monthly restaurant subscription to publish and keep a menu public; account and privacy actions never paywalled | Entire team |
 | Compatibility and performance | Targets in section 8 | Entire team |
 | Privacy and moderation | Export/deletion and retention limits in section 8; immediate publication, reporting, moderator controls, and audit trail | Entire team |
 | Responsibilities | `@javigp2002`, `@tonela10`, and `@TorrellesN` share every delivery role and global code ownership | Entire team |
