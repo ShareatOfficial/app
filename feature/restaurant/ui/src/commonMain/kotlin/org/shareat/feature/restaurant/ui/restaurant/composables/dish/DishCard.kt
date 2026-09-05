@@ -21,6 +21,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,10 +51,27 @@ private val CardShape = RoundedCornerShape(16.dp)
 private val ThumbnailSize = 84.dp
 private const val CollapsedDescriptionLines = 2
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DishCard(
     dish: DishCardUiState,
+    onRatingClick: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    DishCardStateless(
+        dish = dish,
+        isExpanded = isExpanded,
+        onClick = { isExpanded = !isExpanded },
+        onRatingClick = onRatingClick,
+        modifier = modifier,
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DishCardStateless(
+    dish: DishCardUiState,
+    isExpanded: Boolean,
     onClick: () -> Unit,
     onRatingClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -84,7 +105,7 @@ internal fun DishCard(
                             style = MaterialTheme.typography.bodySmall,
                             fontStyle = FontStyle.Italic,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = if (dish.isExpanded) {
+                            maxLines = if (isExpanded) {
                                 Int.MAX_VALUE
                             } else {
                                 CollapsedDescriptionLines
@@ -104,7 +125,7 @@ internal fun DishCard(
                 }
             }
             DishExpandedContent(
-                isExpanded = dish.isExpanded,
+                isExpanded = isExpanded,
                 selectedRating = dish.selectedRating,
                 reviews = dish.reviews,
                 comments = dish.comments,
@@ -232,7 +253,7 @@ private val previewDish = DishCardUiState(
 @Composable
 private fun DishCardPreview() {
     ShareatTheme {
-        DishCard(dish = previewDish, onClick = {}, onRatingClick = {})
+        DishCardStateless(dish = previewDish, isExpanded = false, onClick = {}, onRatingClick = {})
     }
 }
 
@@ -240,8 +261,9 @@ private fun DishCardPreview() {
 @Composable
 private fun DishCardExpandedPreview() {
     ShareatTheme {
-        DishCard(
-            dish = previewDish.copy(isExpanded = true, selectedRating = 4),
+        DishCardStateless(
+            dish = previewDish.copy(selectedRating = 4),
+            isExpanded = true,
             onClick = {},
             onRatingClick = {},
         )
@@ -252,8 +274,9 @@ private fun DishCardExpandedPreview() {
 @Composable
 private fun DishCardExpandedWithoutReviewsPreview() {
     ShareatTheme {
-        DishCard(
-            dish = previewDish.copy(isExpanded = true, reviews = emptyList()),
+        DishCardStateless(
+            dish = previewDish.copy(reviews = emptyList()),
+            isExpanded = true,
             onClick = {},
             onRatingClick = {},
         )

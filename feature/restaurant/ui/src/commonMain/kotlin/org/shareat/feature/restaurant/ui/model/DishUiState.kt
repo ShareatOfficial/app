@@ -13,7 +13,6 @@ data class DishCardUiState(
     val reviews: List<DishReviewUiState> = emptyList(),
     val allergens: List<EuAllergen> = emptyList(),
     val selectedRating: Int? = null,
-    val isExpanded: Boolean = false,
 ) {
     private val ratingSummary: RatingSummary
         get() = RatingSummary.of(reviews.map { Rating(it.rating) })

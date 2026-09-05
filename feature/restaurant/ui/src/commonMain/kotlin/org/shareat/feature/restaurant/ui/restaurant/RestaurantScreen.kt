@@ -70,9 +70,7 @@ fun RestaurantScreen(
         onRefresh = viewModel::onRefresh,
         onErrorShown = viewModel::onErrorShown,
         onCategoryClick = viewModel::onCategoryClick,
-        onAllergenFilterToggle = viewModel::onAllergenFilterToggle,
         onAllergenClick = viewModel::onAllergenClick,
-        onDishClick = viewModel::onDishClick,
         onDishRatingClick = viewModel::onDishRatingClick,
     )
 }
@@ -87,9 +85,7 @@ internal fun RestaurantScreenStateless(
     onRefresh: () -> Unit = {},
     onErrorShown: () -> Unit = {},
     onCategoryClick: (DishCategory?) -> Unit = {},
-    onAllergenFilterToggle: () -> Unit = {},
     onAllergenClick: (EuAllergen) -> Unit = {},
-    onDishClick: (String) -> Unit = {},
     onDishRatingClick: (String, Int) -> Unit = { _, _ -> },
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -129,8 +125,8 @@ internal fun RestaurantScreenStateless(
                         }
                     }
                 }
-                filterSection(uiState, onCategoryClick, onAllergenFilterToggle, onAllergenClick)
-                dishSection(uiState, onDishClick, onDishRatingClick)
+                filterSection(uiState, onCategoryClick, onAllergenClick)
+                dishSection(uiState, onDishRatingClick)
             }
         }
     }
@@ -139,7 +135,6 @@ internal fun RestaurantScreenStateless(
 private fun LazyListScope.filterSection(
     uiState: RestaurantUiState,
     onCategoryClick: (DishCategory?) -> Unit,
-    onAllergenFilterToggle: () -> Unit,
     onAllergenClick: (EuAllergen) -> Unit,
 ) {
     if (uiState.isRefreshing || !uiState.hasPublishedMenu) return
@@ -152,7 +147,6 @@ private fun LazyListScope.filterSection(
             )
             AllergenFilter(
                 state = uiState.allergenFilter,
-                onToggleExpanded = onAllergenFilterToggle,
                 onAllergenClick = onAllergenClick,
                 modifier = Modifier.padding(horizontal = ScreenPadding),
             )
@@ -162,7 +156,6 @@ private fun LazyListScope.filterSection(
 
 private fun LazyListScope.dishSection(
     uiState: RestaurantUiState,
-    onDishClick: (String) -> Unit,
     onDishRatingClick: (String, Int) -> Unit,
 ) {
     if (uiState.isRefreshing) {
@@ -189,7 +182,6 @@ private fun LazyListScope.dishSection(
     items(uiState.dishes, key = { it.id }) { dish ->
         DishCard(
             dish = dish,
-            onClick = { onDishClick(dish.id) },
             onRatingClick = { rating -> onDishRatingClick(dish.id, rating) },
             modifier = Modifier.padding(horizontal = ScreenPadding),
         )

@@ -22,6 +22,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,10 +43,27 @@ private val PanelShape = RoundedCornerShape(16.dp)
 private val PanelElevation = 6.dp
 private val ChipIconSize = 18.dp
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun AllergenFilter(
     state: AllergenFilterUiState,
+    onAllergenClick: (EuAllergen) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    AllergenFilterStateless(
+        state = state,
+        isExpanded = isExpanded,
+        onToggleExpanded = { isExpanded = !isExpanded },
+        onAllergenClick = onAllergenClick,
+        modifier = modifier,
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AllergenFilterStateless(
+    state: AllergenFilterUiState,
+    isExpanded: Boolean,
     onToggleExpanded: () -> Unit,
     onAllergenClick: (EuAllergen) -> Unit,
     modifier: Modifier = Modifier,
@@ -57,7 +78,7 @@ internal fun AllergenFilter(
             label = { Text(text = stringResource(Res.string.restaurant_allergen_filter)) },
             trailingIcon = {
                 Icon(
-                    imageVector = if (state.isExpanded) {
+                    imageVector = if (isExpanded) {
                         Icons.Rounded.KeyboardArrowUp
                     } else {
                         Icons.Rounded.KeyboardArrowDown
@@ -67,7 +88,7 @@ internal fun AllergenFilter(
                 )
             },
         )
-        AnimatedVisibility(visible = state.isExpanded) {
+        AnimatedVisibility(visible = isExpanded) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = PanelShape,
@@ -125,8 +146,9 @@ private fun AllergenChip(chip: AllergenChipUiState, onClick: () -> Unit) {
 @Composable
 private fun AllergenFilterCollapsedPreview() {
     ShareatTheme {
-        AllergenFilter(
-            state = AllergenFilterUiState(allergens = allIncluded, isExpanded = false),
+        AllergenFilterStateless(
+            state = AllergenFilterUiState(allergens = allIncluded),
+            isExpanded = false,
             onToggleExpanded = {},
             onAllergenClick = {},
         )
@@ -137,8 +159,9 @@ private fun AllergenFilterCollapsedPreview() {
 @Composable
 private fun AllergenFilterAllIncludedPreview() {
     ShareatTheme {
-        AllergenFilter(
-            state = AllergenFilterUiState(allergens = allIncluded, isExpanded = true),
+        AllergenFilterStateless(
+            state = AllergenFilterUiState(allergens = allIncluded),
+            isExpanded = true,
             onToggleExpanded = {},
             onAllergenClick = {},
         )
@@ -149,7 +172,7 @@ private fun AllergenFilterAllIncludedPreview() {
 @Composable
 private fun AllergenFilterWithExclusionsPreview() {
     ShareatTheme {
-        AllergenFilter(
+        AllergenFilterStateless(
             state = AllergenFilterUiState(
                 allergens = allIncluded.map { chip ->
                     chip.copy(
@@ -159,8 +182,8 @@ private fun AllergenFilterWithExclusionsPreview() {
                         ),
                     )
                 },
-                isExpanded = true,
             ),
+            isExpanded = true,
             onToggleExpanded = {},
             onAllergenClick = {},
         )

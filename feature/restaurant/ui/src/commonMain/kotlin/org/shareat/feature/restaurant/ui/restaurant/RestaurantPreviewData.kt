@@ -35,7 +35,6 @@ internal object RestaurantPreviewData {
         selection = RestaurantSelection(
             category = DishCategory.Desserts,
             excludedAllergens = setOf(EuAllergen.CerealsContainingGluten),
-            isAllergenFilterExpanded = true,
         ),
         dishMatchesFilters = { false },
     )

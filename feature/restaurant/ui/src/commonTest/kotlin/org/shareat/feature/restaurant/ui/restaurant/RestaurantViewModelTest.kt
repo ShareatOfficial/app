@@ -143,17 +143,6 @@ class RestaurantViewModelTest {
     }
 
     @Test
-    fun tappingADishExpandsOnlyThatCard() = runTest(dispatcher) {
-        val viewModel = viewModelFor()
-
-        viewModel.onDishClick("dish-croquettes")
-
-        val dishes = viewModel.uiState.value.dishes
-        assertTrue(dishes.single { it.id == "dish-croquettes" }.isExpanded)
-        assertTrue(dishes.filterNot { it.id == "dish-croquettes" }.none { it.isExpanded })
-    }
-
-    @Test
     fun pullToRefreshReplacesTheContentWithTheDomainResult() = runTest(dispatcher) {
         val viewModel = viewModelFor { RepositoryResult.Success(refreshedDetails()) }
 

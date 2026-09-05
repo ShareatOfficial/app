@@ -35,7 +35,6 @@ data class CategoryChipUiState(
 
 data class AllergenFilterUiState(
     val allergens: List<AllergenChipUiState> = emptyList(),
-    val isExpanded: Boolean = false,
 ) {
     val hasExclusions: Boolean get() = allergens.any(AllergenChipUiState::isExcluded)
 }

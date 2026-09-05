@@ -38,26 +38,12 @@ class RestaurantViewModel(
 
     fun onCategoryClick(category: DishCategory?) = updateSelection { copy(category = category) }
 
-    fun onAllergenFilterToggle() = updateSelection {
-        copy(isAllergenFilterExpanded = !isAllergenFilterExpanded)
-    }
-
     fun onAllergenClick(allergen: EuAllergen) = updateSelection {
         copy(
             excludedAllergens = if (allergen in excludedAllergens) {
                 excludedAllergens - allergen
             } else {
                 excludedAllergens + allergen
-            },
-        )
-    }
-
-    fun onDishClick(dishId: String) = updateSelection {
-        copy(
-            expandedDishIds = if (dishId in expandedDishIds) {
-                expandedDishIds - dishId
-            } else {
-                expandedDishIds + dishId
             },
         )
     }
@@ -123,7 +109,6 @@ private fun RestaurantSelection.retainedFor(restaurant: RestaurantArgs): Restaur
             it in restaurant.dishes.mapNotNull(DishArgs::category).toSet()
         },
         excludedAllergens = excludedAllergens intersect restaurant.declaredAllergens().toSet(),
-        expandedDishIds = expandedDishIds intersect dishIds,
         dishRatings = dishRatings.filterKeys { it in dishIds },
     )
 }

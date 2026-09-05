@@ -54,16 +54,10 @@ fun RestaurantArgs.toUiState(
         allergens = declaredAllergens().map { allergen ->
             AllergenChipUiState(allergen, isExcluded = allergen in selection.excludedAllergens)
         },
-        isExpanded = selection.isAllergenFilterExpanded,
     ),
     dishes = dishes
         .filter(dishMatchesFilters)
-        .map { dish ->
-            dish.toCardUiState(
-                isExpanded = dish.id in selection.expandedDishIds,
-                selectedRating = selection.dishRatings[dish.id],
-            )
-        },
+        .map { dish -> dish.toCardUiState(selectedRating = selection.dishRatings[dish.id]) },
     hasPublishedMenu = dishes.isNotEmpty(),
     isRefreshing = isRefreshing,
     errorMessage = errorMessage,
@@ -95,10 +89,7 @@ private fun RestaurantArgs.toCategoryChips(selected: DishCategory?): List<Catego
     }
 }
 
-private fun DishArgs.toCardUiState(
-    isExpanded: Boolean,
-    selectedRating: Int?,
-): DishCardUiState = DishCardUiState(
+private fun DishArgs.toCardUiState(selectedRating: Int?): DishCardUiState = DishCardUiState(
     id = id,
     name = name,
     priceLabel = priceLabel,
@@ -107,7 +98,6 @@ private fun DishArgs.toCardUiState(
     reviews = reviews.map(DishReviewArgs::toUiState),
     allergens = allergens,
     selectedRating = selectedRating,
-    isExpanded = isExpanded,
 )
 
 private fun DishReviewArgs.toUiState(): DishReviewUiState = DishReviewUiState(
