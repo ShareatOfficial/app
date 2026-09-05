@@ -14,7 +14,7 @@ Que cualquier pantalla en estado de carga se sienta parte de la misma app: la mi
 
 ## Responsabilidades por módulo
 
-- `:shared:designsystem`: efectos visuales reutilizables (`shimmerEffect`) y componentes compartidos entre features (`components/ReviewCard`, `components/RatingBadge`). No conoce ninguna feature ni modelo de dominio.
+- `:shared:designsystem`: efectos visuales reutilizables (`shimmerEffect`), componentes compartidos entre features (`components/ReviewCard`, `components/RatingBadge`) y la anotación `preview/FormFactorPreviews` con los tamaños de referencia. No conoce ninguna feature ni modelo de dominio.
 - `:feature:<nombre>:ui`: define el skeleton concreto de cada componente (`XyzCardSkeleton`) reutilizando `shimmerEffect`, y decide cómo se compone el skeleton de pantalla completa a partir de esos componentes.
 
 ## Patrón de implementación
@@ -43,6 +43,7 @@ El skeleton de una pantalla completa compone los skeletons de sus componentes en
 - Cualquier placeholder animado usa `Modifier.shimmerEffect(...)` de `:shared:designsystem`; no se implementa una animación de alpha propia por componente.
 - `:shared:designsystem` no importa Koin, `domain`, `data` ni ninguna feature — solo Compose. Sus componentes reciben primitivas, no modelos de dominio.
 - Ninguna feature importa un composable `internal` de otra feature; si hace falta compartirlo, se promociona a `:shared:designsystem`.
+- Una preview multi-dispositivo usa `@FormFactorPreviews` de `:shared:designsystem`; no se redeclara la lista de `@Preview` con anchos y altos propios por módulo. Una preview que varía el *estado* (no el tamaño) sigue siendo un `@Preview` suelto.
 
 ## Pendiente
 

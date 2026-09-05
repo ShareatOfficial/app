@@ -13,8 +13,8 @@ import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.usecase.GetRestaurantUseCase
-import org.shareat.feature.restaurant.domain.DishFilterSubject
-import org.shareat.feature.restaurant.domain.DishFilters
+import org.shareat.feature.restaurant.domain.model.DishFilterSubject
+import org.shareat.feature.restaurant.domain.model.DishFilters
 import org.shareat.feature.restaurant.domain.DishMatchesFiltersUseCase
 import org.shareat.feature.restaurant.ui.model.DishArgs
 import org.shareat.feature.restaurant.ui.model.RestaurantArgs

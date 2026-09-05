@@ -2,6 +2,8 @@ package org.shareat.feature.restaurant.domain
 
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
+import org.shareat.feature.restaurant.domain.model.DishFilterSubject
+import org.shareat.feature.restaurant.domain.model.DishFilters
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

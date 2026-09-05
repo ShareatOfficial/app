@@ -44,6 +44,7 @@ import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restaurant.ui.generated.resources.Res
 import shareat.feature.restaurant.ui.generated.resources.restaurant_no_dishes_for_filters
 import shareat.feature.restaurant.ui.generated.resources.restaurant_no_menus
+import org.shareat.shared.designsystem.preview.FormFactorPreviews
 
 private val ScreenPadding = 16.dp
 private val FilterSpacing = 4.dp
@@ -205,7 +206,7 @@ private fun EmptyMessage(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-@RestaurantFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun RestaurantScreenPreview() {
     ShareatTheme {
@@ -213,7 +214,7 @@ private fun RestaurantScreenPreview() {
     }
 }
 
-@RestaurantFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun RestaurantScreenRefreshingPreview() {
     ShareatTheme {
@@ -221,7 +222,7 @@ private fun RestaurantScreenRefreshingPreview() {
     }
 }
 
-@RestaurantFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun RestaurantScreenFilteredEmptyPreview() {
     ShareatTheme {
@@ -229,7 +230,7 @@ private fun RestaurantScreenFilteredEmptyPreview() {
     }
 }
 
-@RestaurantFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun RestaurantScreenWithoutMenuPreview() {
     ShareatTheme {

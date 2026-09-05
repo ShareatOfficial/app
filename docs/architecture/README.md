@@ -41,6 +41,8 @@ Contiene:
 
 No depende de `data`, `ui`, Compose, DTO, almacenamiento ni clientes de red. `:shared:domain` aplica esta misma regla.
 
+Los modelos viven siempre en un paquete `model/` dentro de su propia capa y su propio módulo, nunca declarados junto al use case, repositorio o ViewModel que los consume: `:feature:<nombre>:domain` los declara en `…feature/<nombre>/domain/model/` y `:shared:domain` en `org.shareat.app.domain.model`. Un fichero de use case contiene el use case, no los tipos que recibe o devuelve.
+
 Única excepción sobre Koin: un módulo `domain` puede publicar su propio módulo Koin aislado en un paquete `di` que enlaza la interfaz de un use case con su implementación. Las entidades, use cases y repositorios siguen recibiendo sus dependencias por constructor y nunca resuelven nada por sí mismos. `:shared:domain` lo hace en `org.shareat.app.domain.usecase.di.sharedDomainModule`.
 
 Un use case que necesitan varias features vive en `:shared:domain`, no en la feature que lo escribió primero: una feature nunca importa el `domain` de otra. Así, `GetRestaurantsUseCase` (listado de home) y `GetRestaurantUseCase` (detalle) comparten `RestaurantDetailsAssembler` y los mismos repositorios. Cada use case expone un único método público; dos consultas distintas son dos use cases distintos, no dos métodos en una interfaz.
@@ -65,6 +67,8 @@ Contiene:
 - interfaces de navegación expresadas como intenciones;
 
 Depende de `domain`; no depende de implementaciones concretas de `data` ni del módulo de app.
+
+La misma regla de modelos aplica a esta capa: los estados de UI, args y modelos de presentación se declaran en `…feature/<nombre>/ui/model/`, no dentro del fichero de la pantalla o del ViewModel.
 
 Cada feature declara sus propias `NavKey` (sus destinos) junto a su interfaz de navegación. Las implementaciones de esas interfaces y las entradas Koin Navigation 3 viven en `:shared:ui`, que importa las keys de cada feature y conecta cada pantalla con el grafo de la aplicación. Ver [Navegación](../navigation/README.md) para el detalle.
 

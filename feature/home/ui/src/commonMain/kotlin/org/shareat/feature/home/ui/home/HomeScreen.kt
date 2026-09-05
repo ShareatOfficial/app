@@ -38,6 +38,7 @@ import org.shareat.feature.home.ui.navigation.HomeNavigation
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.home.ui.generated.resources.Res
 import shareat.feature.home.ui.generated.resources.recommended
+import org.shareat.shared.designsystem.preview.FormFactorPreviews
 
 @Composable
 fun HomeScreen(
@@ -242,7 +243,7 @@ private object HomePreviewData {
     )
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenLoadingPreview() {
     ShareatTheme {
@@ -250,7 +251,7 @@ private fun HomeScreenLoadingPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenContentPreview() {
     ShareatTheme {
@@ -258,7 +259,7 @@ private fun HomeScreenContentPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenSearchingPreview() {
     ShareatTheme {
@@ -266,7 +267,7 @@ private fun HomeScreenSearchingPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenEmptyPreview() {
     ShareatTheme {
@@ -274,7 +275,7 @@ private fun HomeScreenEmptyPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenErrorPreview() {
     ShareatTheme {
