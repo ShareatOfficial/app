@@ -19,9 +19,11 @@ Shareat is a Kotlin Multiplatform app (Android, iOS, web) where customers discov
 androidApp/   iosApp/   webApp/                  # platform entry points
 shared/{domain,data,navigation,designsystem,ui}/ # shared KMP base; :shared:navigation is a tiny leaf
                                                   # module for shared navigation contracts (e.g.
-                                                  # RequiresLogin); :shared:designsystem is a tiny
-                                                  # Compose-only leaf for shared visual effects (e.g.
-                                                  # Modifier.shimmerEffect); :shared:ui is the
+                                                  # RequiresLogin); :shared:designsystem is a
+                                                  # Compose-only leaf for shared visual effects
+                                                  # (Modifier.shimmerEffect) and cross-feature
+                                                  # components (components/ReviewCard,
+                                                  # components/RatingBadge); :shared:ui is the
                                                   # composition root
 feature/<name>/{domain,data,ui}/                 # per-feature modules (some features are still
                                                   # single-module while they're being split — check
@@ -49,7 +51,7 @@ Android / iOS / Web
         +------------------> :feature:<name>:ui -> :feature:<name>:domain
 ```
 
-A feature never imports another feature's internals to reuse a screen, repository, or ViewModel — that goes through an explicit API. Data flow: `Screen -> ViewModel -> Use case -> Repository interface -> {MockRepository | RemoteRepository}`. `data` maps fixtures/remote responses to domain models before returning; `ui` maps domain to presentation state.
+A feature never imports another feature's internals to reuse a screen, repository, or ViewModel — that goes through an explicit API. A composable two features both need is promoted to `:shared:designsystem/components`, not duplicated and not reached into. Data flow: `Screen -> ViewModel -> Use case -> Repository interface -> {MockRepository | RemoteRepository}`. `data` maps fixtures/remote responses to domain models before returning; `ui` maps domain to presentation state.
 
 ## Reference files
 
@@ -59,7 +61,7 @@ Read the one(s) relevant to your change — don't load all of them speculatively
 - `references/data-model.md` — domain entities (Account, Restaurant, Menu/Dish/MenuItem, Review, etc.), their relationships, `FakeShareatData`/`FakeDataScenario`, and the Supabase persistence mapping.
 - `references/dependency-injection.md` — Koin module structure, `single`/`factory`/`viewModel` scope rules, the fake-vs-Supabase module selection, and testing overrides.
 - `references/navigation.md` — how a feature declares a navigation interface, how the app module implements it with `NavKey` and Koin Navigation 3 entries, and the top-level-vs-subscreen split.
-- `references/ui.md` — the rule that a `Loading` ui state renders a skeleton shaped like the loaded screen, `:shared:designsystem`'s `Modifier.shimmerEffect`, and how to build a feature's skeleton components on top of it.
+- `references/ui.md` — the rule that a `Loading` ui state renders a skeleton shaped like the loaded screen, `:shared:designsystem`'s `Modifier.shimmerEffect` and shared `components/`, and how to build a feature's skeleton components on top of them.
 - `references/testing.md` — mock repository conventions, deterministic scenarios, what to test at each layer (repository/use case/ViewModel), and the local Supabase test flow (pgTAP, JVM contract tests).
 - `references/supabase.md` — security boundaries (publishable key only, RLS, Storage limits), the local dev loop, and the safe deployment sequence.
 - `references/product.md` — MVP scope, product rules (reviews, ratings, menu visibility, moderation, monetisation), and what's explicitly post-MVP. Use this when a request would add scope the product definition puts outside the MVP, or when unsure whether a rule is a product decision vs. a technical one.

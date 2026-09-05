@@ -39,7 +39,11 @@ Contiene:
 - use cases y reglas de negocio;
 - errores y resultados expresados en términos de producto.
 
-No depende de `data`, `ui`, Koin, Compose, DTO, almacenamiento ni clientes de red. `:shared:domain` aplica esta misma regla.
+No depende de `data`, `ui`, Compose, DTO, almacenamiento ni clientes de red. `:shared:domain` aplica esta misma regla.
+
+Única excepción sobre Koin: un módulo `domain` puede publicar su propio módulo Koin aislado en un paquete `di` que enlaza la interfaz de un use case con su implementación. Las entidades, use cases y repositorios siguen recibiendo sus dependencias por constructor y nunca resuelven nada por sí mismos. `:shared:domain` lo hace en `org.shareat.app.domain.usecase.di.sharedDomainModule`.
+
+Un use case que necesitan varias features vive en `:shared:domain`, no en la feature que lo escribió primero: una feature nunca importa el `domain` de otra. Así, `GetRestaurantsUseCase` (listado de home) y `GetRestaurantUseCase` (detalle) comparten `RestaurantDetailsAssembler` y los mismos repositorios. Cada use case expone un único método público; dos consultas distintas son dos use cases distintos, no dos métodos en una interfaz.
 
 ### `data`
 

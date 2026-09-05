@@ -18,13 +18,15 @@ Source: `docs/product-definition.md`, closed for the MVP on 2026-08-12 (issue #7
 - A review's comment is optional; the author chooses public or private per review. Private reviews are visible only to their author.
 - Public reviews publish immediately (no pre-moderation). Signed-in users can report them; moderators can hide/restore/remove with a reason and an audit trail. Restaurant owners cannot suppress reviews themselves.
 - Only enabled menus and dishes are visible to visitors — draft/disabled content never appears in a public read path.
-- Allergen info is optional and restaurant-supplied; Shareat must show its source and a "confirm with the restaurant" notice. Allergen filtering/verification is post-MVP.
-- One structured menu per restaurant in the MVP (multiple menus is post-MVP). A dish needs a name and price; description, image, and allergens are optional.
+- Allergen info is optional and restaurant-supplied; Shareat must show its source and a "confirm with the restaurant" notice. Customers **can** filter a menu by allergen (scope change, 2026-09-01): the filter only offers allergens that menu's dishes declare, and a dish with no declaration is never hidden by it. Allergen *verification* is still post-MVP.
+- One structured menu per restaurant; the restaurant screen displays it immediately, with no menu selector. Multiple menus remain post-MVP. A dish needs a name and price; description, image, and allergens are optional.
 - Billing/subscription state never blocks sign-in, account recovery, subscription management, data export, privacy settings, or account deletion. When a subscription lapses, the menu unpublishes but stays editable/exportable by its owner.
 
 ## Explicitly out of scope for the MVP
 
-Social feed, follow/unfollow, an Instagram-like activity feed, public/collaborative lists, advanced map search, multiple menus per restaurant, personal (customer-added) restaurants outside the catalogue, QR menus, push notifications, deep-link sharing beyond basic open, restaurant verification, customer email verification, freemium analytics tier, allergen filters.
+Social feed, follow/unfollow, an Instagram-like activity feed, public/collaborative lists, advanced map search, multiple menus per restaurant, personal (customer-added) restaurants outside the catalogue, QR menus, push notifications, deep-link sharing beyond basic open, restaurant verification, customer email verification, freemium analytics tier, allergen verification.
+
+Allergen filtering was moved **into** scope on 2026-09-01 (branch `feature/restaurant-screen-ui`) because the agreed restaurant screen design requires it.
 
 If a request would add one of these, flag it as post-MVP scope rather than silently implementing it — the product definition treats "explicitly outside the MVP" as a real boundary the team agreed to, not a soft suggestion.
 

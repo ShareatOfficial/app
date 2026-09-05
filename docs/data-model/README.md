@@ -36,6 +36,17 @@ Las excepciones por festivos o cierres puntuales se añadirán más adelante sin
 ## Platos
 
 Un plato pertenece al catálogo de un restaurante. El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`.
+```text
+Restaurant 1 — 1 Menu (MVP)
+Restaurant 1 — N Dish
+Menu       N — N Dish  (MenuItem)
+```
+
+Un restaurante publica un único menú en el MVP. Solo ese menú `Published` y sus platos habilitados llegan a una lectura pública, vía `MenuRepository.getPublishedMenu`; el ensamblado de esa regla vive en `RestaurantDetailsAssembler` (`:shared:domain`), no repetido en cada pantalla.
+
+El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`. El precio, la posición, la disponibilidad y la categoría (`DishCategory`: entrantes, principales, postres, para picar) dentro de un menú pertenecen a `MenuItem`, porque pueden variar entre menús. `MenuItem.category` es opcional: los fixtures la rellenan y el mapper de Supabase la deja a `null` hasta que exista la columna correspondiente (issue #64).
+
+El precio usa unidades menores (`Money.minorUnits`): `1_800` representa 18,00 EUR. No se usa `Double` para valores monetarios.
 
 Cada plato admite una imagen opcional en el MVP. Los alérgenos usan el catálogo de 14 grupos de la UE, una nota opcional y una fuente que deja claro que la información procede del restaurante.
 
@@ -50,7 +61,13 @@ ReviewTarget.Dish
 
 Solo una cuenta customer activa puede escribir reviews. Existe como máximo una por autor y target; `saveReview` actualiza la existente. La valoración es un entero entre 1 y 5, el comentario y la fecha de visita son opcionales, y creación y última actualización se registran por separado.
 
-Los agregados incluyen únicamente reviews públicas con moderación `Visible`. `RatingSummary.averageTenths` evita errores de coma flotante: `48` representa una media de 4,8.
+El proyecto desplegado guarda tres alérgenos con ids más cortos que los canónicos de las migraciones (`gluten` en vez de `cereals_containing_gluten`, `soy` en vez de `soybeans`, `sulphites` en vez de `sulphur_dioxide_and_sulphites`). La base de datos remota ha divergido de `supabase/migrations/`. Hasta que se reconcilien, la lectura (`String.toEuAllergenOrNull`) acepta ambas grafías y la escritura (`EuAllergen.toDatabaseValue`) sigue emitiendo solo la canónica.
+
+Regla general de mapeo de catálogo: **un valor desconocido se descarta, nunca hace fallar el agregado que lo contiene**. `toEuAllergenOrNull` devuelve `null` para un id no reconocido y `DishDto.toDomain` lo omite. Antes lanzaba, y un único alérgeno inesperado tumbaba la carta entera del restaurante: `getPublishedMenu` fallaba, el ensamblador devolvía `menu = null` y la pantalla mostraba "todavía no ha publicado su carta" en lugar de un error.
+
+Las reviews públicas de varios platos se piden en lote con `ReviewRepository.getPublicDishReviews(dishIds)`, una sola consulta por sección en `RestaurantDetailsAssembler`, en vez de una por plato.
+
+Los agregados incluyen únicamente reviews públicas con moderación `Visible`. `RatingSummary.averageTenths` evita errores de coma flotante: `48` representa una media de 4,8. La media se calcula en un único sitio, `RatingSummary.of(ratings)` (`:shared:domain`), que usan tanto los fakes como todo cálculo derivado de una lista de reviews (`List<Review>.toRatingSummary()`); `RatingSummary.Unrated` es el valor sin valoraciones.
 
 ## Repositorios fake
 
@@ -66,6 +83,12 @@ Los agregados incluyen únicamente reviews públicas con moderación `Visible`. 
 `RepositoryError.Unavailable` es la única rama de reserva del mapeo de errores de Supabase y transporta un `details` opcional con la clase de excepción, el código HTTP y el código de error del servidor. Sin ese diagnóstico un fallo de autenticación real (`email_not_confirmed`, clave de API inválida, error de red) quedaba indistinguible de una caída del servicio. Los errores conocidos de Auth y PostgREST se mapean por código (`AuthErrorCode`, `SQLSTATE`), no por coincidencia de texto en el mensaje.
 
 `fakeDataModule` enlaza las interfaces con estas implementaciones para previews y pruebas. `supabaseDataModule` enlaza los mismos contratos con Auth, PostgREST y Storage para runtime; las entidades, interfaces y consumidores no cambian por detalles del proveedor.
+
+## Detalle de restaurante
+
+`RestaurantDetails` (`org.shareat.app.domain.usecase`) es el agregado que consumen home y la pantalla de restaurante: restaurante, `RatingSummary`, platos destacados por reviews y el menú publicado con sus platos ya valorados (`RestaurantMenu` → `RatedMenuDish`), o `null` si todavía no publica ninguno. Se obtiene con `GetRestaurantsUseCase` (página) o `GetRestaurantUseCase` (uno), ambos apoyados en `RestaurantDetailsAssembler`.
+
+`RatedMenuDish` lleva la **lista de reviews públicas** del plato (`reviews: List<Review>`), no un agregado ya aplanado, y expone `ratingSummary` derivado de esa lista. Una única fuente evita que la media que ve el usuario contradiga la lista de reseñas que se pinta a su lado, y permite que la UI muestre ambas cosas sin una segunda llamada. Es correcto porque `ReviewRepository.getPublicReviews` devuelve exactamente la población sobre la que se define el agregado: reviews `Public` con moderación `Visible`.
 
 ## Persistencia Supabase
 

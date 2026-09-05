@@ -108,10 +108,20 @@ Every key — including subscreens — must be registered in `NavigationState`'s
 - Each navigating screen declares its own interface — no reusing a generic interface with access to the whole graph.
 - Each feature declares its own `NavKey`s; navigation implementations (`*NavigationImpl`, `*NavigationModule`) stay in `:shared:ui`.
 - A key that requires a session implements `RequiresLogin` from `:shared:navigation` — not an ad-hoc check in the feature or the app module.
-- Navigation arguments are minimal, serializable, and stable; the destination screen loads the full data through domain.
+- Navigation arguments are minimal, serializable, and stable; the destination screen loads the full data through domain — **except** for the registered payload pattern below.
 - Only the app knows the complete graph and can implement cross-feature navigation.
 - Every key is registered for state restoration.
 - An action requiring auth or a role is also validated in domain/backend — navigation only improves UX, it's not the authorization boundary.
+
+## Arguments as a complete payload
+
+Registered exception (`feature/restaurant-screen-ui`, 2026-09-01). `RestaurantKey` carries a complete `RestaurantArgs` (restaurant, menus, dishes, prices, allergens, ratings) instead of an id, so the restaurant screen paints on the first frame and **issues no call when it opens**; it queries domain only on pull to refresh.
+
+Use it when the caller already holds the loaded data (re-fetching would be a redundant call), the payload is a serializable presentation model owned by the destination feature, and the screen still has a domain refresh path — the payload is a starting point, never the only source of truth.
+
+Don't use it for deep links or cold restoration (no caller supplies the payload — those need an id key), or for large payloads: the back stack is serialized into saved state, so keep it to a few KB.
+
+The payload is built in `:shared:ui` (`HomeNavigationImpl` maps `RestaurantDetails` to `RestaurantArgs`), never in the calling feature, so `:feature:home` never depends on `:feature:restaurant`.
 
 ## Tests
 

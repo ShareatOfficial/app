@@ -4,6 +4,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.CancellationException
 import org.shareat.app.domain.model.AccountId
+import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
@@ -27,6 +28,24 @@ internal class SupabaseReviewRepository(
                 eq("moderation_status", "visible")
             }
         }.decodeList<ReviewDto>().sortedByDescending(ReviewDto::createdAt).map(ReviewDto::toDomain)
+    }
+
+    override suspend fun getPublicDishReviews(
+        dishIds: Set<DishId>,
+    ): RepositoryResult<Map<DishId, List<Review>>> = supabaseResult {
+        if (dishIds.isEmpty()) {
+            emptyMap()
+        } else {
+            client.from("reviews").select {
+                filter {
+                    isIn("dish_id", dishIds.map(DishId::value))
+                    eq("visibility", "public")
+                    eq("moderation_status", "visible")
+                }
+            }.decodeList<ReviewDto>()
+                .sortedByDescending(ReviewDto::createdAt)
+                .groupBy({ DishId(requireNotNull(it.dishId)) }, ReviewDto::toDomain)
+        }
     }
 
     override suspend fun getReviewsByAuthor(accountId: AccountId): RepositoryResult<List<Review>> = supabaseResult {

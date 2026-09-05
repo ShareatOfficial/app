@@ -6,6 +6,6 @@ import org.shareat.app.di.initKoinAndroid
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        initKoinAndroid(this)
+        initKoinAndroid(this, useFakeData = false) // initKoinAndroid(this, useFakeData = true)
     }
 }

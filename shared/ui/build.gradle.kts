@@ -70,6 +70,7 @@ kotlin {
             implementation(project(":feature:login:ui"))
             implementation(project(":feature:restaurantHome"))
             implementation(project(":feature:review"))
+            implementation(project(":feature:restaurant:ui"))
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

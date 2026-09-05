@@ -3,6 +3,7 @@ package org.shareat.app.data.fake
 import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.AccountStatus
+import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.IsoTimestamp
 import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.Review
@@ -11,12 +12,19 @@ import org.shareat.app.domain.model.ReviewId
 import org.shareat.app.domain.model.ReviewModerationStatus
 import org.shareat.app.domain.model.ReviewTarget
 import org.shareat.app.domain.model.ReviewVisibility
+import org.shareat.app.domain.model.toRatingSummary
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.ReviewRepository
 
 fun interface FakeTimestampProvider {
     fun now(): IsoTimestamp
+}
+
+private fun FakeShareatData.publicReviewsOf(target: ReviewTarget): List<Review> = reviews.filter {
+    it.target == target &&
+        it.visibility == ReviewVisibility.Public &&
+        it.moderationStatus == ReviewModerationStatus.Visible
 }
 
 class FakeReviewRepository(
@@ -27,14 +35,16 @@ class FakeReviewRepository(
     },
 ) : ReviewRepository {
     override suspend fun getPublicReviews(target: ReviewTarget) = scenario.result(
-        populated = {
-            data.reviews.filter {
-                it.target == target &&
-                    it.visibility == ReviewVisibility.Public &&
-                    it.moderationStatus == ReviewModerationStatus.Visible
-            }
-        },
+        populated = { data.publicReviewsOf(target) },
         empty = { emptyList() },
+    )
+
+    override suspend fun getPublicDishReviews(dishIds: Set<DishId>) = scenario.result(
+        populated = {
+            dishIds.associateWith { data.publicReviewsOf(ReviewTarget.Dish(it)) }
+                .filterValues(List<Review>::isNotEmpty)
+        },
+        empty = { emptyMap() },
     )
 
     override suspend fun getReviewsByAuthor(accountId: AccountId) = scenario.result(
@@ -43,22 +53,8 @@ class FakeReviewRepository(
     )
 
     override suspend fun getRatingSummary(target: ReviewTarget) = scenario.result(
-        populated = {
-            val ratings = data.reviews.filter {
-                it.target == target &&
-                    it.visibility == ReviewVisibility.Public &&
-                    it.moderationStatus == ReviewModerationStatus.Visible
-            }.map { it.rating.value }
-            if (ratings.isEmpty()) {
-                RatingSummary(averageTenths = null, ratingCount = 0)
-            } else {
-                RatingSummary(
-                    averageTenths = (ratings.sum() * 10 + ratings.size / 2) / ratings.size,
-                    ratingCount = ratings.size,
-                )
-            }
-        },
-        empty = { RatingSummary(averageTenths = null, ratingCount = 0) },
+        populated = { data.publicReviewsOf(target).toRatingSummary() },
+        empty = { RatingSummary.Unrated },
     )
 
     override suspend fun saveReview(draft: ReviewDraft): RepositoryResult<Review> {
