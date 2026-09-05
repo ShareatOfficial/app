@@ -3,6 +3,7 @@ package org.shareat.app.data.fake
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.IsoTimestamp
 import org.shareat.app.domain.model.Rating
 import org.shareat.app.domain.model.RestaurantId
@@ -24,6 +25,31 @@ class FakeReviewRepositoryTest {
             org.shareat.app.domain.model.RatingSummary(averageTenths = 45, ratingCount = 2),
             summary,
         )
+    }
+
+    @Test
+    fun batchedDishReviewsMatchTheSingleTargetLookup() = runSuspend {
+        val repository = FakeReviewRepository(FakeShareatData.preview())
+
+        val batched = assertIs<RepositoryResult.Success<*>>(
+            repository.getPublicDishReviews(setOf(FakeIds.croquettes)),
+        ).value as Map<*, *>
+        val single = assertIs<RepositoryResult.Success<*>>(
+            repository.getPublicReviews(ReviewTarget.Dish(FakeIds.croquettes)),
+        ).value
+
+        assertEquals(single, batched[FakeIds.croquettes])
+    }
+
+    @Test
+    fun batchedDishReviewsOmitDishesWithoutPublicReviews() = runSuspend {
+        val repository = FakeReviewRepository(FakeShareatData.preview())
+
+        val batched = assertIs<RepositoryResult.Success<*>>(
+            repository.getPublicDishReviews(setOf(DishId("dish-with-no-reviews"))),
+        ).value as Map<*, *>
+
+        assertEquals(emptyMap<Any, Any>(), batched)
     }
 
     @Test

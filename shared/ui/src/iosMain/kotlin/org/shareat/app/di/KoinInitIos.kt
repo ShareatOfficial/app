@@ -1,5 +1,5 @@
 package org.shareat.app.di
 
-fun initKoinIos() {
-    initKoin()
+fun initKoinIos(useFakeData: Boolean = false) {
+    initKoin(useFakeData = useFakeData)
 }

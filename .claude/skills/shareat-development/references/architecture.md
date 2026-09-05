@@ -36,7 +36,13 @@ Note: not every feature in the repo has all three modules split out yet (some ar
 
 Contains: domain entities and value objects, repository interfaces, use cases and business rules, errors/results expressed in product terms.
 
-Does **not** depend on `data`, `ui`, Koin, Compose, DTOs, storage, or network clients. `:shared:domain` follows the same rule.
+Does **not** depend on `data`, `ui`, Compose, DTOs, storage, or network clients. `:shared:domain` follows the same rule.
+
+Models always live in a `model/` package inside their own layer and their own module — never declared alongside the use case, repository, or ViewModel that consumes them. `:feature:<name>:domain` declares them in `…feature/<name>/domain/model/`; `:shared:domain` uses `org.shareat.app.domain.model`. A use case file holds the use case, not the types it takes or returns.
+
+One Koin exception: a `domain` module may publish its own Koin module, isolated in a `di` package, binding a use case interface to its impl. Entities, use cases, and repositories still receive dependencies by constructor and never resolve anything themselves. `:shared:domain` does this in `org.shareat.app.domain.usecase.di.sharedDomainModule`.
+
+A use case that more than one feature needs lives in `:shared:domain`, not in whichever feature wrote it first — a feature never imports another feature's `domain`. That is why `GetRestaurantsUseCase` (home's list) and `GetRestaurantUseCase` (the detail screen) sit there sharing `RestaurantDetailsAssembler` and the same repositories. **Each use case exposes exactly one public method**; two different queries are two use cases, never two methods on one interface.
 
 ### `data`
 
@@ -48,7 +54,7 @@ Depends on `domain`. DTOs and provider-specific details never leak into the publ
 
 Contains: the feature's screens and components, ViewModels/state/effects, navigation interfaces expressed as intents (not concrete navigation).
 
-Depends on `domain` only — never on a concrete `data` implementation or the app module. A feature declares its own `NavKey`s (its destinations) alongside its navigation interface. The navigation interface implementations and the Koin Navigation 3 entries live in `:shared:ui`, which imports each feature's keys and wires each screen into the app's graph (see `navigation.md`).
+Depends on `domain` only — never on a concrete `data` implementation or the app module. The same model rule applies here: ui states, args, and presentation models are declared in `…feature/<name>/ui/model/`, not inside the screen or ViewModel file. A feature declares its own `NavKey`s (its destinations) alongside its navigation interface. The navigation interface implementations and the Koin Navigation 3 entries live in `:shared:ui`, which imports each feature's keys and wires each screen into the app's graph (see `navigation.md`).
 
 ## Dependency direction
 

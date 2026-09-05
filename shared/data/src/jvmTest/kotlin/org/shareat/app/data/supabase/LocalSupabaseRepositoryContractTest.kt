@@ -8,6 +8,7 @@ import org.shareat.app.domain.model.Account
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.AuthSession
 import org.shareat.app.domain.model.EmailAddress
+import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.RegistrationCredentials
 import org.shareat.app.domain.model.Restaurant
@@ -20,10 +21,16 @@ class LocalSupabaseRepositoryContractTest {
         val url = System.getenv("SHAREAT_SUPABASE_URL") ?: return@runBlocking
         val key = System.getenv("SHAREAT_SUPABASE_PUBLISHABLE_KEY") ?: return@runBlocking
         val client = createShareatSupabaseClient(SupabaseConfig(url, key), secureSessionStorage = null)
+        val dishes = SupabaseDishRepository(client)
+
         val restaurants = SupabaseRestaurantRepository(client).getPublishedRestaurants()
         val restaurant = (assertIs<RepositoryResult.Success<*>>(restaurants).value as List<*>)
             .single() as Restaurant
         assertEquals("Local Shareat Kitchen", restaurant.name)
+
+        val menuResult = SupabaseMenuRepository(client, dishes).getPublishedMenu(restaurant.id)
+        val menu = assertIs<RepositoryResult.Success<*>>(menuResult).value as MenuDetails
+        assertEquals(1250, menu.items.single().price.minorUnits)
 
         val summaryResult = SupabaseReviewRepository(client)
             .getRatingSummary(ReviewTarget.Restaurant(restaurant.id))

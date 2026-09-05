@@ -6,6 +6,7 @@ import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.AccountStatus
 import org.shareat.app.domain.model.AllergenDeclaration
 import org.shareat.app.domain.model.AllergenInformationSource
+import org.shareat.app.domain.model.Currency
 import org.shareat.app.domain.model.DailyOpeningHours
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishId
@@ -15,6 +16,12 @@ import org.shareat.app.domain.model.GeoCoordinates
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.IsoTimestamp
 import org.shareat.app.domain.model.LocalTime
+import org.shareat.app.domain.model.Menu
+import org.shareat.app.domain.model.MenuItemDraft
+import org.shareat.app.domain.model.MenuDish
+import org.shareat.app.domain.model.MenuId
+import org.shareat.app.domain.model.MenuPublicationState
+import org.shareat.app.domain.model.Money
 import org.shareat.app.domain.model.OpeningPeriod
 import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.Rating
@@ -23,6 +30,8 @@ import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.RestaurantProfileDraft
+import org.shareat.app.domain.model.RestaurantMenuDraft
+import org.shareat.app.domain.model.DishDraft
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewId
 import org.shareat.app.domain.model.ReviewModerationStatus
@@ -139,6 +148,20 @@ internal fun RestaurantProfileDraft.toCreateProfileRpc(): CreateRestaurantProfil
 private fun LocalTime.toDatabaseTime(): String =
     "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00"
 
+internal fun MenuDto.toDomain(): Menu = Menu(
+    id = MenuId(id),
+    restaurantId = RestaurantId(restaurantId),
+    name = name,
+    description = description,
+    publicationState = when (publicationState) {
+        "draft" -> MenuPublicationState.Draft
+        "published" -> MenuPublicationState.Published
+        "unpublished" -> MenuPublicationState.Unpublished
+        "disabled" -> MenuPublicationState.Disabled
+        else -> error("Unsupported menu state: $publicationState")
+    },
+)
+
 internal fun DishDto.toDomain(
     allergens: Set<String>,
     publicImageUrl: (String) -> String,
@@ -149,13 +172,69 @@ internal fun DishDto.toDomain(
     description = description,
     image = imagePath?.let { ImageRef(publicImageUrl(it), imageAltText) },
     allergenDeclaration = if (allergens.isEmpty() && allergenNote == null) null else AllergenDeclaration(
-        allergens = allergens.mapTo(mutableSetOf(), String::toEuAllergen),
+        allergens = allergens.mapNotNullTo(mutableSetOf(), String::toEuAllergenOrNull),
         note = allergenNote,
         source = AllergenInformationSource.Restaurant,
     ),
     isEnabled = isEnabled,
 )
 
+internal fun MenuItemDto.toDomain(dish: Dish): MenuDish = MenuDish(
+    dish = dish,
+    price = Money(priceMinorUnits, Currency.Euro),
+    position = position,
+    isEnabled = isEnabled,
+)
+
+internal fun RestaurantMenuDraft.toSaveRpc(): SaveRestaurantMenuRpc = SaveRestaurantMenuRpc(
+    restaurantId = restaurantId.value,
+    menuId = menuId?.value,
+    name = name.trim(),
+    description = description?.trim()?.ifEmpty { null },
+    publicationState = publicationState.toDatabaseValue(),
+    items = items.sortedBy(MenuItemDraft::position).mapIndexed { position, item ->
+        MenuItemUpdateDto(
+            dishId = item.dishId.value,
+            priceMinorUnits = item.price.minorUnits,
+            position = position,
+            isEnabled = item.isEnabled,
+        )
+    },
+)
+
+internal fun DishDraft.toSaveRpc(): SaveRestaurantDishRpc = SaveRestaurantDishRpc(
+    restaurantId = restaurantId.value,
+    dishId = id?.value,
+    name = name.trim(),
+    description = description?.trim()?.ifEmpty { null },
+    isEnabled = isEnabled,
+    allergenIds = allergenDeclaration?.allergens.orEmpty().map(EuAllergen::toDatabaseValue),
+    allergenNote = allergenDeclaration?.note?.trim()?.ifEmpty { null },
+)
+
+private fun MenuPublicationState.toDatabaseValue(): String = when (this) {
+    MenuPublicationState.Draft -> "draft"
+    MenuPublicationState.Published -> "published"
+    MenuPublicationState.Unpublished -> "unpublished"
+    MenuPublicationState.Disabled -> "disabled"
+}
+
+private fun EuAllergen.toDatabaseValue(): String = when (this) {
+    EuAllergen.Celery -> "celery"
+    EuAllergen.CerealsContainingGluten -> "cereals_containing_gluten"
+    EuAllergen.Crustaceans -> "crustaceans"
+    EuAllergen.Eggs -> "eggs"
+    EuAllergen.Fish -> "fish"
+    EuAllergen.Lupin -> "lupin"
+    EuAllergen.Milk -> "milk"
+    EuAllergen.Molluscs -> "molluscs"
+    EuAllergen.Mustard -> "mustard"
+    EuAllergen.Nuts -> "nuts"
+    EuAllergen.Peanuts -> "peanuts"
+    EuAllergen.Sesame -> "sesame"
+    EuAllergen.Soybeans -> "soybeans"
+    EuAllergen.SulphurDioxideAndSulphites -> "sulphur_dioxide_and_sulphites"
+}
 
 internal fun ReviewDto.toDomain(): Review = Review(
     id = ReviewId(id),
@@ -186,9 +265,12 @@ private fun String.toLocalTime(): LocalTime {
     return LocalTime(parts[0].toInt(), parts[1].toInt())
 }
 
-private fun String.toEuAllergen(): EuAllergen = when (this) {
+// The deployed project stores three allergens under shorter ids than the canonical ones this
+// mapper writes, so reads accept both spellings. An id we don't recognise is dropped rather than
+// thrown on: one unknown allergen must never fail the whole menu it belongs to.
+internal fun String.toEuAllergenOrNull(): EuAllergen? = when (this) {
     "celery" -> EuAllergen.Celery
-    "cereals_containing_gluten" -> EuAllergen.CerealsContainingGluten
+    "cereals_containing_gluten", "gluten" -> EuAllergen.CerealsContainingGluten
     "crustaceans" -> EuAllergen.Crustaceans
     "eggs" -> EuAllergen.Eggs
     "fish" -> EuAllergen.Fish
@@ -199,7 +281,7 @@ private fun String.toEuAllergen(): EuAllergen = when (this) {
     "nuts" -> EuAllergen.Nuts
     "peanuts" -> EuAllergen.Peanuts
     "sesame" -> EuAllergen.Sesame
-    "soybeans" -> EuAllergen.Soybeans
-    "sulphur_dioxide_and_sulphites" -> EuAllergen.SulphurDioxideAndSulphites
-    else -> error("Unsupported allergen: $this")
+    "soybeans", "soy" -> EuAllergen.Soybeans
+    "sulphur_dioxide_and_sulphites", "sulphites" -> EuAllergen.SulphurDioxideAndSulphites
+    else -> null
 }

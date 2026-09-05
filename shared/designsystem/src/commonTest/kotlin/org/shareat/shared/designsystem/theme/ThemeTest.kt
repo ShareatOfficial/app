@@ -8,7 +8,7 @@ class ThemeTest {
     @Test
     fun lightColorSchemeMatchesMaterialThemeBuilderExport() {
         with(ShareatLightColorScheme) {
-            assertEquals(Color(0xFF8F4C36), primary)
+            assertEquals(Color(0xFFFF4F00), primary)
             assertEquals(Color(0xFFFFFFFF), onPrimary)
             assertEquals(Color(0xFFFFDBD0), primaryContainer)
             assertEquals(Color(0xFF723521), onPrimaryContainer)

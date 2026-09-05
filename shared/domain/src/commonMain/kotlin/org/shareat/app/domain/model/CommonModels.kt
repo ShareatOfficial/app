@@ -19,6 +19,13 @@ value class RestaurantId(val value: String) {
 }
 
 @JvmInline
+value class MenuId(val value: String) {
+    init {
+        require(value.isNotBlank())
+    }
+}
+
+@JvmInline
 value class DishId(val value: String) {
     init {
         require(value.isNotBlank())
@@ -52,5 +59,18 @@ data class ImageRef(
 ) {
     init {
         require(url.isNotBlank())
+    }
+}
+
+enum class Currency(val code: String) {
+    Euro("EUR"),
+}
+
+data class Money(
+    val minorUnits: Long,
+    val currency: Currency = Currency.Euro,
+) {
+    init {
+        require(minorUnits >= 0)
     }
 }

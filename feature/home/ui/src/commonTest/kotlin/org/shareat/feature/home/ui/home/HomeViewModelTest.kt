@@ -26,8 +26,8 @@ import org.shareat.app.domain.model.Rating
 import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
-import org.shareat.feature.home.domain.DishReviewHighlight
-import org.shareat.feature.home.domain.RestaurantWithHighlights
+import org.shareat.app.domain.usecase.DishReviewHighlight
+import org.shareat.app.domain.usecase.RestaurantDetails
 import org.shareat.feature.home.ui.home.model.HomeContentUiState
 import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
 import kotlin.test.AfterTest
@@ -53,7 +53,7 @@ class HomeViewModelTest {
 
     @Test
     fun initialStateBeforeLoadCompletesIsLoading() = runTest(dispatcher) {
-        val viewModel = viewModelFor { _, _ -> RepositoryResult.Success(listOf(restaurantWithHighlightsFixture())) }
+        val viewModel = viewModelFor { _, _ -> RepositoryResult.Success(listOf(restaurantDetailsFixture())) }
 
         assertIs<HomeContentUiState.Loading>(viewModel.uiState.value.content)
     }
@@ -62,7 +62,7 @@ class HomeViewModelTest {
     fun loadsRestaurantsIntoSectionedContent() = runTest(dispatcher) {
         val viewModel = viewModelFor { _, _ ->
             RepositoryResult.Success(
-                listOf(restaurantWithHighlightsFixture(name = "Casa Naranja", averageTenths = 48)),
+                listOf(restaurantDetailsFixture(name = "Casa Naranja", averageTenths = 48)),
             )
         }
 
@@ -79,7 +79,7 @@ class HomeViewModelTest {
     @Test
     fun filtersRestaurantsByCaseInsensitiveNameAndRebuildsSections() = runTest(dispatcher) {
         val viewModel = viewModelFor { _, _ ->
-            RepositoryResult.Success(listOf(restaurantWithHighlightsFixture(name = "Casa Naranja")))
+            RepositoryResult.Success(listOf(restaurantDetailsFixture(name = "Casa Naranja")))
         }
         advanceUntilIdle()
 
@@ -97,7 +97,7 @@ class HomeViewModelTest {
     @Test
     fun searchQueryUpdatesImmediatelyButFilteringWaitsForDebounce() = runTest(dispatcher) {
         val viewModel = viewModelFor { _, _ ->
-            RepositoryResult.Success(listOf(restaurantWithHighlightsFixture(name = "Casa Naranja")))
+            RepositoryResult.Success(listOf(restaurantDetailsFixture(name = "Casa Naranja")))
         }
         advanceUntilIdle()
 
@@ -129,7 +129,7 @@ class HomeViewModelTest {
             if (shouldFail) {
                 RepositoryResult.Failure(RepositoryError.Offline)
             } else {
-                RepositoryResult.Success(listOf(restaurantWithHighlightsFixture()))
+                RepositoryResult.Success(listOf(restaurantDetailsFixture()))
             }
         }
         advanceUntilIdle()
@@ -143,17 +143,17 @@ class HomeViewModelTest {
     }
 
     private fun viewModelFor(
-        result: (page: Int, numberOfRestaurants: Int) -> RepositoryResult<List<RestaurantWithHighlights>>,
+        result: (page: Int, numberOfRestaurants: Int) -> RepositoryResult<List<RestaurantDetails>>,
     ): HomeViewModel = HomeViewModel(
         getRestaurantsUseCase = { page, numberOfRestaurants -> result(page, numberOfRestaurants) },
     )
 }
 
-private fun restaurantWithHighlightsFixture(
+private fun restaurantDetailsFixture(
     id: String = "restaurant-1",
     name: String = "Casa Naranja",
     averageTenths: Int? = null,
-): RestaurantWithHighlights = RestaurantWithHighlights(
+): RestaurantDetails = RestaurantDetails(
     restaurant = Restaurant(
         id = RestaurantId(id),
         ownerAccountId = AccountId("owner-1"),
@@ -192,5 +192,6 @@ private fun restaurantWithHighlightsFixture(
             ),
         ),
     ),
+    menu = null,
     isOpen = true,
 )

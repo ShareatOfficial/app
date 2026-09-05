@@ -6,6 +6,7 @@ import org.shareat.app.data.fake.FakeAccountRepository
 import org.shareat.app.data.fake.FakeDishRepository
 import org.shareat.app.data.fake.FakeAuthRepository
 import org.shareat.app.data.fake.FakeImageRepository
+import org.shareat.app.data.fake.FakeMenuRepository
 import org.shareat.app.data.fake.FakeRestaurantRepository
 import org.shareat.app.data.fake.FakeReviewRepository
 import org.shareat.app.data.fake.FakeShareatData
@@ -14,6 +15,7 @@ import org.shareat.app.data.supabase.SupabaseAuthRepository
 import org.shareat.app.data.supabase.SupabaseConfig
 import org.shareat.app.data.supabase.SupabaseDishRepository
 import org.shareat.app.data.supabase.SupabaseImageRepository
+import org.shareat.app.data.supabase.SupabaseMenuRepository
 import org.shareat.app.data.supabase.SupabaseRestaurantRepository
 import org.shareat.app.data.supabase.SupabaseReviewRepository
 import org.shareat.app.data.supabase.SecureSessionStorage
@@ -22,6 +24,7 @@ import org.shareat.app.domain.repository.AccountRepository
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.DishRepository
 import org.shareat.app.domain.repository.ImageRepository
+import org.shareat.app.domain.repository.MenuRepository
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.domain.repository.ReviewRepository
 
@@ -32,6 +35,7 @@ val fakeDataModule: Module = module {
     single { FakeShareatData.preview() }
     single<AccountRepository> { FakeAccountRepository(get()) }
     single<RestaurantRepository> { FakeRestaurantRepository(get()) }
+    single<MenuRepository> { FakeMenuRepository(get()) }
     single<DishRepository> { FakeDishRepository(get()) }
     single<ReviewRepository> { FakeReviewRepository(get()) }
     single<AuthRepository> { FakeAuthRepository() }
@@ -46,6 +50,7 @@ fun supabaseDataModule(config: SupabaseConfig = SupabaseConfig.fromBuildConfig()
     single { SupabaseDishRepository(get()) }
     single<DishRepository> { get<SupabaseDishRepository>() }
     single<RestaurantRepository> { SupabaseRestaurantRepository(get()) }
+    single<MenuRepository> { SupabaseMenuRepository(get(), get()) }
     single<ReviewRepository> { SupabaseReviewRepository(get()) }
     single<ImageRepository> { SupabaseImageRepository(get()) }
 }

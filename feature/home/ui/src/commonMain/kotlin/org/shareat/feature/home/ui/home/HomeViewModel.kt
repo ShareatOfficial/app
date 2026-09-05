@@ -12,15 +12,17 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
+import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
-import org.shareat.feature.home.domain.GetRestaurantsUseCase
-import org.shareat.feature.home.domain.RestaurantWithHighlights
+import org.shareat.app.domain.usecase.GetRestaurantsUseCase
+import org.shareat.app.domain.usecase.RestaurantDetails
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
 import org.shareat.feature.home.ui.home.model.HomeContentUiState
 import org.shareat.feature.home.ui.home.model.HomeUiState
 import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
 import org.shareat.feature.home.ui.home.model.toFeedSections
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val HomePageOffset = 0
 private const val HomePageSize = 50
@@ -37,7 +39,8 @@ class HomeViewModel(
 
     private val searchQuery = MutableStateFlow("")
 
-    private var loadedRestaurants: List<RestaurantCardUiState> = emptyList()
+    private var loadedRestaurants: List<RestaurantDetails> = emptyList()
+    private var restaurantCards: List<RestaurantCardUiState> = emptyList()
 
     init {
         loadHome()
@@ -53,7 +56,7 @@ class HomeViewModel(
         viewModelScope.launch {
             searchQuery
                 .drop(1)
-                .debounce(SearchDebounceMillis)
+                .debounce(SearchDebounceMillis.milliseconds)
                 .collect { query -> _uiState.update { it.copy(content = filteredContent(query)) } }
         }
     }
@@ -69,7 +72,8 @@ class HomeViewModel(
                 val result = getRestaurantsUseCase(page = HomePageOffset, numberOfRestaurants = HomePageSize)
             ) {
                 is RepositoryResult.Success -> {
-                    loadedRestaurants = result.value.map { it.toCardUiState() }
+                    loadedRestaurants = result.value
+                    restaurantCards = result.value.map { it.toCardUiState() }
                     _uiState.update { it.copy(content = filteredContent(it.searchQuery)) }
                 }
 
@@ -80,14 +84,17 @@ class HomeViewModel(
         }
     }
 
+    fun restaurantFor(id: RestaurantId): RestaurantDetails? =
+        loadedRestaurants.firstOrNull { it.restaurant.id == id }
+
     private fun filteredContent(query: String): HomeContentUiState.Loaded = HomeContentUiState.Loaded(
-        sections = loadedRestaurants
+        sections = restaurantCards
             .filter { restaurant -> restaurant.name.contains(query, ignoreCase = true) }
             .toFeedSections(),
     )
 }
 
-private fun RestaurantWithHighlights.toCardUiState(): RestaurantCardUiState = RestaurantCardUiState(
+private fun RestaurantDetails.toCardUiState(): RestaurantCardUiState = RestaurantCardUiState(
     id = restaurant.id,
     name = restaurant.name,
     heroImageUrl = restaurant.heroImage?.url,

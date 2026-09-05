@@ -27,6 +27,7 @@ private val HighlightsSectionShape = RoundedCornerShape(24.dp)
 internal fun RestaurantHighlightsSection(
     restaurants: List<RestaurantCardUiState>,
     modifier: Modifier = Modifier,
+    onRestaurantClick: (RestaurantCardUiState) -> Unit = {},
 ) {
     HighlightsContainer(modifier = modifier) {
         restaurants.chunked(RestaurantGridColumns).forEach { rowRestaurants ->
@@ -45,6 +46,7 @@ internal fun RestaurantHighlightsSection(
                         dishReviews = restaurant.dishReviews,
                         showDishReviews = false,
                         modifier = Modifier.weight(1f),
+                        onClick = { onRestaurantClick(restaurant) },
                     )
                 }
             }

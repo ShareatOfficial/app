@@ -4,7 +4,7 @@ import Shared
 @main
 struct iOSApp: App {
     init() {
-        KoinInitIosKt.doInitKoinIos()
+        KoinInitIosKt.doInitKoinIos(useFakeData: false)
     }
     var body: some Scene {
         WindowGroup {
