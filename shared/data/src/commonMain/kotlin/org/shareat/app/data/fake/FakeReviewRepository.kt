@@ -6,6 +6,7 @@ import org.shareat.app.domain.model.AccountStatus
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.IsoTimestamp
 import org.shareat.app.domain.model.RatingSummary
+import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
 import org.shareat.app.domain.model.ReviewId
@@ -55,6 +56,15 @@ class FakeReviewRepository(
     override suspend fun getRatingSummary(target: ReviewTarget) = scenario.result(
         populated = { data.publicReviewsOf(target).toRatingSummary() },
         empty = { RatingSummary.Unrated },
+    )
+
+    override suspend fun getRestaurantRatingSummaries(restaurantIds: Set<RestaurantId>) = scenario.result(
+        populated = {
+            restaurantIds
+                .associateWith { data.publicReviewsOf(ReviewTarget.Restaurant(it)).toRatingSummary() }
+                .filterValues { it.ratingCount > 0 }
+        },
+        empty = { emptyMap() },
     )
 
     override suspend fun saveReview(draft: ReviewDraft): RepositoryResult<Review> {

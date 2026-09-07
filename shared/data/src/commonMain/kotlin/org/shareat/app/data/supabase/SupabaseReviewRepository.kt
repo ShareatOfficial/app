@@ -6,6 +6,7 @@ import kotlinx.coroutines.CancellationException
 import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.RatingSummary
+import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
 import org.shareat.app.domain.model.ReviewId
@@ -36,13 +37,15 @@ internal class SupabaseReviewRepository(
         if (dishIds.isEmpty()) {
             emptyMap()
         } else {
-            client.from("reviews").select {
-                filter {
-                    isIn("dish_id", dishIds.map(DishId::value))
-                    eq("visibility", "public")
-                    eq("moderation_status", "visible")
-                }
-            }.decodeList<ReviewDto>()
+            selectInBatches(dishIds.map(DishId::value)) { batch ->
+                client.from("reviews").select {
+                    filter {
+                        isIn("dish_id", batch)
+                        eq("visibility", "public")
+                        eq("moderation_status", "visible")
+                    }
+                }.decodeList<ReviewDto>()
+            }
                 .sortedByDescending(ReviewDto::createdAt)
                 .groupBy({ DishId(requireNotNull(it.dishId)) }, ReviewDto::toDomain)
         }
@@ -68,6 +71,21 @@ internal class SupabaseReviewRepository(
             }
         }.decodeList<RatingSummaryDto>()
         rows.singleOrNull()?.toDomain() ?: RatingSummary(averageTenths = null, ratingCount = 0)
+    }
+
+    override suspend fun getRestaurantRatingSummaries(
+        restaurantIds: Set<RestaurantId>,
+    ): RepositoryResult<Map<RestaurantId, RatingSummary>> = supabaseResult {
+        if (restaurantIds.isEmpty()) {
+            emptyMap()
+        } else {
+            selectInBatches(restaurantIds.map(RestaurantId::value)) { batch ->
+                client.from("restaurant_rating_summaries").select {
+                    filter { isIn("restaurant_id", batch) }
+                }.decodeList<RatingSummaryDto>()
+            }
+                .associateBy({ RestaurantId(requireNotNull(it.restaurantId)) }, RatingSummaryDto::toDomain)
+        }
     }
 
     override suspend fun saveReview(draft: ReviewDraft): RepositoryResult<Review> = supabaseResult {

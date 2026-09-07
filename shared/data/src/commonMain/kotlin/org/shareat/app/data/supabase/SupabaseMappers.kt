@@ -64,7 +64,13 @@ internal fun RestaurantDto.toDomain(
     ownerAccountId = AccountId(ownerAccountId),
     name = name,
     description = description,
-    heroImage = heroImagePath?.let { ImageRef(publicImageUrl(it), heroImageAltText) },
+    heroImage = heroImagePath?.let {
+        if (it.startsWith("http")) {
+            ImageRef(it, heroImageAltText)
+        } else {
+            ImageRef(publicImageUrl(it), heroImageAltText)
+        }
+    },
     publicEmail = publicEmail?.let(::EmailAddress),
     publicPhone = publicPhone,
     address = PostalAddress(

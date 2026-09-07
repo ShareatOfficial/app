@@ -5,9 +5,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.shareat.app.domain.model.AccountId
+import org.shareat.app.domain.model.AllergenDeclaration
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.DishId
@@ -32,12 +34,12 @@ import org.shareat.app.domain.model.ReviewVisibility
 import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
+import org.shareat.app.domain.usecase.GetRestaurantMenuUseCase
 import org.shareat.app.domain.usecase.GetRestaurantUseCase
 import org.shareat.app.domain.usecase.RatedMenuDish
 import org.shareat.app.domain.usecase.RestaurantDetails
 import org.shareat.app.domain.usecase.RestaurantMenu
 import org.shareat.feature.restaurant.domain.DishMatchesFiltersUseCaseImpl
-import org.shareat.feature.restaurant.ui.model.DishArgs
 import org.shareat.feature.restaurant.ui.model.RestaurantArgs
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -63,12 +65,23 @@ class RestaurantViewModelTest {
     }
 
     @Test
-    fun theArgumentsRenderWithoutQueryingTheRepository() = runTest(dispatcher) {
-        val viewModel = viewModelFor { fail("The screen must not load anything when it opens") }
-
-        advanceUntilIdle()
+    fun theHeaderRendersFromTheArgumentsWhileOnlyTheDishesLoad() = runTest(dispatcher) {
+        val viewModel = openScreenWith()
 
         val state = viewModel.uiState.value
+        assertEquals("Casa Naranja", state.header.name)
+        assertEquals("4,8", state.header.ratingLabel)
+        assertTrue(state.isLoadingDishes)
+        assertFalse(state.isRefreshing)
+        assertTrue(state.dishes.isEmpty())
+    }
+
+    @Test
+    fun theMenuIsLoadedWhenTheScreenOpens() = runTest(dispatcher) {
+        val viewModel = viewModelFor()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoadingDishes)
         assertEquals("Casa Naranja", state.header.name)
         assertEquals(listOf("Croquetas", "Lubina", "Torrija"), state.dishes.map { it.name })
         assertTrue(state.hasPublishedMenu)
@@ -77,11 +90,7 @@ class RestaurantViewModelTest {
 
     @Test
     fun aRestaurantWithoutAPublishedMenuShowsNoDishesAndNoFilters() = runTest(dispatcher) {
-        val viewModel = RestaurantViewModel(
-            args = argsFixture.copy(dishes = emptyList()),
-            getRestaurant = GetRestaurantUseCase { fail("Unexpected repository call") },
-            dishMatchesFilters = DishMatchesFiltersUseCaseImpl(),
-        )
+        val viewModel = viewModelFor(menu = { RepositoryResult.Success(null) })
 
         val state = viewModel.uiState.value
         assertFalse(state.hasPublishedMenu)
@@ -144,7 +153,7 @@ class RestaurantViewModelTest {
 
     @Test
     fun pullToRefreshReplacesTheContentWithTheDomainResult() = runTest(dispatcher) {
-        val viewModel = viewModelFor { RepositoryResult.Success(refreshedDetails()) }
+        val viewModel = viewModelFor(getRestaurant = { RepositoryResult.Success(refreshedDetails()) })
 
         viewModel.onRefresh()
         assertTrue(viewModel.uiState.value.isRefreshing)
@@ -158,7 +167,7 @@ class RestaurantViewModelTest {
 
     @Test
     fun aFailedRefreshKeepsTheContentAndSurfacesTheError() = runTest(dispatcher) {
-        val viewModel = viewModelFor { RepositoryResult.Failure(RepositoryError.Offline) }
+        val viewModel = viewModelFor(getRestaurant = { RepositoryResult.Failure(RepositoryError.Offline) })
 
         viewModel.onRefresh()
         advanceUntilIdle()
@@ -174,7 +183,7 @@ class RestaurantViewModelTest {
 
     @Test
     fun theErrorIsClearedOnceShown() = runTest(dispatcher) {
-        val viewModel = viewModelFor { RepositoryResult.Failure(RepositoryError.Offline) }
+        val viewModel = viewModelFor(getRestaurant = { RepositoryResult.Failure(RepositoryError.Offline) })
         viewModel.onRefresh()
         advanceUntilIdle()
 
@@ -196,7 +205,7 @@ class RestaurantViewModelTest {
 
     @Test
     fun aRememberedRatingIsDroppedWhenTheDishLeavesTheRefreshedMenu() = runTest(dispatcher) {
-        val viewModel = viewModelFor { RepositoryResult.Success(refreshedDetails()) }
+        val viewModel = viewModelFor(getRestaurant = { RepositoryResult.Success(refreshedDetails()) })
         viewModel.onDishRatingClick("dish-croquettes", 4)
 
         viewModel.onRefresh()
@@ -207,7 +216,7 @@ class RestaurantViewModelTest {
 
     @Test
     fun theRatingAndReviewCountComeFromTheDishReviewList() = runTest(dispatcher) {
-        val viewModel = viewModelFor { RepositoryResult.Success(refreshedDetails()) }
+        val viewModel = viewModelFor(getRestaurant = { RepositoryResult.Success(refreshedDetails()) })
 
         viewModel.onRefresh()
         advanceUntilIdle()
@@ -227,12 +236,25 @@ class RestaurantViewModelTest {
         assertEquals(0, dish.reviewCount)
     }
 
-    private fun viewModelFor(
+    private fun TestScope.viewModelFor(
+        menu: suspend (RestaurantId) -> RepositoryResult<RestaurantMenu?> = {
+            RepositoryResult.Success(publishedMenu())
+        },
         getRestaurant: suspend (RestaurantId) -> RepositoryResult<RestaurantDetails> = {
-            fail("Unexpected repository call")
+            fail("Opening the screen must ask for the menu only")
+        },
+    ): RestaurantViewModel = openScreenWith(menu, getRestaurant).also { advanceUntilIdle() }
+
+    private fun openScreenWith(
+        menu: suspend (RestaurantId) -> RepositoryResult<RestaurantMenu?> = {
+            RepositoryResult.Success(publishedMenu())
+        },
+        getRestaurant: suspend (RestaurantId) -> RepositoryResult<RestaurantDetails> = {
+            fail("Opening the screen must ask for the menu only")
         },
     ): RestaurantViewModel = RestaurantViewModel(
         args = argsFixture,
+        getRestaurantMenu = GetRestaurantMenuUseCase { id -> menu(id) },
         getRestaurant = GetRestaurantUseCase { id -> getRestaurant(id) },
         dishMatchesFilters = DishMatchesFiltersUseCaseImpl(),
     )
@@ -245,47 +267,81 @@ private val argsFixture = RestaurantArgs(
     isOpen = true,
     ratingLabel = "4,8",
     reviewCount = 1_284,
-    dishes = listOf(
-        DishArgs(
+)
+
+private fun publishedMenu(): RestaurantMenu = restaurantMenu(
+    listOf(
+        ratedDish(
             id = "dish-croquettes",
             name = "Croquetas",
-            priceLabel = "12€",
+            price = Money(1_200),
+            position = 0,
             category = DishCategory.Starters,
-            allergens = listOf(EuAllergen.CerealsContainingGluten, EuAllergen.Milk),
-            declaresAllergens = true,
+            allergens = setOf(EuAllergen.CerealsContainingGluten, EuAllergen.Milk),
         ),
-        DishArgs(
+        ratedDish(
             id = "dish-sea-bass",
             name = "Lubina",
-            priceLabel = "24€",
+            price = Money(2_400),
+            position = 1,
             category = DishCategory.MainCourses,
-            allergens = listOf(EuAllergen.Fish),
-            declaresAllergens = true,
+            allergens = setOf(EuAllergen.Fish),
         ),
-        DishArgs(
+        ratedDish(
             id = "dish-french-toast",
             name = "Torrija",
-            priceLabel = "6€",
+            price = Money(600),
+            position = 2,
             category = DishCategory.Desserts,
-            allergens = listOf(EuAllergen.Milk),
-            declaresAllergens = true,
+            allergens = setOf(EuAllergen.Milk),
         ),
     ),
 )
 
-private fun refreshedDetails(): RestaurantDetails {
-    val restaurantId = RestaurantId("restaurant-casa-naranja")
-    val menu = Menu(
+private fun ratedDish(
+    id: String,
+    name: String,
+    price: Money,
+    position: Int,
+    category: DishCategory,
+    allergens: Set<EuAllergen>,
+    reviews: List<Review> = emptyList(),
+): RatedMenuDish = RatedMenuDish(
+    menuDish = MenuDish(
+        dish = Dish(
+            id = DishId(id),
+            restaurantId = RestaurantId("restaurant-casa-naranja"),
+            name = name,
+            allergenDeclaration = AllergenDeclaration(allergens),
+            isEnabled = true,
+        ),
+        price = price,
+        position = position,
+        category = category,
+    ),
+    reviews = reviews,
+)
+
+private fun restaurantMenu(dishes: List<RatedMenuDish>): RestaurantMenu = RestaurantMenu(
+    menu = Menu(
         id = MenuId("menu-winter"),
-        restaurantId = restaurantId,
+        restaurantId = RestaurantId("restaurant-casa-naranja"),
         name = "Carta de invierno",
         publicationState = MenuPublicationState.Published,
-    )
+    ),
+    dishes = dishes,
+)
+
+private fun detailsWith(
+    name: String,
+    dishes: List<RatedMenuDish>?,
+): RestaurantDetails {
+    val restaurantId = RestaurantId("restaurant-casa-naranja")
     return RestaurantDetails(
         restaurant = Restaurant(
             id = restaurantId,
             ownerAccountId = AccountId("owner-1"),
-            name = "Casa Naranja renovada",
+            name = name,
             address = PostalAddress(
                 streetLine = "Calle del Olmo, 18",
                 locality = "Madrid",
@@ -296,31 +352,33 @@ private fun refreshedDetails(): RestaurantDetails {
         ),
         ratingSummary = RatingSummary(averageTenths = 47, ratingCount = 1_300),
         dishHighlights = emptyList(),
-        menu = RestaurantMenu(
-            menu = menu,
-            dishes = listOf(
-                RatedMenuDish(
-                    menuDish = MenuDish(
-                        dish = Dish(
-                            id = DishId("dish-onion-soup"),
-                            restaurantId = restaurantId,
-                            name = "Sopa de cebolla",
-                            isEnabled = true,
-                        ),
-                        price = Money(1_150),
-                        position = 0,
-                        category = DishCategory.Starters,
-                    ),
-                    reviews = listOf(
-                        dishReview("review-1", rating = 5, comment = "Reconfortante."),
-                        dishReview("review-2", rating = 4),
-                    ),
-                ),
-            ),
-        ),
+        menu = dishes?.let(::restaurantMenu),
         isOpen = true,
     )
 }
+
+private fun refreshedDetails(): RestaurantDetails = detailsWith(
+    name = "Casa Naranja renovada",
+    dishes = listOf(
+        RatedMenuDish(
+            menuDish = MenuDish(
+                dish = Dish(
+                    id = DishId("dish-onion-soup"),
+                    restaurantId = RestaurantId("restaurant-casa-naranja"),
+                    name = "Sopa de cebolla",
+                    isEnabled = true,
+                ),
+                price = Money(1_150),
+                position = 0,
+                category = DishCategory.Starters,
+            ),
+            reviews = listOf(
+                dishReview("review-1", rating = 5, comment = "Reconfortante."),
+                dishReview("review-2", rating = 4),
+            ),
+        ),
+    ),
+)
 
 private fun dishReview(id: String, rating: Int, comment: String? = null): Review = Review(
     id = ReviewId(id),

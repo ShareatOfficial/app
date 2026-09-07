@@ -1,7 +1,7 @@
 package org.shareat.feature.home.ui.navigation
 
-import org.shareat.app.domain.usecase.RestaurantDetails
+import org.shareat.app.domain.usecase.RestaurantSummary
 
 interface HomeNavigation {
-    fun openRestaurant(restaurant: RestaurantDetails)
+    fun openRestaurant(restaurant: RestaurantSummary)
 }

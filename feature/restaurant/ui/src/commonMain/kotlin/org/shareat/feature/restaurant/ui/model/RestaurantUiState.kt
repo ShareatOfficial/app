@@ -9,6 +9,7 @@ data class RestaurantUiState(
     val allergenFilter: AllergenFilterUiState = AllergenFilterUiState(),
     val dishes: List<DishCardUiState> = emptyList(),
     val hasPublishedMenu: Boolean = false,
+    val isLoadingDishes: Boolean = false,
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
 ) {

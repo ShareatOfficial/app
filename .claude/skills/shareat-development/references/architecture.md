@@ -42,7 +42,7 @@ Models always live in a `model/` package inside their own layer and their own mo
 
 One Koin exception: a `domain` module may publish its own Koin module, isolated in a `di` package, binding a use case interface to its impl. Entities, use cases, and repositories still receive dependencies by constructor and never resolve anything themselves. `:shared:domain` does this in `org.shareat.app.domain.usecase.di.sharedDomainModule`.
 
-A use case that more than one feature needs lives in `:shared:domain`, not in whichever feature wrote it first — a feature never imports another feature's `domain`. That is why `GetRestaurantsUseCase` (home's list) and `GetRestaurantUseCase` (the detail screen) sit there sharing `RestaurantDetailsAssembler` and the same repositories. **Each use case exposes exactly one public method**; two different queries are two use cases, never two methods on one interface.
+A use case that more than one feature needs lives in `:shared:domain`, not in whichever feature wrote it first — a feature never imports another feature's `domain`. That is why `GetRestaurantsUseCase` (home's list) and `GetRestaurantUseCase` (the detail screen) sit there, over the same repositories and with one assembler per aggregate (`RestaurantSummariesAssembler` and `RestaurantDetailsAssembler`). **Each use case exposes exactly one public method**; two different queries are two use cases, never two methods on one interface.
 
 ### `data`
 

@@ -108,29 +108,34 @@ Cada key, incluida cualquier subpantalla, debe registrarse también en el `Seria
 - Cada pantalla que navega declara su propia interfaz; no se reutiliza una interfaz genérica con acceso a todo el grafo.
 - Cada feature declara sus propias `NavKey`; las implementaciones de navegación (`*NavigationImpl`, `*NavigationModule`) permanecen en `:shared:ui`.
 - Una key que requiere sesión implementa `RequiresLogin` desde `:shared:navigation`, no un chequeo ad-hoc en la feature o en el módulo de app.
-- Los argumentos de navegación son mínimos, serializables y estables; la pantalla carga el dato completo mediante dominio. Excepción registrada: cuando quien navega ya tiene el dato completo en memoria, la key puede transportar el modelo de presentación completo y serializable (patrón *payload*, ver abajo).
+- Los argumentos de navegación son mínimos, serializables y estables; la pantalla carga el dato completo mediante dominio. Excepción registrada: cuando quien navega ya tiene parte del dato en memoria, la key puede transportar ese modelo de presentación serializable como cabecera (patrón *payload*, ver abajo).
 - La app es la única que conoce el grafo completo y puede implementar navegación entre features.
 - Cada key está registrada para restauración de estado.
 - Una acción que requiere autenticación o rol se valida también en dominio/backend; la navegación solo mejora la experiencia de usuario.
 
-## Argumentos como payload completo
+## Argumentos como payload de cabecera
 
-Origen: `feature/restaurant-screen-ui`, 2026-09-01.
+Origen: `feature/restaurant-screen-ui`, 2026-09-01. Revisado el 2026-09-07 por coste de red.
 
-`RestaurantKey` transporta un `RestaurantArgs` completo (restaurante, menús, platos, precios, alérgenos y valoraciones) en vez de un identificador. La pantalla de restaurante se pinta entera en el primer frame y **no lanza ninguna petición al abrirse**; solo consulta dominio cuando el usuario hace *pull to refresh*.
+`RestaurantKey` transporta un `RestaurantArgs` con **la cabecera** del restaurante (identidad, dirección, imagen, valoración media y número de reseñas), no un identificador pelado ni el menú completo. La pantalla pinta esa cabecera en el primer frame y **solo pide lo que le falta**: los platos, vía `GetRestaurantMenuUseCase`. El esqueleto se limita a la sección de platos (`isLoadingDishes`); la cabecera nunca parpadea, porque el dato ya venía en la key.
 
-Cuándo aplica:
+`isRefreshing` queda reservado al *pull to refresh*, que sí recarga el restaurante entero (`GetRestaurantUseCase`) porque el usuario pide explícitamente datos frescos.
 
-- Quien navega ya tiene el dato completo cargado, de modo que pedirlo otra vez sería una petición redundante.
-- El payload es un modelo de presentación de la feature destino, serializable y sin tipos de dominio con lógica.
-- La pantalla sigue teniendo un camino de recarga contra dominio; el payload es un punto de partida, nunca la única fuente de verdad.
+La versión inicial transportaba también menús, platos, precios y alérgenos, de modo que la pantalla no pedía nada al abrirse. Se revirtió esa parte: para poder rellenar el payload, home tenía que ensamblar el menú publicado de **cada** restaurante del feed (`getPublishedMenu` + reviews de sus platos, unas 5 peticiones por restaurante) y descartarlo salvo para el que el usuario tocase. Medido sobre 5 restaurantes eran ~2 s de las peticiones de home. La cabecera sí viaja porque home ya la tiene cargada y es lo que evita el parpadeo al abrir.
 
-Cuándo no aplica:
+Cuándo transportar un dato en la key:
 
+- Quien navega ya lo tiene cargado para su propia pantalla, de modo que volver a pedirlo sería redundante.
+- Es un modelo de presentación de la feature destino, serializable y sin tipos de dominio con lógica.
+- La pantalla sigue teniendo su camino de carga contra dominio; el payload es un punto de partida, nunca la única fuente de verdad.
+
+Cuándo no:
+
+- El origen no lo tiene: si para rellenar el payload hay que hacer peticiones extra por cada elemento de una lista, el dato lo carga la pantalla destino, no el origen.
 - Deep links y restauración fría, donde no hay origen que aporte el payload: esos casos necesitan una key con identificador.
 - Payloads grandes: el back stack se serializa en el estado guardado, así que el payload debe seguir siendo del orden de unos pocos KB.
 
-La construcción del payload vive en `:shared:ui` (`HomeNavigationImpl` mapea `RestaurantDetails` a `RestaurantArgs`), no en la feature de origen, para que `:feature:home` no dependa de `:feature:restaurant`.
+La construcción del payload vive en `:shared:ui` (`HomeNavigationImpl` mapea `RestaurantSummary` a `RestaurantArgs`), no en la feature de origen, para que `:feature:home` no dependa de `:feature:restaurant`.
 
 ## Pruebas
 

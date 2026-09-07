@@ -56,3 +56,7 @@ internal fun RestaurantCardSkeleton(modifier: Modifier = Modifier) {
 
 - [Architecture](architecture.md) — where `:shared:designsystem` sits in the module graph.
 - `docs/ui/README.md` — the living doc version of this convention.
+
+## Skeletons cover only what is missing
+
+A screen that opens holding part of its data (a navigation payload, a cached header) renders that part for real and confines its skeleton to the section still loading — see `RestaurantUiState.isLoadingDishes`, which drives the dish skeletons while the header from `RestaurantArgs` paints immediately. Never blank out data you already have behind a full-screen skeleton just because another part of the screen is in flight.

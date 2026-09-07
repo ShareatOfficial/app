@@ -48,7 +48,7 @@ import org.shareat.shared.designsystem.preview.FormFactorPreviews
 
 private val ScreenPadding = 16.dp
 private val FilterSpacing = 4.dp
-private const val RefreshingDishSkeletons = 3
+private const val LoadingDishSkeletons = 3
 
 @Composable
 fun RestaurantScreen(
@@ -137,7 +137,7 @@ private fun LazyListScope.filterSection(
     onCategoryClick: (DishCategory?) -> Unit,
     onAllergenClick: (EuAllergen) -> Unit,
 ) {
-    if (uiState.isRefreshing || !uiState.hasPublishedMenu) return
+    if (uiState.isRefreshing || uiState.isLoadingDishes || !uiState.hasPublishedMenu) return
     item {
         Column(verticalArrangement = Arrangement.spacedBy(FilterSpacing)) {
             CategoryChipsRow(
@@ -158,8 +158,8 @@ private fun LazyListScope.dishSection(
     uiState: RestaurantUiState,
     onDishRatingClick: (String, Int) -> Unit,
 ) {
-    if (uiState.isRefreshing) {
-        items(RefreshingDishSkeletons) {
+    if (uiState.isRefreshing || uiState.isLoadingDishes) {
+        items(LoadingDishSkeletons) {
             DishCardSkeleton(modifier = Modifier.padding(horizontal = ScreenPadding))
         }
         return

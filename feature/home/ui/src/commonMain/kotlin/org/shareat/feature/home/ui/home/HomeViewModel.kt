@@ -16,7 +16,7 @@ import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.usecase.GetRestaurantsUseCase
-import org.shareat.app.domain.usecase.RestaurantDetails
+import org.shareat.app.domain.usecase.RestaurantSummary
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
 import org.shareat.feature.home.ui.home.model.HomeContentUiState
 import org.shareat.feature.home.ui.home.model.HomeUiState
@@ -39,7 +39,7 @@ class HomeViewModel(
 
     private val searchQuery = MutableStateFlow("")
 
-    private var loadedRestaurants: List<RestaurantDetails> = emptyList()
+    private var loadedRestaurants: List<RestaurantSummary> = emptyList()
     private var restaurantCards: List<RestaurantCardUiState> = emptyList()
 
     init {
@@ -84,7 +84,7 @@ class HomeViewModel(
         }
     }
 
-    fun restaurantFor(id: RestaurantId): RestaurantDetails? =
+    fun restaurantFor(id: RestaurantId): RestaurantSummary? =
         loadedRestaurants.firstOrNull { it.restaurant.id == id }
 
     private fun filteredContent(query: String): HomeContentUiState.Loaded = HomeContentUiState.Loaded(
@@ -94,7 +94,7 @@ class HomeViewModel(
     )
 }
 
-private fun RestaurantDetails.toCardUiState(): RestaurantCardUiState = RestaurantCardUiState(
+private fun RestaurantSummary.toCardUiState(): RestaurantCardUiState = RestaurantCardUiState(
     id = restaurant.id,
     name = restaurant.name,
     heroImageUrl = restaurant.heroImage?.url,

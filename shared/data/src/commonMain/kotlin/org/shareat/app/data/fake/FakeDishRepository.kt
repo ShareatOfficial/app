@@ -27,6 +27,11 @@ class FakeDishRepository(
         empty = { emptyList() },
     )
 
+    override suspend fun getDishesByRestaurant(restaurantIds: Set<RestaurantId>) = scenario.result(
+        populated = { data.dishes.filter { it.restaurantId in restaurantIds }.groupBy(Dish::restaurantId) },
+        empty = { emptyMap() },
+    )
+
     override suspend fun saveDish(draft: DishDraft): RepositoryResult<Dish> = scenario.result(
         populated = { save(draft) },
         empty = { save(draft) },

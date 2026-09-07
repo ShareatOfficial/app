@@ -42,6 +42,20 @@ class FakeReviewRepositoryTest {
     }
 
     @Test
+    fun batchedRestaurantRatingSummariesMatchTheSingleTargetLookup() = runSuspend {
+        val repository = FakeReviewRepository(FakeShareatData.preview())
+
+        val batched = assertIs<RepositoryResult.Success<*>>(
+            repository.getRestaurantRatingSummaries(setOf(FakeIds.restaurant)),
+        ).value as Map<*, *>
+        val single = assertIs<RepositoryResult.Success<*>>(
+            repository.getRatingSummary(ReviewTarget.Restaurant(FakeIds.restaurant)),
+        ).value
+
+        assertEquals(single, batched[FakeIds.restaurant])
+    }
+
+    @Test
     fun batchedDishReviewsOmitDishesWithoutPublicReviews() = runSuspend {
         val repository = FakeReviewRepository(FakeShareatData.preview())
 

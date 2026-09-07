@@ -4,11 +4,34 @@ import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.Money
+import org.shareat.app.domain.model.RatingSummary
+import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.usecase.RatedMenuDish
 import org.shareat.app.domain.usecase.RestaurantDetails
+import org.shareat.app.domain.usecase.RestaurantMenu
+import org.shareat.app.domain.usecase.RestaurantSummary
 
-fun RestaurantDetails.toArgs(): RestaurantArgs = RestaurantArgs(
+fun RestaurantDetails.toArgs(): RestaurantArgs = restaurantArgs(
+    restaurant = restaurant,
+    ratingSummary = ratingSummary,
+    isOpen = isOpen,
+    dishes = menu?.dishes.orEmpty().map(RatedMenuDish::toArgs),
+)
+
+fun RestaurantSummary.toArgs(): RestaurantArgs = restaurantArgs(
+    restaurant = restaurant,
+    ratingSummary = ratingSummary,
+    isOpen = isOpen,
+    dishes = emptyList(),
+)
+
+private fun restaurantArgs(
+    restaurant: Restaurant,
+    ratingSummary: RatingSummary,
+    isOpen: Boolean,
+    dishes: List<DishArgs>,
+): RestaurantArgs = RestaurantArgs(
     id = restaurant.id.value,
     name = restaurant.name,
     address = "${restaurant.address.streetLine}, ${restaurant.address.locality}",
@@ -18,7 +41,7 @@ fun RestaurantDetails.toArgs(): RestaurantArgs = RestaurantArgs(
     description = restaurant.description,
     ratingLabel = ratingSummary.averageTenths?.toRatingLabel(),
     reviewCount = ratingSummary.ratingCount,
-    dishes = menu?.dishes.orEmpty().map(RatedMenuDish::toArgs),
+    dishes = dishes,
 )
 
 private fun RatedMenuDish.toArgs(): DishArgs = DishArgs(
@@ -42,8 +65,12 @@ private fun Review.toArgs(): DishReviewArgs = DishReviewArgs(
 private fun Dish.declaredAllergens(): List<EuAllergen> =
     allergenDeclaration?.allergens.orEmpty().sortedBy(EuAllergen::ordinal)
 
+fun RestaurantArgs.withDishes(menu: RestaurantMenu?): RestaurantArgs =
+    copy(dishes = menu?.dishes.orEmpty().map(RatedMenuDish::toArgs))
+
 fun RestaurantArgs.toUiState(
     selection: RestaurantSelection = RestaurantSelection(),
+    isLoadingDishes: Boolean = false,
     isRefreshing: Boolean = false,
     errorMessage: String? = null,
     dishMatchesFilters: (DishArgs) -> Boolean = { true },
@@ -59,6 +86,7 @@ fun RestaurantArgs.toUiState(
         .filter(dishMatchesFilters)
         .map { dish -> dish.toCardUiState(selectedRating = selection.dishRatings[dish.id]) },
     hasPublishedMenu = dishes.isNotEmpty(),
+    isLoadingDishes = isLoadingDishes,
     isRefreshing = isRefreshing,
     errorMessage = errorMessage,
 )

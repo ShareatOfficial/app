@@ -7,6 +7,7 @@ import kotlin.test.assertIs
 import org.shareat.app.domain.model.Account
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.AuthSession
+import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.EmailAddress
 import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.RatingSummary
@@ -37,6 +38,18 @@ class LocalSupabaseRepositoryContractTest {
         val summary = assertIs<RepositoryResult.Success<*>>(summaryResult).value as RatingSummary
         assertEquals(50, summary.averageTenths)
         assertEquals(1, summary.ratingCount)
+
+        val batchedDishes = dishes.getDishesByRestaurant(setOf(restaurant.id))
+        val dishesByRestaurant = assertIs<RepositoryResult.Success<*>>(batchedDishes).value as Map<*, *>
+        assertEquals(
+            (dishes.getDishes(restaurant.id) as RepositoryResult.Success).value.map { it.id },
+            (dishesByRestaurant[restaurant.id] as List<*>).map { (it as Dish).id },
+        )
+
+        val batchedSummaries = SupabaseReviewRepository(client)
+            .getRestaurantRatingSummaries(setOf(restaurant.id))
+        val summariesById = assertIs<RepositoryResult.Success<*>>(batchedSummaries).value as Map<*, *>
+        assertEquals(summary, summariesById[restaurant.id])
 
         val auth = SupabaseAuthRepository(client)
         val email = EmailAddress("integration-${System.currentTimeMillis()}@shareat.test")

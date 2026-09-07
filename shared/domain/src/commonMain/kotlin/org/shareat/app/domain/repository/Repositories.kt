@@ -47,6 +47,10 @@ interface MenuRepository {
 interface DishRepository {
     suspend fun getDish(id: DishId): RepositoryResult<Dish>
     suspend fun getDishes(restaurantId: RestaurantId): RepositoryResult<List<Dish>>
+
+    suspend fun getDishesByRestaurant(
+        restaurantIds: Set<RestaurantId>,
+    ): RepositoryResult<Map<RestaurantId, List<Dish>>>
     suspend fun saveDish(draft: DishDraft): RepositoryResult<Dish>
     suspend fun archiveDish(id: DishId): RepositoryResult<Unit>
     /** Deletes a dish only when it has no reviews; otherwise returns [RepositoryError.Conflict]. */
@@ -63,6 +67,11 @@ interface ReviewRepository {
 
     suspend fun getReviewsByAuthor(accountId: AccountId): RepositoryResult<List<Review>>
     suspend fun getRatingSummary(target: ReviewTarget): RepositoryResult<RatingSummary>
+
+    /** Batched [getRatingSummary] for many restaurants at once. Unrated restaurants are absent. */
+    suspend fun getRestaurantRatingSummaries(
+        restaurantIds: Set<RestaurantId>,
+    ): RepositoryResult<Map<RestaurantId, RatingSummary>>
 
     /** Creates or updates the unique review identified by author and target. */
     suspend fun saveReview(draft: ReviewDraft): RepositoryResult<Review>

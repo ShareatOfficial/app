@@ -12,6 +12,7 @@ import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
+import org.shareat.app.domain.usecase.GetRestaurantMenuUseCase
 import org.shareat.app.domain.usecase.GetRestaurantUseCase
 import org.shareat.feature.restaurant.domain.model.DishFilterSubject
 import org.shareat.feature.restaurant.domain.model.DishFilters
@@ -22,11 +23,13 @@ import org.shareat.feature.restaurant.ui.model.RestaurantSelection
 import org.shareat.feature.restaurant.ui.model.RestaurantUiState
 import org.shareat.feature.restaurant.ui.model.declaredAllergens
 import org.shareat.feature.restaurant.ui.model.toArgs
+import org.shareat.feature.restaurant.ui.model.withDishes
 import org.shareat.feature.restaurant.ui.model.toUiState
 
 @Stable
 class RestaurantViewModel(
     args: RestaurantArgs,
+    private val getRestaurantMenu: GetRestaurantMenuUseCase,
     private val getRestaurant: GetRestaurantUseCase,
     private val dishMatchesFilters: DishMatchesFiltersUseCase,
 ) : ViewModel() {
@@ -35,6 +38,10 @@ class RestaurantViewModel(
 
     private val _uiState = MutableStateFlow(currentUiState())
     val uiState: StateFlow<RestaurantUiState> = _uiState.asStateFlow()
+
+    init {
+        loadDishes()
+    }
 
     fun onCategoryClick(category: DishCategory?) = updateSelection { copy(category = category) }
 
@@ -70,6 +77,23 @@ class RestaurantViewModel(
         }
     }
 
+    private fun loadDishes() {
+        _uiState.value = currentUiState(isLoadingDishes = true)
+        viewModelScope.launch {
+            when (val result = getRestaurantMenu(RestaurantId(restaurant.id))) {
+                is RepositoryResult.Success -> {
+                    restaurant = restaurant.withDishes(result.value)
+                    selection = selection.retainedFor(restaurant)
+                    _uiState.value = currentUiState()
+                }
+
+                is RepositoryResult.Failure -> {
+                    _uiState.value = currentUiState(errorMessage = result.error.toUserMessage())
+                }
+            }
+        }
+    }
+
     fun onErrorShown() {
         _uiState.value = currentUiState()
     }
@@ -80,10 +104,12 @@ class RestaurantViewModel(
     }
 
     private fun currentUiState(
+        isLoadingDishes: Boolean = false,
         isRefreshing: Boolean = false,
         errorMessage: String? = null,
     ): RestaurantUiState = restaurant.toUiState(
         selection = selection,
+        isLoadingDishes = isLoadingDishes,
         isRefreshing = isRefreshing,
         errorMessage = errorMessage,
         dishMatchesFilters = ::matchesFilters,

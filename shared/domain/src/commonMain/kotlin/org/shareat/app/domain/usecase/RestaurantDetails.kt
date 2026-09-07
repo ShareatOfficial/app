@@ -12,7 +12,6 @@ data class RestaurantDetails(
     val restaurant: Restaurant,
     val ratingSummary: RatingSummary,
     val dishHighlights: List<DishReviewHighlight>,
-    /** The restaurant's published menu, or null while it has none the public can read. */
     val menu: RestaurantMenu?,
     val isOpen: Boolean,
 )
@@ -29,8 +28,14 @@ data class RestaurantMenu(
 
 data class RatedMenuDish(
     val menuDish: MenuDish,
-    /** Every public, visible review of the dish, the source of both its average and its count. */
     val reviews: List<Review>,
 ) {
     val ratingSummary: RatingSummary get() = reviews.toRatingSummary()
 }
+
+data class RestaurantSummary(
+    val restaurant: Restaurant,
+    val ratingSummary: RatingSummary,
+    val dishHighlights: List<DishReviewHighlight>,
+    val isOpen: Boolean,
+)

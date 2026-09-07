@@ -96,11 +96,14 @@ class GetRestaurantUseCaseImplTest {
         val useCase = GetRestaurantUseCaseImpl(
             restaurantRepository = FakeRestaurantRepository { RepositoryResult.Success(listOf(restaurant)) },
             assembler = RestaurantDetailsAssembler(
-                menuRepository = FakeMenuRepository(
-                    menusByRestaurant = mapOf(restaurant.id to listOf(menu)),
-                    dishesByMenu = mapOf(
-                        menu.id to dishes.mapIndexed { index, dish -> menuDishFixture(dish, index) },
+                publishedMenuAssembler = PublishedMenuAssembler(
+                    menuRepository = FakeMenuRepository(
+                        menusByRestaurant = mapOf(restaurant.id to listOf(menu)),
+                        dishesByMenu = mapOf(
+                            menu.id to dishes.mapIndexed { index, dish -> menuDishFixture(dish, index) },
+                        ),
                     ),
+                    reviewRepository = reviews,
                 ),
                 dishRepository = FakeDishRepository(mapOf(restaurant.id to dishes)),
                 reviewRepository = reviews,

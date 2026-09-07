@@ -130,9 +130,24 @@ internal class FakeRestaurantRepository(
 internal class FakeDishRepository(
     private val dishesByRestaurant: Map<RestaurantId, List<Dish>>,
 ) : DishRepository {
+    var dishRequests = 0
+        private set
+
     override suspend fun getDish(id: DishId) = unavailable<Dish>()
-    override suspend fun getDishes(restaurantId: RestaurantId): RepositoryResult<List<Dish>> =
-        RepositoryResult.Success(dishesByRestaurant[restaurantId].orEmpty())
+    override suspend fun getDishes(restaurantId: RestaurantId): RepositoryResult<List<Dish>> {
+        dishRequests++
+        return RepositoryResult.Success(dishesByRestaurant[restaurantId].orEmpty())
+    }
+
+    override suspend fun getDishesByRestaurant(
+        restaurantIds: Set<RestaurantId>,
+    ): RepositoryResult<Map<RestaurantId, List<Dish>>> {
+        dishRequests++
+        return RepositoryResult.Success(
+            restaurantIds.associateWith { dishesByRestaurant[it].orEmpty() }
+                .filterValues(List<Dish>::isNotEmpty),
+        )
+    }
 
     override suspend fun saveDish(draft: DishDraft) = unavailable<Dish>()
     override suspend fun archiveDish(id: DishId) = unavailable<Unit>()
@@ -174,6 +189,9 @@ internal class FakeReviewRepository(
     var dishReviewRequests = 0
         private set
 
+    var ratingSummaryRequests = 0
+        private set
+
     override suspend fun getPublicReviews(target: ReviewTarget): RepositoryResult<List<Review>> =
         when (target) {
             is ReviewTarget.Dish -> RepositoryResult.Success(reviewsByDish[target.dishId].orEmpty())
@@ -191,11 +209,53 @@ internal class FakeReviewRepository(
     }
 
     override suspend fun getReviewsByAuthor(accountId: AccountId) = unavailable<List<Review>>()
-    override suspend fun getRatingSummary(target: ReviewTarget): RepositoryResult<RatingSummary> =
-        ratingSummaryResult()
+    override suspend fun getRatingSummary(target: ReviewTarget): RepositoryResult<RatingSummary> {
+        ratingSummaryRequests++
+        return ratingSummaryResult()
+    }
+
+    override suspend fun getRestaurantRatingSummaries(
+        restaurantIds: Set<RestaurantId>,
+    ): RepositoryResult<Map<RestaurantId, RatingSummary>> {
+        ratingSummaryRequests++
+        return when (val result = ratingSummaryResult()) {
+            is RepositoryResult.Success -> RepositoryResult.Success(restaurantIds.associateWith { result.value })
+            is RepositoryResult.Failure -> result
+        }
+    }
 
     override suspend fun saveReview(draft: ReviewDraft) = unavailable<Review>()
     override suspend fun deleteReview(id: ReviewId, authorAccountId: AccountId) = unavailable<Unit>()
+}
+
+internal object FailingMenuRepository : MenuRepository {
+    override suspend fun getMenus(restaurantId: RestaurantId) = unavailable<List<Menu>>()
+    override suspend fun getPublishedMenu(restaurantId: RestaurantId) = unavailable<MenuDetails>()
+    override suspend fun getMenu(id: MenuId) = unavailable<MenuDetails>()
+    override suspend fun saveMenu(draft: RestaurantMenuDraft) = unavailable<MenuDetails>()
+    override suspend fun deleteMenu(id: MenuId) = unavailable<Unit>()
+}
+
+internal fun assemblerFor(
+    dishesByRestaurant: Map<RestaurantId, List<Dish>> = emptyMap(),
+    menusByRestaurant: Map<RestaurantId, List<Menu>> = emptyMap(),
+    dishesByMenu: Map<MenuId, List<MenuDish>> = emptyMap(),
+    reviewsByDish: Map<DishId, List<Review>> = emptyMap(),
+    ratingSummaryResult: (() -> RepositoryResult<RatingSummary>)? = null,
+): RestaurantDetailsAssembler {
+    val reviews = FakeReviewRepository(
+        reviewsByDish = reviewsByDish,
+        ratingSummaryResult = ratingSummaryResult
+            ?: { RepositoryResult.Success(RatingSummary(averageTenths = 48, ratingCount = 2)) },
+    )
+    return RestaurantDetailsAssembler(
+        publishedMenuAssembler = PublishedMenuAssembler(
+            menuRepository = FakeMenuRepository(menusByRestaurant, dishesByMenu),
+            reviewRepository = reviews,
+        ),
+        dishRepository = FakeDishRepository(dishesByRestaurant),
+        reviewRepository = reviews,
+    )
 }
 
 internal fun <T> unavailable(): RepositoryResult<T> = RepositoryResult.Failure(RepositoryError.Unavailable())

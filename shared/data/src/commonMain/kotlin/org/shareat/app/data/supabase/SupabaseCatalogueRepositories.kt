@@ -154,6 +154,24 @@ internal class SupabaseDishRepository(
         dishes.map { it.toDomain(allergens[it.id].orEmpty(), ::dishImageUrl) }
     }
 
+    override suspend fun getDishesByRestaurant(
+        restaurantIds: Set<RestaurantId>,
+    ): RepositoryResult<Map<RestaurantId, List<Dish>>> = supabaseResult {
+        if (restaurantIds.isEmpty()) {
+            emptyMap()
+        } else {
+            val dishes = selectInBatches(restaurantIds.map(RestaurantId::value)) { batch ->
+                client.from("dishes").select {
+                    filter { isIn("restaurant_id", batch) }
+                }.decodeList<DishDto>()
+            }
+            val allergens = loadAllergens(dishes.mapTo(mutableSetOf(), DishDto::id))
+            dishes.groupBy({ RestaurantId(it.restaurantId) }) {
+                it.toDomain(allergens[it.id].orEmpty(), ::dishImageUrl)
+            }
+        }
+    }
+
     override suspend fun saveDish(draft: DishDraft): RepositoryResult<Dish> = supabaseResult {
         val id = client.postgrest.rpc(
             function = "save_restaurant_dish",
@@ -174,18 +192,22 @@ internal class SupabaseDishRepository(
 
     internal suspend fun loadDishes(ids: Set<String>): List<Dish> {
         if (ids.isEmpty()) return emptyList()
-        val visibleDishes = client.from("dishes").select {
-            filter { isIn("id", ids.toList()) }
-        }.decodeList<DishDto>()
+        val visibleDishes = selectInBatches(ids) { batch ->
+            client.from("dishes").select {
+                filter { isIn("id", batch) }
+            }.decodeList<DishDto>()
+        }
         val allergens = loadAllergens(ids)
         return visibleDishes.map { it.toDomain(allergens[it.id].orEmpty(), ::dishImageUrl) }
     }
 
     private suspend fun loadAllergens(dishIds: Set<String>): Map<String, Set<String>> {
         if (dishIds.isEmpty()) return emptyMap()
-        return client.from("dish_allergens").select {
-            filter { isIn("dish_id", dishIds.toList()) }
-        }.decodeList<DishAllergenDto>()
+        return selectInBatches(dishIds) { batch ->
+            client.from("dish_allergens").select {
+                filter { isIn("dish_id", batch) }
+            }.decodeList<DishAllergenDto>()
+        }
             .groupBy(DishAllergenDto::dishId, DishAllergenDto::allergenId)
             .mapValues { it.value.toSet() }
     }

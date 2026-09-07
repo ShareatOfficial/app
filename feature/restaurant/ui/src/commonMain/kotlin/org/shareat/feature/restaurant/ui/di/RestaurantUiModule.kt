@@ -9,5 +9,5 @@ import org.shareat.feature.restaurant.ui.restaurant.RestaurantViewModel
 val restaurantUiModule: Module = module {
     includes(restaurantDomainModule)
 
-    viewModel { parameters -> RestaurantViewModel(parameters.get(), get(), get()) }
+    viewModel { parameters -> RestaurantViewModel(parameters.get(), get(), get(), get()) }
 }

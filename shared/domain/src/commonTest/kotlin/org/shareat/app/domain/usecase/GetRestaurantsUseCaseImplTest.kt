@@ -3,10 +3,6 @@ package org.shareat.app.domain.usecase
 import kotlinx.coroutines.test.runTest
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishId
-import org.shareat.app.domain.model.Menu
-import org.shareat.app.domain.model.MenuDish
-import org.shareat.app.domain.model.MenuId
-import org.shareat.app.domain.model.MenuPublicationState
 import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantId
@@ -16,7 +12,6 @@ import org.shareat.app.domain.repository.RepositoryResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GetRestaurantsUseCaseImplTest {
@@ -28,7 +23,7 @@ class GetRestaurantsUseCaseImplTest {
 
         val result = useCase(page = 2, numberOfRestaurants = 2)
 
-        val page = assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value
+        val page = assertIs<RepositoryResult.Success<List<RestaurantSummary>>>(result).value
         assertEquals(listOf("restaurant-2", "restaurant-3"), page.map { it.restaurant.id.value })
     }
 
@@ -53,7 +48,7 @@ class GetRestaurantsUseCaseImplTest {
 
         val result = useCase(page = 0, numberOfRestaurants = 2)
 
-        val page = assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value
+        val page = assertIs<RepositoryResult.Success<List<RestaurantSummary>>>(result).value
         assertEquals(listOf("Pulpo a la brasa"), page[0].dishHighlights.map { it.dish.name })
         assertEquals(listOf("Croquetas"), page[1].dishHighlights.map { it.dish.name })
     }
@@ -82,7 +77,7 @@ class GetRestaurantsUseCaseImplTest {
 
         val result = useCase(page = 0, numberOfRestaurants = 1)
 
-        val card = assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value.single()
+        val card = assertIs<RepositoryResult.Success<List<RestaurantSummary>>>(result).value.single()
         assertEquals(3, card.dishHighlights.size)
         assertEquals(
             listOf("Pulpo a la brasa", "Croquetas", "Croquetas"),
@@ -92,76 +87,25 @@ class GetRestaurantsUseCaseImplTest {
     }
 
     @Test
-    fun exposesOnlyThePublishedMenu() = runTest {
-        val restaurant = restaurantFixture()
-        val draft = menuFixture(
-            id = "menu-draft",
-            restaurantId = restaurant.id,
-            name = "Menú de temporada",
-            publicationState = MenuPublicationState.Draft,
-        )
-        val published = menuFixture(id = "menu-published", restaurantId = restaurant.id, name = "Carta")
-
-        val useCase = useCaseFor(
-            seed = listOf(restaurant),
-            menusByRestaurant = mapOf(restaurant.id to listOf(draft, published)),
-        )
-
-        val result = useCase(page = 0, numberOfRestaurants = 1)
-
-        val details = assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value.single()
-        assertEquals("Carta", details.menu?.menu?.name)
-    }
-
-    @Test
-    fun aRestaurantWithoutAPublishedMenuHasNoMenu() = runTest {
-        val restaurant = restaurantFixture()
-        val draft = menuFixture(
-            id = "menu-draft",
-            restaurantId = restaurant.id,
-            publicationState = MenuPublicationState.Draft,
+    fun readsEachRepositoryOncePerPageInsteadOfOncePerRestaurant() = runTest {
+        val restaurants = (0 until 4).map { restaurantFixture(id = "restaurant-$it", name = "Restaurant $it") }
+        val dishes = restaurants.associate { restaurant ->
+            restaurant.id to listOf(
+                dishFixture(id = "dish-${restaurant.id.value}", restaurantId = restaurant.id, name = "Plato"),
+            )
+        }
+        val dishRepository = FakeDishRepository(dishes)
+        val reviewRepository = FakeReviewRepository()
+        val useCase = GetRestaurantsUseCaseImpl(
+            restaurantRepository = FakeRestaurantRepository { RepositoryResult.Success(restaurants) },
+            assembler = RestaurantSummariesAssembler(dishRepository, reviewRepository),
         )
 
-        val useCase = useCaseFor(
-            seed = listOf(restaurant),
-            menusByRestaurant = mapOf(restaurant.id to listOf(draft)),
-        )
+        useCase(page = 0, numberOfRestaurants = 4)
 
-        val result = useCase(page = 0, numberOfRestaurants = 1)
-
-        val details = assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value.single()
-        assertNull(details.menu)
-    }
-
-    @Test
-    fun exposesOnlySellableDishesSortedByPosition() = runTest {
-        val restaurant = restaurantFixture()
-        val menu = menuFixture(id = "menu-1", restaurantId = restaurant.id)
-        val starter = dishFixture(id = "dish-1", restaurantId = restaurant.id, name = "Croquetas")
-        val main = dishFixture(id = "dish-2", restaurantId = restaurant.id, name = "Pulpo")
-        val archived = dishFixture(id = "dish-3", restaurantId = restaurant.id, name = "Retirado", isEnabled = false)
-        val unlisted = dishFixture(id = "dish-4", restaurantId = restaurant.id, name = "Fuera de carta")
-
-        val useCase = useCaseFor(
-            seed = listOf(restaurant),
-            menusByRestaurant = mapOf(restaurant.id to listOf(menu)),
-            dishesByMenu = mapOf(
-                menu.id to listOf(
-                    menuDishFixture(main, position = 1),
-                    menuDishFixture(starter, position = 0),
-                    menuDishFixture(archived, position = 2),
-                    menuDishFixture(unlisted, position = 3, isEnabled = false),
-                ),
-            ),
-        )
-
-        val result = useCase(page = 0, numberOfRestaurants = 1)
-
-        val details = assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value.single()
-        assertEquals(
-            listOf("Croquetas", "Pulpo"),
-            details.menu?.dishes.orEmpty().map { it.menuDish.dish.name },
-        )
+        assertEquals(1, dishRepository.dishRequests)
+        assertEquals(1, reviewRepository.ratingSummaryRequests)
+        assertEquals(1, reviewRepository.dishReviewRequests)
     }
 
     @Test
@@ -173,7 +117,7 @@ class GetRestaurantsUseCaseImplTest {
 
         val result = useCase(page = 0, numberOfRestaurants = 1)
 
-        val card = assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value.single()
+        val card = assertIs<RepositoryResult.Success<List<RestaurantSummary>>>(result).value.single()
         assertEquals(RatingSummary(averageTenths = null, ratingCount = 0), card.ratingSummary)
     }
 
@@ -193,41 +137,24 @@ class GetRestaurantsUseCaseImplTest {
 
         val result = useCase(page = 0, numberOfRestaurants = 10)
 
-        assertEquals(emptyList(), assertIs<RepositoryResult.Success<List<RestaurantDetails>>>(result).value)
+        assertEquals(emptyList(), assertIs<RepositoryResult.Success<List<RestaurantSummary>>>(result).value)
     }
 
     private fun useCaseFor(
         seed: List<Restaurant> = emptyList(),
         dishesByRestaurant: Map<RestaurantId, List<Dish>> = emptyMap(),
-        menusByRestaurant: Map<RestaurantId, List<Menu>> = emptyMap(),
-        dishesByMenu: Map<MenuId, List<MenuDish>> = emptyMap(),
         reviewsByDish: Map<DishId, List<Review>> = emptyMap(),
         ratingSummaryResult: (() -> RepositoryResult<RatingSummary>)? = null,
         restaurantsResult: (() -> RepositoryResult<List<Restaurant>>)? = null,
     ): GetRestaurantsUseCase = GetRestaurantsUseCaseImpl(
         restaurantRepository = FakeRestaurantRepository(restaurantsResult ?: { RepositoryResult.Success(seed) }),
-        assembler = assemblerFor(
-            dishesByRestaurant = dishesByRestaurant,
-            menusByRestaurant = menusByRestaurant,
-            dishesByMenu = dishesByMenu,
-            reviewsByDish = reviewsByDish,
-            ratingSummaryResult = ratingSummaryResult,
+        assembler = RestaurantSummariesAssembler(
+            dishRepository = FakeDishRepository(dishesByRestaurant),
+            reviewRepository = FakeReviewRepository(
+                reviewsByDish = reviewsByDish,
+                ratingSummaryResult = ratingSummaryResult
+                    ?: { RepositoryResult.Success(RatingSummary(averageTenths = 48, ratingCount = 2)) },
+            ),
         ),
     )
 }
-
-internal fun assemblerFor(
-    dishesByRestaurant: Map<RestaurantId, List<Dish>> = emptyMap(),
-    menusByRestaurant: Map<RestaurantId, List<Menu>> = emptyMap(),
-    dishesByMenu: Map<MenuId, List<MenuDish>> = emptyMap(),
-    reviewsByDish: Map<DishId, List<Review>> = emptyMap(),
-    ratingSummaryResult: (() -> RepositoryResult<RatingSummary>)? = null,
-): RestaurantDetailsAssembler = RestaurantDetailsAssembler(
-    menuRepository = FakeMenuRepository(menusByRestaurant, dishesByMenu),
-    dishRepository = FakeDishRepository(dishesByRestaurant),
-    reviewRepository = FakeReviewRepository(
-        reviewsByDish = reviewsByDish,
-        ratingSummaryResult = ratingSummaryResult
-            ?: { RepositoryResult.Success(RatingSummary(averageTenths = 48, ratingCount = 2)) },
-    ),
-)
