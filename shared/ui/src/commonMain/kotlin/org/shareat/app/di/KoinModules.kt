@@ -7,9 +7,10 @@ import org.shareat.app.auth.RestaurantProfileCoordinator
 import org.shareat.app.data.supabaseDataModule
 import org.shareat.app.data.fakeDataModule
 import org.shareat.app.navigation.Navigator
+import org.shareat.feature.review.di.reviewUiModule
 
 private val applicationModule: Module = module {
-    includes(navigationModule)
+    includes(navigationModule, reviewUiModule)
     single { SessionCoordinator(get()) }
     single { RestaurantProfileCoordinator(get(), get(), get(), get()) }
     factory { parameters -> Navigator(parameters.get(), get()) }
