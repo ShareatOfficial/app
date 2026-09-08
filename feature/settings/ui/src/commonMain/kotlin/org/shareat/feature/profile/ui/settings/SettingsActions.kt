@@ -7,6 +7,7 @@ enum class SettingsUserAction {
     Privacy,
     ConnectedAccounts,
     ReviewHistory,
+    Subscription,
     DownloadData,
     DeleteAccount,
     LogOut,
@@ -41,6 +42,7 @@ sealed interface SettingsRestaurantAction {
     data object PhotosAndMedia : SettingsRestaurantAction
     data object Notifications : SettingsRestaurantAction
     data object TeamAndPermissions : SettingsRestaurantAction
+    data object Subscription : SettingsRestaurantAction
     data object SaveChanges : SettingsRestaurantAction
     data object LogOut : SettingsRestaurantAction
 }

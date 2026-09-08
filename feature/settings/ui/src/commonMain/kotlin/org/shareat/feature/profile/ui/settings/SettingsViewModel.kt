@@ -49,6 +49,7 @@ class SettingsViewModel(
             SettingsUserAction.Privacy -> openPrivacy()
             SettingsUserAction.ConnectedAccounts -> openConnectedAccounts()
             SettingsUserAction.ReviewHistory -> openReviewHistory()
+            SettingsUserAction.Subscription -> emitEvent(SettingsEvent.NavigateToSubscription)
             SettingsUserAction.DownloadData -> downloadData()
             SettingsUserAction.DeleteAccount -> deleteAccount()
             SettingsUserAction.LogOut -> onLogOut()
@@ -81,6 +82,7 @@ class SettingsViewModel(
             SettingsRestaurantAction.PhotosAndMedia -> openPhotosAndMedia()
             SettingsRestaurantAction.Notifications -> openRestaurantNotifications()
             SettingsRestaurantAction.TeamAndPermissions -> openTeamAndPermissions()
+            SettingsRestaurantAction.Subscription -> emitEvent(SettingsEvent.NavigateToSubscription)
             SettingsRestaurantAction.SaveChanges -> saveRestaurantChanges()
             SettingsRestaurantAction.LogOut -> onLogOut()
         }
