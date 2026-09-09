@@ -14,6 +14,10 @@ Cada nueva feature se divide en tres módulos Gradle:
 :feature:<nombre>:ui
 ```
 
+`:feature:subscription` follows the same split. Its `data` module keeps RevenueCat SDK types behind
+the domain repository and its `ui` module owns the native paywall/Customer Center bridge. See
+[RevenueCat subscriptions](../subscriptions/README.md).
+
 La base compartida también está separada en tres módulos Gradle, más dos módulos hoja adicionales: uno para contratos de navegación compartidos y otro para UI compartida:
 
 ```text

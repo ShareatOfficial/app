@@ -21,10 +21,12 @@ import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.shareat.feature.home.ui.navigation.HomeKey
+import org.shareat.feature.lastactivity.navigation.LastActivityKey
 import org.shareat.feature.login.ui.LoginKey
 import org.shareat.feature.profile.ui.profile.ProfileKey
 import org.shareat.feature.profile.ui.editprofile.EditProfileKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
+import org.shareat.feature.profile.ui.terms.TermsAndConditionsKey
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.restaurant.ui.navigation.RestaurantKey
 
@@ -32,8 +34,10 @@ private val navigationConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(HomeKey::class, HomeKey.serializer())
+            subclass(LastActivityKey::class, LastActivityKey.serializer())
             subclass(ProfileKey::class, ProfileKey.serializer())
             subclass(SettingsKey::class, SettingsKey.serializer())
+            subclass(TermsAndConditionsKey::class, TermsAndConditionsKey.serializer())
             subclass(EditProfileKey::class, EditProfileKey.serializer())
             subclass(LoginKey::class, LoginKey.serializer())
             subclass(RestaurantOnboardingKey::class, RestaurantOnboardingKey.serializer())

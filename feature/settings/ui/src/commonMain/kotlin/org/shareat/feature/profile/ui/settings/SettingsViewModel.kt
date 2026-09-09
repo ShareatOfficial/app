@@ -44,13 +44,6 @@ class SettingsViewModel(
     fun onUserAction(action: SettingsUserAction) {
         when (action) {
             SettingsUserAction.EditProfile -> emitEvent(SettingsEvent.NavigateToEditProfile)
-            SettingsUserAction.PasswordAndSecurity -> openPasswordAndSecurity()
-            SettingsUserAction.Notifications -> openUserNotifications()
-            SettingsUserAction.Privacy -> openPrivacy()
-            SettingsUserAction.ConnectedAccounts -> openConnectedAccounts()
-            SettingsUserAction.ReviewHistory -> openReviewHistory()
-            SettingsUserAction.DownloadData -> downloadData()
-            SettingsUserAction.DeleteAccount -> deleteAccount()
             SettingsUserAction.LogOut -> onLogOut()
         }
     }
@@ -74,13 +67,7 @@ class SettingsViewModel(
             is SettingsRestaurantAction.ClosingTimeChanged ->
                 changeClosingTime(action.day, action.value)
 
-            SettingsRestaurantAction.AdjustMapPin -> adjustMapPin()
-            SettingsRestaurantAction.SpecialDatesAndHolidays -> openSpecialDatesAndHolidays()
-            SettingsRestaurantAction.AddSplitHours -> addSplitHours()
-            SettingsRestaurantAction.ReservationsAndOrderLinks -> openReservationsAndOrderLinks()
-            SettingsRestaurantAction.PhotosAndMedia -> openPhotosAndMedia()
-            SettingsRestaurantAction.Notifications -> openRestaurantNotifications()
-            SettingsRestaurantAction.TeamAndPermissions -> openTeamAndPermissions()
+            SettingsRestaurantAction.Subscription -> emitEvent(SettingsEvent.NavigateToSubscription)
             SettingsRestaurantAction.SaveChanges -> saveRestaurantChanges()
             SettingsRestaurantAction.LogOut -> onLogOut()
         }
@@ -114,14 +101,6 @@ class SettingsViewModel(
         }
     }
 
-    private fun openPasswordAndSecurity(): Nothing = TODO("To be implemented")
-    private fun openUserNotifications(): Nothing = TODO("To be implemented")
-    private fun openPrivacy(): Nothing = TODO("To be implemented")
-    private fun openConnectedAccounts(): Nothing = TODO("To be implemented")
-    private fun openReviewHistory(): Nothing = TODO("To be implemented")
-    private fun downloadData(): Nothing = TODO("To be implemented")
-    private fun deleteAccount(): Nothing = TODO("To be implemented")
-
     private fun changeRestaurantName(value: String) = editRestaurant { copy(name = value) }
     private fun changeRestaurantDescription(value: String) =
         editRestaurant { copy(description = value) }
@@ -147,14 +126,6 @@ class SettingsViewModel(
     private fun changeClosingTime(day: OpeningDay, value: String) = updateOpeningHours(day) {
         copy(closingTime = value)
     }
-
-    private fun adjustMapPin(): Nothing = TODO("To be implemented")
-    private fun openSpecialDatesAndHolidays(): Nothing = TODO("To be implemented")
-    private fun addSplitHours(): Nothing = TODO("To be implemented")
-    private fun openReservationsAndOrderLinks(): Nothing = TODO("To be implemented")
-    private fun openPhotosAndMedia(): Nothing = TODO("To be implemented")
-    private fun openRestaurantNotifications(): Nothing = TODO("To be implemented")
-    private fun openTeamAndPermissions(): Nothing = TODO("To be implemented")
 
     private fun saveRestaurantChanges() {
         val state = _uiState.value as? SettingsUiState.Restaurant ?: return
