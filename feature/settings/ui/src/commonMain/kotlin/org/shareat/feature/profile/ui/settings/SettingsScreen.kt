@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.AllInclusive
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.Schedule
@@ -205,7 +206,7 @@ private fun UserSettings(
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Outlined.ManageAccounts,
+                leadingIcon = Icons.Outlined.Description,
                 text = "Terms and Conditions",
                 onClick = callbacks.onTermsAndConditionsClick,
             )
@@ -441,7 +442,7 @@ private fun RestaurantSettings(
                 }
                 SettingsDivider()
                 SettingsItem(
-                    Icons.Outlined.ManageAccounts,
+                    Icons.Outlined.Description,
                     "Terms and Conditions",
                     callbacks.onTermsAndConditionsClick,
                 )

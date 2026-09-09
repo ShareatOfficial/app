@@ -19,7 +19,7 @@ actual fun TermsAndConditionsContent(modifier: Modifier) {
             WKWebView(
                 frame = CGRectMake(0.0, 0.0, 0.0, 0.0),
                 configuration = WKWebViewConfiguration().apply {
-                    preferences.setValue(false, forKey = "javaScriptEnabled")
+                    defaultWebpagePreferences.allowsContentJavaScript = false
                 },
             ).apply {
                 NSURL.URLWithString(TERMS_AND_CONDITIONS_URL)?.let { url ->

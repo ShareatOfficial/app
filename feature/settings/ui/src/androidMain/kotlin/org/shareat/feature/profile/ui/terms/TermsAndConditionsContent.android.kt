@@ -19,5 +19,6 @@ actual fun TermsAndConditionsContent(modifier: Modifier) {
                 loadUrl(TERMS_AND_CONDITIONS_URL)
             }
         },
+        onRelease = WebView::destroy,
     )
 }

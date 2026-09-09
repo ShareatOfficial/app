@@ -49,7 +49,9 @@ val profileNavigationModule = module {
     }
     navigation<ProfileKey> { Profile() }
     navigation<SettingsKey> { SettingsScreen() }
-    navigation<TermsAndConditionsKey> {
+    navigation<TermsAndConditionsKey>(
+        metadata = mapOf(HIDE_NAVIGATION_METADATA to true),
+    ) {
         TermsAndConditionsScreen(onBackClick = koinInject<TermsAndConditionsNavigation>()::goBack)
     }
     navigation<EditProfileKey> { EditProfileScreen() }
