@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.feature.home.ui.home.composables.HomeSearchBar
@@ -33,13 +34,16 @@ import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
 import org.shareat.feature.home.ui.home.model.HomeUiState
 import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
 import org.shareat.feature.home.ui.home.model.toFeedSections
+import org.shareat.feature.home.ui.navigation.HomeNavigation
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.home.ui.generated.resources.Res
 import shareat.feature.home.ui.generated.resources.recommended
+import org.shareat.shared.designsystem.preview.FormFactorPreviews
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    navigation: HomeNavigation = koinInject(),
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -49,6 +53,9 @@ fun HomeScreen(
         modifier = modifier,
         onSearchQueryChanged = viewModel::onSearchQueryChanged,
         onRetryClick = viewModel::onRetryClick,
+        onRestaurantClick = { restaurant ->
+            viewModel.restaurantFor(restaurant.id)?.let(navigation::openRestaurant)
+        },
     )
 }
 
@@ -58,6 +65,7 @@ private fun HomeScreenStateless(
     modifier: Modifier = Modifier,
     onSearchQueryChanged: (String) -> Unit = {},
     onRetryClick: () -> Unit = {},
+    onRestaurantClick: (RestaurantCardUiState) -> Unit = {},
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -86,6 +94,7 @@ private fun HomeScreenStateless(
                         HomeFeed(
                             sections = content.sections,
                             showRecommendedTitle = uiState.searchQuery.isBlank(),
+                            onRestaurantClick = onRestaurantClick,
                             modifier = Modifier.align(Alignment.TopStart),
                         )
                     }
@@ -99,6 +108,7 @@ private fun HomeScreenStateless(
 private fun HomeFeed(
     sections: List<HomeFeedSectionUiState>,
     showRecommendedTitle: Boolean,
+    onRestaurantClick: (RestaurantCardUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -119,10 +129,12 @@ private fun HomeFeed(
             when (section) {
                 is HomeFeedSectionUiState.Highlights -> RestaurantHighlightsSection(
                     restaurants = section.restaurants,
+                    onRestaurantClick = onRestaurantClick,
                 )
 
                 is HomeFeedSectionUiState.Standalone -> RestaurantStandaloneCard(
                     restaurant = section.restaurant,
+                    onClick = { onRestaurantClick(section.restaurant) },
                 )
             }
         }
@@ -130,7 +142,10 @@ private fun HomeFeed(
 }
 
 @Composable
-private fun RestaurantStandaloneCard(restaurant: RestaurantCardUiState) {
+private fun RestaurantStandaloneCard(
+    restaurant: RestaurantCardUiState,
+    onClick: () -> Unit,
+) {
     RestaurantCard(
         name = restaurant.name,
         heroImageUrl = restaurant.heroImageUrl,
@@ -141,6 +156,7 @@ private fun RestaurantStandaloneCard(restaurant: RestaurantCardUiState) {
         dishReviews = restaurant.dishReviews,
         showDishReviews = true,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        onClick = onClick,
     )
 }
 
@@ -227,7 +243,7 @@ private object HomePreviewData {
     )
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenLoadingPreview() {
     ShareatTheme {
@@ -235,7 +251,7 @@ private fun HomeScreenLoadingPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenContentPreview() {
     ShareatTheme {
@@ -243,7 +259,7 @@ private fun HomeScreenContentPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenSearchingPreview() {
     ShareatTheme {
@@ -251,7 +267,7 @@ private fun HomeScreenSearchingPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenEmptyPreview() {
     ShareatTheme {
@@ -259,7 +275,7 @@ private fun HomeScreenEmptyPreview() {
     }
 }
 
-@HomeFormFactorPreviews
+@FormFactorPreviews
 @Composable
 private fun HomeScreenErrorPreview() {
     ShareatTheme {

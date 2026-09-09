@@ -78,6 +78,11 @@ Restaurants cannot rate dishes or restaurants.
 - Public collaborative or Spotify-like lists.
 - Advanced map search.
 
+> **Scope change (2026-09-01, branch `feature/restaurant-screen-ui`):** customer-facing allergen
+> filtering moved **into** the MVP, because the agreed restaurant screen design shows an allergen
+> filter. Multiple menus per restaurant stay out: the restaurant screen receives and displays the
+> single published menu, with no menu selector.
+
 ### Agreed MVP rules
 
 - **Authentication:** browsing public content does not require an account. Creating reviews, favourites, personal content, or restaurant content does.
@@ -89,7 +94,8 @@ Restaurants cannot rate dishes or restaurants.
 - **Review aggregate:** arithmetic mean of public ratings, rounded to one decimal, displayed with the public rating count. Private reviews are excluded.
 - **Comments and visibility:** a rating may include an optional comment. The author chooses whether the whole review is public or private. A private review is visible only to its author.
 - **Moderation:** public reviews are published immediately. Signed-in users can report them; moderators can hide them while investigating and restore or remove them, with an audit trail. Restaurant owners cannot suppress reviews themselves.
-- **Allergens:** optional, restaurant-supplied information in the MVP. The restaurant is responsible for keeping it accurate; Shareat must display its source and a notice to confirm allergens directly with the restaurant. Allergen filtering and verification are post-MVP.
+- **Allergens:** optional, restaurant-supplied information in the MVP. The restaurant is responsible for keeping it accurate; Shareat must display its source and a notice to confirm allergens directly with the restaurant. Customers can filter a menu by allergen; the filter only offers the allergens that menu's dishes declare, and a dish with no declaration is never hidden by it, because absence of a declaration is not absence of the allergen. Allergen *verification* remains post-MVP.
+- **Menus:** a restaurant publishes one menu. The public restaurant screen displays it immediately, with no selector; draft, unpublished, and disabled menus never reach a public read path.
 
 ## 4. MVP and post-MVP boundary
 
@@ -98,6 +104,9 @@ Restaurants cannot rate dishes or restaurants.
 - Restaurant registration and sign-in.
 - Customer registration and sign-in.
 - Restaurant list.
+- Restaurant detail with its profile and its published menu's dishes, filterable by dish category and by allergen.
+- A restaurant can create and publish one menu.
+- The MVP menu is entered as structured data; each dish requires a name and price, while its description, image, and allergens are optional.
 - Restaurant detail with its profile and dishes.
 - A customer can rate and optionally review a restaurant.
 - A customer can rate and optionally review a dish.
@@ -117,6 +126,8 @@ Restaurants cannot rate dishes or restaurants.
 
 - Restaurant search on a map.
 - Public personal lists for restaurants and dishes.
+- Multiple menus per restaurant, and the selector needed to choose between them.
+- Menu import from images or PDF. Images remain available as optional dish media in the MVP, but they are not parsed into menu data.
 - Multiple menus per restaurant.
 - Images remain available as optional dish media in the MVP.
 - Push notifications.
@@ -211,6 +222,7 @@ This is a product model, not a final database schema.
 - **CustomerProfile:** display name, avatar, preferences, privacy settings.
 - **Restaurant:** owner account, name, description, address/location, category, verification state, publication state.
 - **Dish:** restaurant, name, description, image, allergen data, enabled state.
+- **MenuItem:** menu, dish, price, position, enabled state, dish category; join entity that permits a dish to appear in more than one menu.
 - **Review:** customer, target type, target ID, rating, comment, moderation state, timestamps.
 - **Favourite:** customer and restaurant/dish target.
 - **DishHistory:** customer, dish, eaten state and date.
@@ -409,7 +421,7 @@ Final targets require a baseline and measurement window. Candidate metrics are:
 ### Known post-MVP backlog
 
 - Verification improvements.
-- Allergen and personal-history filters.
+- Personal-history filters.
 - Favourites and eaten status.
 - Personal restaurants outside the catalogue.
 - QR menus.
@@ -432,6 +444,9 @@ Final targets require a baseline and measurement window. Candidate metrics are:
 | Public access | Anonymous browsing; authentication for write and personal actions | Entire team |
 | Reviews | Integer 1–5; one per customer/target; editable/deletable; optional comment; public/private choice; immediate public publication with reporting | Entire team |
 | Aggregation | Arithmetic mean of visible public ratings, one decimal, with rating count | Entire team |
+| MVP menu | One manually entered structured menu, displayed without a selector and filterable by dish category and allergen; dish name and price required; description, image, and allergens optional | Entire team |
+| Menu files | Whole-menu image/PDF import is post-MVP | Entire team |
+| Monetisation | Monthly restaurant subscription to publish and keep a menu public; account and privacy actions never paywalled | Entire team |
 | Compatibility and performance | Targets in section 8 | Entire team |
 | Privacy and moderation | Export/deletion and retention limits in section 8; immediate publication, reporting, moderator controls, and audit trail | Entire team |
 | Responsibilities | `@javigp2002`, `@tonela10`, and `@TorrellesN` share every delivery role and global code ownership | Entire team |

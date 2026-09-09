@@ -1,6 +1,7 @@
 package org.shareat.feature.home.ui.home.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
+import org.shareat.shared.designsystem.components.RatingBadge
+import org.shareat.shared.designsystem.components.ReviewCard
 import org.shareat.shared.designsystem.shimmerEffect
 import org.shareat.shared.designsystem.theme.ShareatTheme
 
@@ -42,9 +45,10 @@ internal fun RestaurantCard(
     dishReviews: List<DishReviewUiState>,
     showDishReviews: Boolean,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
     ) {
         Column {
@@ -65,8 +69,8 @@ internal fun RestaurantCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     dishReviews.forEach { dishReview ->
-                        DishReviewCard(
-                            dishName = dishReview.dishName,
+                        ReviewCard(
+                            title = dishReview.dishName,
                             comment = dishReview.comment,
                             rating = dishReview.rating,
                         )

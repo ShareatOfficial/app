@@ -108,10 +108,24 @@ Every key — including subscreens — must be registered in `NavigationState`'s
 - Each navigating screen declares its own interface — no reusing a generic interface with access to the whole graph.
 - Each feature declares its own `NavKey`s; navigation implementations (`*NavigationImpl`, `*NavigationModule`) stay in `:shared:ui`.
 - A key that requires a session implements `RequiresLogin` from `:shared:navigation` — not an ad-hoc check in the feature or the app module.
-- Navigation arguments are minimal, serializable, and stable; the destination screen loads the full data through domain.
+- Navigation arguments are minimal, serializable, and stable; the destination screen loads the full data through domain — **except** for the registered payload pattern below.
 - Only the app knows the complete graph and can implement cross-feature navigation.
 - Every key is registered for state restoration.
 - An action requiring auth or a role is also validated in domain/backend — navigation only improves UX, it's not the authorization boundary.
+
+## Arguments as a complete payload
+
+Registered exception (`feature/restaurant-screen-ui`, 2026-09-01; revised 2026-09-07 over network cost). `RestaurantKey` carries a **header-only** `RestaurantArgs` (identity, address, image, average rating, review count) instead of a bare id, so the restaurant screen paints its header on the first frame and **asks only for what it is missing**: the dishes, via `GetRestaurantMenuUseCase`. The skeleton is confined to the dish section (`isLoadingDishes`); the header never flashes, because that data arrived in the key. `isRefreshing` stays reserved for pull to refresh, which does reload the whole restaurant (`GetRestaurantUseCase`) because the user explicitly asked for fresh data.
+
+The general rule: when a screen opens with part of its data already in the key, it fetches the remainder, not the whole aggregate — and its skeleton covers only the part still in flight.
+
+The first version carried menus, dishes, prices and allergens too, so the screen issued no call at all when opening. That part was reverted: to fill the payload, home had to assemble the published menu of **every** restaurant in the feed (`getPublishedMenu` plus its dishes' reviews, ~5 requests per restaurant) and throw it away for all but the one tapped — ~2s of home's request across only 5 restaurants. The header still travels because home already holds it, and it is what avoids the flash on open.
+
+Put data in a key when the caller already holds it for its own screen (re-fetching would be redundant), it is a serializable presentation model owned by the destination feature, and the screen still has its own domain load path — the payload is a starting point, never the only source of truth.
+
+Don't when the caller doesn't hold it: if filling the payload needs extra per-item requests across a list, the destination screen loads it instead. Nor for deep links or cold restoration (no caller supplies the payload — those need an id key), nor for large payloads: the back stack is serialized into saved state, so keep it to a few KB.
+
+The payload is built in `:shared:ui` (`HomeNavigationImpl` maps `RestaurantSummary` to `RestaurantArgs`), never in the calling feature, so `:feature:home` never depends on `:feature:restaurant`.
 
 ## Tests
 

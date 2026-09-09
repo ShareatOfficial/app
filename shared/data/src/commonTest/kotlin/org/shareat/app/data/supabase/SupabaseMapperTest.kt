@@ -56,6 +56,35 @@ class SupabaseMapperTest {
     }
 
     @Test
+    fun dishDtoAcceptsTheShortAllergenIdsTheDeployedProjectStores() {
+        val dish = dishWithAllergens(setOf("gluten", "soy", "sulphites"))
+
+        assertEquals(
+            setOf(
+                EuAllergen.CerealsContainingGluten,
+                EuAllergen.Soybeans,
+                EuAllergen.SulphurDioxideAndSulphites,
+            ),
+            assertNotNull(dish.allergenDeclaration).allergens,
+        )
+    }
+
+    @Test
+    fun anUnknownAllergenIsDroppedInsteadOfFailingTheDish() {
+        val dish = dishWithAllergens(setOf("milk", "unobtainium"))
+
+        assertEquals(setOf(EuAllergen.Milk), assertNotNull(dish.allergenDeclaration).allergens)
+    }
+
+    private fun dishWithAllergens(allergens: Set<String>) = DishDto(
+        id = "dish-id",
+        restaurantId = "restaurant-id",
+        name = "Dish",
+        allergenSource = "restaurant",
+        isEnabled = true,
+    ).toDomain(allergens = allergens, publicImageUrl = { it })
+
+    @Test
     fun restaurantUpdateMapsAllOpeningPeriodsForTransactionalRpc() {
         val restaurant = RestaurantDto(
             id = "restaurant-id",

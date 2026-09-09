@@ -36,6 +36,17 @@ Las excepciones por festivos o cierres puntuales se añadirán más adelante sin
 ## Platos
 
 Un plato pertenece al catálogo de un restaurante. El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`.
+```text
+Restaurant 1 — 1 Menu (MVP)
+Restaurant 1 — N Dish
+Menu       N — N Dish  (MenuItem)
+```
+
+Un restaurante publica un único menú en el MVP. Solo ese menú `Published` y sus platos habilitados llegan a una lectura pública, vía `MenuRepository.getPublishedMenu`; el ensamblado de esa regla vive en `PublishedMenuAssembler` (`:shared:domain`), del que dependen tanto `GetRestaurantMenuUseCase` como `RestaurantDetailsAssembler`, no repetido en cada pantalla. «Sin menú publicado» no es un error: el assembler lo traduce a `Success(null)` y reserva `Failure` para fallos reales de lectura.
+
+El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`. El precio, la posición, la disponibilidad y la categoría (`DishCategory`: entrantes, principales, postres, para picar) dentro de un menú pertenecen a `MenuItem`, porque pueden variar entre menús. `MenuItem.category` es opcional: los fixtures la rellenan y el mapper de Supabase la deja a `null` hasta que exista la columna correspondiente (issue #64).
+
+El precio usa unidades menores (`Money.minorUnits`): `1_800` representa 18,00 EUR. No se usa `Double` para valores monetarios.
 
 Cada plato admite una imagen opcional en el MVP. Los alérgenos usan el catálogo de 14 grupos de la UE, una nota opcional y una fuente que deja claro que la información procede del restaurante.
 
@@ -50,7 +61,13 @@ ReviewTarget.Dish
 
 Solo una cuenta customer activa puede escribir reviews. Existe como máximo una por autor y target; `saveReview` actualiza la existente. La valoración es un entero entre 1 y 5, el comentario y la fecha de visita son opcionales, y creación y última actualización se registran por separado.
 
-Los agregados incluyen únicamente reviews públicas con moderación `Visible`. `RatingSummary.averageTenths` evita errores de coma flotante: `48` representa una media de 4,8.
+El proyecto desplegado guarda tres alérgenos con ids más cortos que los canónicos de las migraciones (`gluten` en vez de `cereals_containing_gluten`, `soy` en vez de `soybeans`, `sulphites` en vez de `sulphur_dioxide_and_sulphites`). La base de datos remota ha divergido de `supabase/migrations/`. Hasta que se reconcilien, la lectura (`String.toEuAllergenOrNull`) acepta ambas grafías y la escritura (`EuAllergen.toDatabaseValue`) sigue emitiendo solo la canónica.
+
+Regla general de mapeo de catálogo: **un valor desconocido se descarta, nunca hace fallar el agregado que lo contiene**. `toEuAllergenOrNull` devuelve `null` para un id no reconocido y `DishDto.toDomain` lo omite. Antes lanzaba, y un único alérgeno inesperado tumbaba la carta entera del restaurante: `getPublishedMenu` fallaba, el ensamblador devolvía `menu = null` y la pantalla mostraba "todavía no ha publicado su carta" en lugar de un error.
+
+Las reviews públicas de varios platos se piden en lote con `ReviewRepository.getPublicDishReviews(dishIds)`, una sola consulta por sección, en vez de una por plato. La misma regla aplica a una lista de restaurantes: `DishRepository.getDishesByRestaurant(restaurantIds)` y `ReviewRepository.getRestaurantRatingSummaries(restaurantIds)` resuelven una página entera en una consulta cada uno. **Una consulta por página, nunca una por elemento**: un ensamblador que itera una lista llamando a un repositorio por elemento multiplica los viajes de red por el tamaño de la página (ver `RestaurantSummariesAssembler`). Los ids viajan en la query string, así que las implementaciones de Supabase parten los filtros `in` en lotes (`selectInBatches`).
+
+Los agregados incluyen únicamente reviews públicas con moderación `Visible`. `RatingSummary.averageTenths` evita errores de coma flotante: `48` representa una media de 4,8. La media se calcula en un único sitio, `RatingSummary.of(ratings)` (`:shared:domain`), que usan tanto los fakes como todo cálculo derivado de una lista de reviews (`List<Review>.toRatingSummary()`); `RatingSummary.Unrated` es el valor sin valoraciones.
 
 ## Repositorios fake
 
@@ -66,6 +83,16 @@ Los agregados incluyen únicamente reviews públicas con moderación `Visible`. 
 `RepositoryError.Unavailable` es la única rama de reserva del mapeo de errores de Supabase y transporta un `details` opcional con la clase de excepción, el código HTTP y el código de error del servidor. Sin ese diagnóstico un fallo de autenticación real (`email_not_confirmed`, clave de API inválida, error de red) quedaba indistinguible de una caída del servicio. Los errores conocidos de Auth y PostgREST se mapean por código (`AuthErrorCode`, `SQLSTATE`), no por coincidencia de texto en el mensaje.
 
 `fakeDataModule` enlaza las interfaces con estas implementaciones para previews y pruebas. `supabaseDataModule` enlaza los mismos contratos con Auth, PostgREST y Storage para runtime; las entidades, interfaces y consumidores no cambian por detalles del proveedor.
+
+## Detalle de restaurante
+
+Hay dos agregados, uno por pantalla, y la diferencia entre ambos es el menú:
+
+- `RestaurantSummary` alimenta el feed de home: restaurante, `RatingSummary` y platos destacados por reviews. Lo devuelve `GetRestaurantsUseCase` (página) mediante `RestaurantSummariesAssembler`, que resuelve la página entera en tres consultas en lote, no en unas cuantas por restaurante. **No incluye menú**: la tarjeta de home no lo pinta, y cargarlo para toda la página era el coste dominante de la petición de home.
+- `RestaurantDetails` alimenta el *pull to refresh* de la pantalla de restaurante: lo anterior más el menú publicado con sus platos ya valorados (`RestaurantMenu` → `RatedMenuDish`), o `null` si todavía no publica ninguno. Lo devuelve `GetRestaurantUseCase` (uno) mediante `RestaurantDetailsAssembler`.
+- `RestaurantMenu` por sí solo alimenta la apertura de esa pantalla: viniendo de home, la cabecera ya viaja en los argumentos de navegación, así que `GetRestaurantMenuUseCase` pide **solo los platos** en vez de reensamblar el restaurante entero.
+
+`RatedMenuDish` lleva la **lista de reviews públicas** del plato (`reviews: List<Review>`), no un agregado ya aplanado, y expone `ratingSummary` derivado de esa lista. Una única fuente evita que la media que ve el usuario contradiga la lista de reseñas que se pinta a su lado, y permite que la UI muestre ambas cosas sin una segunda llamada. Es correcto porque `ReviewRepository.getPublicReviews` devuelve exactamente la población sobre la que se define el agregado: reviews `Public` con moderación `Visible`.
 
 ## Persistencia Supabase
 

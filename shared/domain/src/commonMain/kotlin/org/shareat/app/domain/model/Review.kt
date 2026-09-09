@@ -59,4 +59,19 @@ data class RatingSummary(
         require(averageTenths == null || averageTenths in 10..50)
         require((ratingCount == 0) == (averageTenths == null))
     }
+
+    companion object {
+        val Unrated = RatingSummary(averageTenths = null, ratingCount = 0)
+
+        fun of(ratings: List<Rating>): RatingSummary {
+            if (ratings.isEmpty()) return Unrated
+            val values = ratings.map(Rating::value)
+            return RatingSummary(
+                averageTenths = (values.sum() * 10 + values.size / 2) / values.size,
+                ratingCount = values.size,
+            )
+        }
+    }
 }
+
+fun List<Review>.toRatingSummary(): RatingSummary = RatingSummary.of(map(Review::rating))

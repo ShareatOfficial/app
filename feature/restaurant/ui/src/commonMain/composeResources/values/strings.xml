@@ -1,0 +1,38 @@
+<resources>
+    <string name="restaurant_leave_your_rate">Deja tu valoración</string>
+    <string name="restaurant_unrated">Sin valoraciones</string>
+    <string name="restaurant_verified">Restaurante verificado</string>
+    <string name="restaurant_back">Volver</string>
+    <string name="restaurant_allergen_filter">Filtro de alérgenos</string>
+    <string name="restaurant_allergen_included">Se muestran los platos con este alérgeno</string>
+    <string name="restaurant_allergen_excluded">Se ocultan los platos con este alérgeno</string>
+    <string name="restaurant_all_categories">Todos</string>
+    <string name="restaurant_no_menus">Este restaurante todavía no ha publicado su carta.</string>
+    <string name="restaurant_no_dishes_for_filters">Ningún plato coincide con los filtros seleccionados.</string>
+    <string name="restaurant_dish_rate_prompt">Valora este plato</string>
+    <string name="restaurant_dish_rate_star">Puntuar con %1$d estrellas</string>
+    <string name="restaurant_dish_reviews_empty">Sé el primero en valorar este plato</string>
+    <string name="restaurant_dish_reviews_no_comments">Todavía nadie ha dejado un comentario</string>
+    <string name="category_starters">Entrantes</string>
+    <string name="category_main_courses">Platos principales</string>
+    <string name="category_desserts">Postres</string>
+    <string name="category_small_bites">Para picar</string>
+    <string name="allergen_celery">apio</string>
+    <string name="allergen_gluten">gluten</string>
+    <string name="allergen_crustaceans">crustáceos</string>
+    <string name="allergen_eggs">huevo</string>
+    <string name="allergen_fish">pescado</string>
+    <string name="allergen_lupin">altramuces</string>
+    <string name="allergen_milk">lácteos</string>
+    <string name="allergen_molluscs">moluscos</string>
+    <string name="allergen_mustard">mostaza</string>
+    <string name="allergen_nuts">frutos secos</string>
+    <string name="allergen_peanuts">cacahuetes</string>
+    <string name="allergen_sesame">sésamo</string>
+    <string name="allergen_soybeans">soja</string>
+    <string name="allergen_sulphites">sulfitos</string>
+    <plurals name="restaurant_reviews_count">
+        <item quantity="one">%1$s reseña</item>
+        <item quantity="other">%1$s reseñas</item>
+    </plurals>
+</resources>

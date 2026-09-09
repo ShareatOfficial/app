@@ -40,3 +40,35 @@ data class Dish(
 ) {
     init { require(name.isNotBlank()) }
 }
+
+enum class DishCategory {
+    Starters,
+    MainCourses,
+    Desserts,
+    SmallBites,
+}
+
+/** Join entity for the many-to-many relationship between menus and dishes. */
+data class MenuItem(
+    val menuId: MenuId,
+    val dishId: DishId,
+    val price: Money,
+    val position: Int,
+    val isEnabled: Boolean,
+    val category: DishCategory? = null,
+) {
+    init { require(position >= 0) }
+}
+
+data class MenuDetails(
+    val menu: Menu,
+    val items: List<MenuDish>,
+)
+
+data class MenuDish(
+    val dish: Dish,
+    val price: Money,
+    val position: Int,
+    val isEnabled: Boolean = true,
+    val category: DishCategory? = null,
+)

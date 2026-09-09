@@ -37,18 +37,27 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.compose.uiTooling)
+        }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.components.resources)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
     }
+}
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.uiTooling)
 }
 
 compose.resources {

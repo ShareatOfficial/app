@@ -48,6 +48,7 @@ import org.shareat.app.domain.model.Weekday
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.settings.ui.generated.resources.Res
 import shareat.feature.settings.ui.generated.resources.*
+import org.shareat.shared.designsystem.preview.FormFactorPreviews
 
 @Composable
 fun RestaurantOnboardingScreen(
@@ -286,25 +287,17 @@ private fun weekdayLabel(day: Weekday): String = stringResource(when (day) {
 @Composable
 private fun ErrorText(message: String) = Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
 
-@Preview(name = "Onboarding mobile", widthDp = 390, heightDp = 844)
+@FormFactorPreviews
 @Composable
-private fun MobilePreview() {
+private fun EmptyPreview() {
     ShareatTheme {
         StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
     }
 }
 
-@Preview(name = "Onboarding foldable", widthDp = 673, heightDp = 900)
+@FormFactorPreviews
 @Composable
-private fun FoldablePreview() {
-    ShareatTheme {
-        StatelessRestaurantOnboardingScreen(RestaurantOnboardingUiState(), {})
-    }
-}
-
-@Preview(name = "Onboarding tablet", widthDp = 900, heightDp = 1000)
-@Composable
-private fun TabletPreview() {
+private fun FilledPreview() {
     ShareatTheme {
         StatelessRestaurantOnboardingScreen(
             RestaurantOnboardingUiState(name = "Casa Naranja"),
@@ -313,18 +306,7 @@ private fun TabletPreview() {
     }
 }
 
-@Preview(name = "Onboarding desktop", widthDp = 1280, heightDp = 900)
-@Composable
-private fun DesktopPreview() {
-    ShareatTheme {
-        StatelessRestaurantOnboardingScreen(
-            RestaurantOnboardingUiState(name = "Casa Naranja"),
-            {},
-        )
-    }
-}
-
-@Preview(name = "Onboarding validation", widthDp = 390, heightDp = 844)
+@Preview(name = "Onboarding validation", widthDp = 411, heightDp = 891)
 @Composable
 private fun ValidationPreview() {
     ShareatTheme {

@@ -43,11 +43,23 @@ Restaurant 1 — N Dish
 Menu       N — N Dish  (via MenuItem)
 ```
 
-Name, description, image, and allergens belong to `Dish`. Price, position, and availability within a specific menu belong to `MenuItem`, because they can vary between menus.
+A restaurant publishes one menu in the MVP. Only that `Published` menu and its enabled dishes reach a public read path, via `MenuRepository.getPublishedMenu`; that rule is enforced once, in `PublishedMenuAssembler` (`:shared:domain`), which both `GetRestaurantMenuUseCase` and `RestaurantDetailsAssembler` delegate to — never repeated per screen. "No published menu" is not an error: the assembler maps it to `Success(null)` and keeps `Failure` for genuine read failures.
+
+Name, description, image, and allergens belong to `Dish`. Price, position, availability, and `DishCategory` (starters / mains / desserts / small bites) within a specific menu belong to `MenuItem`, because they can vary between menus. `MenuItem.category` is nullable: fixtures populate it, and the Supabase mapper leaves it null until the column exists.
 
 Price uses minor units: `Money.minorUnits`, where `1_800` = 18,00 EUR. Never `Double` for money.
 
 Each dish has an optional image in the MVP. Allergens use the EU's 14-group catalogue, plus an optional note and a source that makes clear the allergen info comes from the restaurant (not verified by Shareat).
+
+## Restaurant summary and details
+
+Two aggregates, one per screen, and the menu is what separates them:
+
+- `RestaurantSummary` feeds the home feed: restaurant, `RatingSummary` and review-backed dish highlights. `GetRestaurantsUseCase` (a page) returns it via `RestaurantSummariesAssembler`, which resolves the whole page in three batched queries rather than several per restaurant. It carries **no menu**: the home card never draws one, and loading it for the page was the dominant cost of home's request.
+- `RestaurantDetails` feeds the restaurant screen's pull to refresh: the same plus the published menu with its already-rated dishes (`RestaurantMenu` → `RatedMenuDish`), or null when it publishes none. `GetRestaurantUseCase` (one) returns it via `RestaurantDetailsAssembler`.
+- `RestaurantMenu` alone feeds that screen's opening load: arriving from home, the header already travels in the navigation arguments, so `GetRestaurantMenuUseCase` fetches **only the dishes** rather than reassembling the whole restaurant.
+
+`RatedMenuDish` carries the dish's **public review list** (`reviews: List<Review>`), not a pre-flattened aggregate, and exposes `ratingSummary` derived from it. One source keeps the average a screen shows from contradicting the reviews rendered next to it, and lets the UI draw both without a second call. This is sound because `ReviewRepository.getPublicReviews` returns exactly the population the aggregate is defined over: `Public` reviews with `Visible` moderation.
 
 ## Reviews
 
@@ -60,7 +72,13 @@ ReviewTarget.Dish
 
 Only an active customer account can write reviews. At most one review per author+target — `saveReview` updates the existing one instead of creating a duplicate. Rating is an integer 1–5; comment and visit date are optional; created and last-updated are tracked separately.
 
-Aggregates only include public reviews with `Visible` moderation status. `RatingSummary.averageTenths` avoids floating-point error: `48` means an average of 4.8.
+The deployed project stores three allergens under shorter ids than the canonical ones in the migrations (`gluten` for `cereals_containing_gluten`, `soy` for `soybeans`, `sulphites` for `sulphur_dioxide_and_sulphites`) — the remote database has drifted from `supabase/migrations/`. Until they are reconciled, reads (`String.toEuAllergenOrNull`) accept both spellings while writes (`EuAllergen.toDatabaseValue`) still emit only the canonical id.
+
+General catalogue-mapping rule: **an unrecognised value is dropped, never allowed to fail the aggregate that contains it.** `toEuAllergenOrNull` returns null for an unknown id and `DishDto.toDomain` skips it. It previously threw, and a single unexpected allergen took down a restaurant's whole menu: `getPublishedMenu` failed, the assembler returned `menu = null`, and the screen reported "no menu published" instead of an error. When you add a mapper from a database string to a domain enum, make the unknown branch degrade, not throw.
+
+Public reviews for several dishes are fetched in one batch via `ReviewRepository.getPublicDishReviews(dishIds)` — one query per section, not one per dish. The same rule governs a list of restaurants: `DishRepository.getDishesByRestaurant(restaurantIds)` and `ReviewRepository.getRestaurantRatingSummaries(restaurantIds)` each resolve a whole page in one query. **One query per page, never one per element**: an assembler that loops a list calling a repository per element multiplies network round trips by page size (see `RestaurantSummariesAssembler`). Always prefer a batched repository method over an N-per-entity loop. Ids travel in the query string, so the Supabase implementations split `in` filters into request-sized batches (`selectInBatches`).
+
+Aggregates only include public reviews with `Visible` moderation status. `RatingSummary.averageTenths` avoids floating-point error: `48` means an average of 4.8. The mean is computed in exactly one place, `RatingSummary.of(ratings)` in `:shared:domain` — used by the fakes and by anything deriving a summary from a review list (`List<Review>.toRatingSummary()`). `RatingSummary.Unrated` is the no-ratings value; don't hand-roll `RatingSummary(null, 0)` or the rounding formula again.
 
 ## Fake repositories
 

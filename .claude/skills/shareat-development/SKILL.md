@@ -19,10 +19,13 @@ Shareat is a Kotlin Multiplatform app (Android, iOS, web) where customers discov
 androidApp/   iosApp/   webApp/                  # platform entry points
 shared/{domain,data,navigation,designsystem,ui}/ # shared KMP base; :shared:navigation is a tiny leaf
                                                   # module for shared navigation contracts (e.g.
-                                                  # RequiresLogin); :shared:designsystem is a tiny
-                                                  # Compose-only leaf for shared visual effects (e.g.
-                                                  # Modifier.shimmerEffect); :shared:ui is the
-                                                  # composition root
+                                                  # RequiresLogin); :shared:designsystem is a
+                                                  # Compose-only leaf for shared visual effects
+                                                  # (Modifier.shimmerEffect) and cross-feature
+                                                  # components (components/ReviewCard,
+                                                  # components/RatingBadge) plus the shared
+                                                  # preview/FormFactorPreviews annotation;
+                                                  # :shared:ui is the composition root
 feature/<name>/{domain,data,ui}/                 # per-feature modules (some features are still
                                                   # single-module while they're being split — check
                                                   # settings.gradle.kts for what actually exists
@@ -49,7 +52,7 @@ Android / iOS / Web
         +------------------> :feature:<name>:ui -> :feature:<name>:domain
 ```
 
-A feature never imports another feature's internals to reuse a screen, repository, or ViewModel — that goes through an explicit API. Data flow: `Screen -> ViewModel -> Use case -> Repository interface -> {MockRepository | RemoteRepository}`. `data` maps fixtures/remote responses to domain models before returning; `ui` maps domain to presentation state.
+A feature never imports another feature's internals to reuse a screen, repository, or ViewModel — that goes through an explicit API. A composable two features both need is promoted to `:shared:designsystem/components`, not duplicated and not reached into. Data flow: `Screen -> ViewModel -> Use case -> Repository interface -> {MockRepository | RemoteRepository}`. `data` maps fixtures/remote responses to domain models before returning; `ui` maps domain to presentation state.
 
 ## Reference files
 
@@ -59,7 +62,7 @@ Read the one(s) relevant to your change — don't load all of them speculatively
 - `references/data-model.md` — domain entities (Account, Restaurant, Menu/Dish/MenuItem, Review, etc.), their relationships, `FakeShareatData`/`FakeDataScenario`, and the Supabase persistence mapping.
 - `references/dependency-injection.md` — Koin module structure, `single`/`factory`/`viewModel` scope rules, the fake-vs-Supabase module selection, and testing overrides.
 - `references/navigation.md` — how a feature declares a navigation interface, how the app module implements it with `NavKey` and Koin Navigation 3 entries, and the top-level-vs-subscreen split.
-- `references/ui.md` — the rule that a `Loading` ui state renders a skeleton shaped like the loaded screen, `:shared:designsystem`'s `Modifier.shimmerEffect`, and how to build a feature's skeleton components on top of it.
+- `references/ui.md` — the rule that a `Loading` ui state renders a skeleton shaped like the loaded screen, `:shared:designsystem`'s `Modifier.shimmerEffect` and shared `components/`, and how to build a feature's skeleton components on top of them.
 - `references/testing.md` — mock repository conventions, deterministic scenarios, what to test at each layer (repository/use case/ViewModel), and the local Supabase test flow (pgTAP, JVM contract tests).
 - `references/supabase.md` — security boundaries (publishable key only, RLS, Storage limits), the local dev loop, and the safe deployment sequence.
 - `references/product.md` — MVP scope, product rules (reviews, ratings, menu visibility, moderation, monetisation), and what's explicitly post-MVP. Use this when a request would add scope the product definition puts outside the MVP, or when unsure whether a rule is a product decision vs. a technical one.
@@ -73,6 +76,8 @@ Read the one(s) relevant to your change — don't load all of them speculatively
 - A disabled/draft/unpublished menu, dish, or review never reaches a public read path or a public aggregate.
 - Every repository interface method is `suspend`, so a mock implementation can be replaced by a remote one without touching callers.
 - New Gradle modules for a feature are registered in `settings.gradle.kts`.
+- Models live in a `model/` package inside their own layer and module — `…/<feature>/domain/model/`, `…/<feature>/ui/model/`, `org.shareat.app.domain.model` for the shared base — never declared alongside the use case, repository, or ViewModel that consumes them.
+- A multi-device preview annotates with `@FormFactorPreviews` from `:shared:designsystem`; a module never redeclares its own list of `@Preview` widths and heights. A preview that varies *state* rather than size stays a plain `@Preview`.
 - A screen's `Loading` ui state renders a skeleton shaped like its own loaded content (reusing `Modifier.shimmerEffect` from `:shared:designsystem`), never a bare spinner — see `references/ui.md`.
 - No comments by default — this is the default, not a fallback to reach for. Name classes, functions, and variables well enough (and apply SOLID — especially single responsibility — well enough) that the code reads without narration. This also covers module-placement/dependency-direction rationale ("lives here to avoid a circular dependency") — that belongs in the PR description or `docs/`, not a code comment. The only exception is logic that is itself genuinely tricky (a non-obvious algorithm, a workaround for a specific bug/platform quirk, a subtle invariant) — and even then, at most a two-line `//` comment, never a `/** KDoc */` block, explaining the *why*, not the *what*.
 
