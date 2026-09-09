@@ -68,6 +68,8 @@ kotlin {
             implementation(project(":feature:home:ui"))
             implementation(project(":feature:settings:ui"))
             implementation(project(":feature:login:ui"))
+            implementation(project(":feature:subscription:data"))
+            implementation(project(":feature:subscription:ui"))
             implementation(project(":feature:restaurantHome"))
             implementation(project(":feature:review"))
 

@@ -8,6 +8,7 @@ import org.shareat.app.data.supabaseDataModule
 import org.shareat.app.data.fakeDataModule
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.review.di.reviewUiModule
+import org.shareat.feature.subscription.data.subscriptionDataModule
 
 private val applicationModule: Module = module {
     includes(navigationModule, reviewUiModule)
@@ -17,12 +18,12 @@ private val applicationModule: Module = module {
 }
 
 val sharedModule: Module = module {
-    includes(supabaseDataModule(), applicationModule)
+    includes(supabaseDataModule(), subscriptionDataModule, applicationModule)
 }
 
 /** Preview/test graph. Runtime apps use [sharedModule], which is Supabase-backed. */
 val previewSharedModule: Module = module {
-    includes(fakeDataModule, applicationModule)
+    includes(fakeDataModule, subscriptionDataModule, applicationModule)
 }
 
 expect val platformModule: Module

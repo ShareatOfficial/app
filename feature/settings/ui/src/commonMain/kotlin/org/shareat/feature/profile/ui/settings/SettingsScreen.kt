@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.outlined.AllInclusive
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
@@ -78,6 +79,7 @@ fun SettingsScreen(
             when (event) {
                 SettingsEvent.LogoutSuccess -> navigator.onLogoutSuccess()
                 SettingsEvent.NavigateToEditProfile -> navigator.openEditProfile()
+                SettingsEvent.NavigateToSubscription -> navigator.openSubscription()
             }
         }
     }
@@ -239,6 +241,12 @@ private fun UserSettings(
                 leadingIcon = Icons.Outlined.History,
                 text = "Review history",
                 onClick = { callbacks.onUserAction(SettingsUserAction.ReviewHistory) },
+            )
+            SettingsDivider()
+            SettingsItem(
+                leadingIcon = Icons.Outlined.AllInclusive,
+                text = "Shareat Unlimited",
+                onClick = { callbacks.onUserAction(SettingsUserAction.Subscription) },
             )
         }
 
@@ -506,6 +514,12 @@ private fun RestaurantSettings(
                     Icons.Outlined.Group,
                     "Team & permissions",
                     { callbacks.onRestaurantAction(SettingsRestaurantAction.TeamAndPermissions) },
+                )
+                SettingsDivider()
+                SettingsItem(
+                    Icons.Outlined.AllInclusive,
+                    "Shareat Unlimited",
+                    { callbacks.onRestaurantAction(SettingsRestaurantAction.Subscription) },
                 )
             }
         }
