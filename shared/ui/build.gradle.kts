@@ -66,6 +66,7 @@ kotlin {
             implementation(project(":shared:navigation"))
 
             implementation(project(":feature:home:ui"))
+            implementation(project(":feature:lastActivity"))
             implementation(project(":feature:settings:ui"))
             implementation(project(":feature:login:ui"))
             implementation(project(":feature:subscription:data"))
@@ -77,6 +78,7 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.material.icons.core)
+            implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)

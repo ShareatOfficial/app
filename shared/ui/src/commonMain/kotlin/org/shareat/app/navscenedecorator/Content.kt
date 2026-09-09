@@ -7,7 +7,8 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -20,7 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.home.ui.navigation.HomeKey
-import org.shareat.feature.profile.ui.profile.ProfileKey
+import org.shareat.feature.lastactivity.navigation.LastActivityKey
+import org.shareat.feature.profile.ui.settings.SettingsKey
 
 data class TopLevelNavigationItem(
     val route: NavKey,
@@ -30,7 +32,8 @@ data class TopLevelNavigationItem(
 
 val TOP_LEVEL_NAV_ITEMS = listOf(
     TopLevelNavigationItem(HomeKey, "Home", Icons.Default.Home),
-    TopLevelNavigationItem(ProfileKey, "Profile", Icons.Default.Person),
+    TopLevelNavigationItem(LastActivityKey, "Actividad", Icons.Default.History),
+    TopLevelNavigationItem(SettingsKey, "Settings", Icons.Default.Settings),
 )
 
 @Composable
