@@ -14,7 +14,8 @@ import org.koin.core.parameter.parametersOf
 import org.shareat.app.navigation.LocalNavigator
 import org.shareat.app.navigation.Navigator
 import org.shareat.feature.home.ui.navigation.HomeKey
-import org.shareat.feature.profile.ui.profile.ProfileKey
+import org.shareat.feature.lastactivity.navigation.LastActivityKey
+import org.shareat.feature.profile.ui.settings.SettingsKey
 import org.shareat.app.navigation.rememberNavigationState
 import org.shareat.app.navigation.toEntries
 import org.shareat.app.navscenedecorator.TOP_LEVEL_NAV_ITEMS
@@ -31,7 +32,7 @@ fun App() {
         SharedTransitionLayout {
             val navigationState = rememberNavigationState(
                 startRoute = HomeKey,
-                topLevelRoutes = setOf(HomeKey, ProfileKey),
+                topLevelRoutes = setOf(HomeKey, LastActivityKey, SettingsKey),
             )
             val navigator = koinInject<Navigator> {
                 parametersOf(navigationState)

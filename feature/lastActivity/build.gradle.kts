@@ -4,6 +4,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.koin.compiler)
 }
 
 kotlin {
@@ -32,7 +36,24 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":shared:designsystem"))
+            implementation(project(":shared:navigation"))
             api(project(":shared:domain"))
+            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.uiToolingPreview)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.annotations)
+            implementation(project.dependencies.platform(libs.koin.bom))
+            implementation(libs.jetbrains.navigation3.ui)
+            implementation(libs.kotlinx.serialization.core)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
