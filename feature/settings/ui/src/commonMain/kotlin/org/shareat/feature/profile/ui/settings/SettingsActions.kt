@@ -2,14 +2,6 @@ package org.shareat.feature.profile.ui.settings
 
 enum class SettingsUserAction {
     EditProfile,
-    PasswordAndSecurity,
-    Notifications,
-    Privacy,
-    ConnectedAccounts,
-    ReviewHistory,
-    Subscription,
-    DownloadData,
-    DeleteAccount,
     LogOut,
 }
 
@@ -35,13 +27,6 @@ sealed interface SettingsRestaurantAction {
         val value: String,
     ) : SettingsRestaurantAction
 
-    data object AdjustMapPin : SettingsRestaurantAction
-    data object SpecialDatesAndHolidays : SettingsRestaurantAction
-    data object AddSplitHours : SettingsRestaurantAction
-    data object ReservationsAndOrderLinks : SettingsRestaurantAction
-    data object PhotosAndMedia : SettingsRestaurantAction
-    data object Notifications : SettingsRestaurantAction
-    data object TeamAndPermissions : SettingsRestaurantAction
     data object Subscription : SettingsRestaurantAction
     data object SaveChanges : SettingsRestaurantAction
     data object LogOut : SettingsRestaurantAction

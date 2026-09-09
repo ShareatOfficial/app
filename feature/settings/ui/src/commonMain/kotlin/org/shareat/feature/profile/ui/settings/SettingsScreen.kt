@@ -24,21 +24,11 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.AllInclusive
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.EventAvailable
-import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.ManageAccounts
-import androidx.compose.material.icons.outlined.NotificationsNone
-import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Storefront
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -88,6 +78,7 @@ fun SettingsScreen(
         modifier = modifier,
         callbacks = SettingsCallbacks(
             onBackClick = navigator::goBack,
+            onTermsAndConditionsClick = navigator::openTermsAndConditions,
             onUserAction = viewModel::onUserAction,
             onRestaurantAction = viewModel::onRestaurantAction,
         ),
@@ -96,6 +87,7 @@ fun SettingsScreen(
 
 private data class SettingsCallbacks(
     val onBackClick: () -> Unit = {},
+    val onTermsAndConditionsClick: () -> Unit = {},
     val onUserAction: (SettingsUserAction) -> Unit = {},
     val onRestaurantAction: (SettingsRestaurantAction) -> Unit = {},
 )
@@ -214,61 +206,9 @@ private fun UserSettings(
             )
             SettingsDivider()
             SettingsItem(
-                leadingIcon = Icons.Outlined.Lock,
-                text = "Password & security",
-                onClick = { callbacks.onUserAction(SettingsUserAction.PasswordAndSecurity) },
-            )
-            SettingsDivider()
-            SettingsItem(
-                leadingIcon = Icons.Outlined.NotificationsNone,
-                text = "Notifications",
-                onClick = { callbacks.onUserAction(SettingsUserAction.Notifications) },
-            )
-            SettingsDivider()
-            SettingsItem(
-                leadingIcon = Icons.Outlined.Security,
-                text = "Privacy",
-                onClick = { callbacks.onUserAction(SettingsUserAction.Privacy) },
-            )
-            SettingsDivider()
-            SettingsItem(
-                leadingIcon = Icons.Outlined.Link,
-                text = "Connected accounts",
-                onClick = { callbacks.onUserAction(SettingsUserAction.ConnectedAccounts) },
-            )
-            SettingsDivider()
-            SettingsItem(
-                leadingIcon = Icons.Outlined.History,
-                text = "Review history",
-                onClick = { callbacks.onUserAction(SettingsUserAction.ReviewHistory) },
-            )
-            SettingsDivider()
-            SettingsItem(
-                leadingIcon = Icons.Outlined.AllInclusive,
-                text = "Shareat Unlimited",
-                onClick = { callbacks.onUserAction(SettingsUserAction.Subscription) },
-            )
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
-        ) {
-            SettingsItem(
-                leadingIcon = Icons.Outlined.Download,
-                text = "Download my data",
-                onClick = { callbacks.onUserAction(SettingsUserAction.DownloadData) },
-            )
-            SettingsDivider()
-            SettingsItem(
-                leadingIcon = Icons.Outlined.Delete,
-                text = "Delete account",
-                onClick = { callbacks.onUserAction(SettingsUserAction.DeleteAccount) },
-                isDestructive = true,
-                showChevron = false,
+                leadingIcon = Icons.Outlined.Description,
+                text = "Terms and Conditions",
+                onClick = callbacks.onTermsAndConditionsClick,
             )
         }
 
@@ -425,15 +365,6 @@ private fun RestaurantSettings(
                         singleLine = true,
                     )
                 }
-                TextButton(
-                    onClick = {
-                        callbacks.onRestaurantAction(SettingsRestaurantAction.AdjustMapPin)
-                    },
-                ) {
-                    Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null)
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text("Adjust map pin")
-                }
             }
         }
         item {
@@ -441,20 +372,6 @@ private fun RestaurantSettings(
                 title = "Opening hours",
                 icon = Icons.Outlined.Schedule,
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(
-                        onClick = {
-                            callbacks.onRestaurantAction(
-                                SettingsRestaurantAction.SpecialDatesAndHolidays,
-                            )
-                        },
-                    ) {
-                        Text("Special dates & holidays")
-                    }
-                }
                 uiState.openingHours.forEach { hours ->
                     OpeningHoursRow(
                         hours = hours,
@@ -478,44 +395,13 @@ private fun RestaurantSettings(
                         SettingsDivider()
                     }
                 }
-                TextButton(
-                    onClick = {
-                        callbacks.onRestaurantAction(SettingsRestaurantAction.AddSplitHours)
-                    },
-                ) {
-                    Text("+ Add split hours")
-                }
             }
         }
         item {
             RestaurantSectionCard(
                 title = "Management",
-                icon = Icons.Outlined.Tune,
+                icon = Icons.Outlined.AllInclusive,
             ) {
-                SettingsItem(
-                    Icons.Outlined.EventAvailable,
-                    "Reservations & order links",
-                    { callbacks.onRestaurantAction(SettingsRestaurantAction.ReservationsAndOrderLinks) },
-                )
-                SettingsDivider()
-                SettingsItem(
-                    Icons.Outlined.PhotoLibrary,
-                    "Photos & media",
-                    { callbacks.onRestaurantAction(SettingsRestaurantAction.PhotosAndMedia) },
-                )
-                SettingsDivider()
-                SettingsItem(
-                    Icons.Outlined.NotificationsNone,
-                    "Notifications",
-                    { callbacks.onRestaurantAction(SettingsRestaurantAction.Notifications) },
-                )
-                SettingsDivider()
-                SettingsItem(
-                    Icons.Outlined.Group,
-                    "Team & permissions",
-                    { callbacks.onRestaurantAction(SettingsRestaurantAction.TeamAndPermissions) },
-                )
-                SettingsDivider()
                 SettingsItem(
                     Icons.Outlined.AllInclusive,
                     "Shareat Unlimited",
@@ -554,6 +440,12 @@ private fun RestaurantSettings(
                         },
                     )
                 }
+                SettingsDivider()
+                SettingsItem(
+                    Icons.Outlined.Description,
+                    "Terms and Conditions",
+                    callbacks.onTermsAndConditionsClick,
+                )
                 SettingsDivider()
                 SettingsItem(
                     leadingIcon = Icons.AutoMirrored.Filled.ExitToApp,
