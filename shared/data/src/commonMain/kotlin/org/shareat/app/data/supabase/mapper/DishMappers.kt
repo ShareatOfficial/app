@@ -13,7 +13,6 @@ import org.shareat.app.domain.model.RestaurantId
 
 internal fun DishDto.toDomain(
     restaurantId: RestaurantId,
-    allergens: Set<String>,
     publicImageUrl: (String) -> String,
 ): Dish = Dish(
     id = DishId(id),
@@ -22,7 +21,7 @@ internal fun DishDto.toDomain(
     description = description,
     image = imagePath?.let { ImageRef(publicImageUrl(it), imageAltText) },
     allergenDeclaration = if (allergens.isEmpty() && allergenNote == null) null else AllergenDeclaration(
-        allergens = allergens.mapNotNullTo(mutableSetOf(), String::toEuAllergenOrNull),
+        allergens = allergens.mapNotNullTo(mutableSetOf()) { it.allergenId.toEuAllergenOrNull() },
         note = allergenNote,
         source = AllergenInformationSource.Restaurant,
     ),

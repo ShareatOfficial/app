@@ -22,6 +22,16 @@ internal data class RestaurantDto(
     val latitude: Double? = null,
     val longitude: Double? = null,
     @SerialName("publication_state") val publicationState: String,
+    @SerialName("restaurant_opening_periods") val openingPeriods: List<EmbeddedOpeningPeriodDto> = emptyList(),
+)
+
+/** The schedule as it arrives nested inside its restaurant, without repeating the restaurant id. */
+@Serializable
+internal data class EmbeddedOpeningPeriodDto(
+    val weekday: Int,
+    val position: Int,
+    @SerialName("opens_at") val opensAt: String,
+    @SerialName("closes_at") val closesAt: String,
 )
 
 @Serializable

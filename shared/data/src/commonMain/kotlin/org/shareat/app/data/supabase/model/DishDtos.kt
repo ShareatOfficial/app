@@ -12,12 +12,19 @@ internal data class DishDto(
     @SerialName("image_alt_text") val imageAltText: String? = null,
     @SerialName("allergen_note") val allergenNote: String? = null,
     @SerialName("is_enabled") val isEnabled: Boolean,
+    @SerialName("dish_allergens") val allergens: List<EmbeddedAllergenDto> = emptyList(),
+)
+
+@Serializable
+internal data class EmbeddedAllergenDto(
+    @SerialName("allergen_id") val allergenId: String,
 )
 
 @Serializable
 internal data class RestaurantDishDto(
-    @SerialName("dish_id") val dishId: String,
+    @SerialName("dish_id") val dishId: String = "",
     @SerialName("restaurant_id") val restaurantId: String,
+    @SerialName("dishes") val dish: DishDto? = null,
 )
 
 @Serializable

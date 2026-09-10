@@ -2,7 +2,7 @@ package org.shareat.app.data.supabase.mapper
 
 import org.shareat.app.data.supabase.model.CreateOpeningPeriodDto
 import org.shareat.app.data.supabase.model.CreateRestaurantProfileRpc
-import org.shareat.app.data.supabase.model.OpeningPeriodDto
+import org.shareat.app.data.supabase.model.EmbeddedOpeningPeriodDto
 import org.shareat.app.data.supabase.model.OpeningPeriodUpdateDto
 import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.data.supabase.model.UpdateRestaurantSettingsRpc
@@ -23,7 +23,6 @@ import org.shareat.app.domain.model.Weekday
 import org.shareat.app.domain.model.WeeklyOpeningHours
 
 internal fun RestaurantDto.toDomain(
-    periods: List<OpeningPeriodDto>,
     publicImageUrl: (String) -> String,
 ): Restaurant = Restaurant(
     id = RestaurantId(id),
@@ -48,10 +47,10 @@ internal fun RestaurantDto.toDomain(
         coordinates = latitude?.let { GeoCoordinates(it, requireNotNull(longitude)) },
     ),
     openingHours = WeeklyOpeningHours(
-        periods.groupBy { it.weekday }.entries.sortedBy { it.key }.map { (weekday, rows) ->
+        openingPeriods.groupBy { it.weekday }.entries.sortedBy { it.key }.map { (weekday, rows) ->
             DailyOpeningHours(
                 day = Weekday.entries[weekday - 1],
-                periods = rows.sortedBy(OpeningPeriodDto::position).map {
+                periods = rows.sortedBy(EmbeddedOpeningPeriodDto::position).map {
                     OpeningPeriod(it.opensAt.toLocalTime(), it.closesAt.toLocalTime())
                 },
             )

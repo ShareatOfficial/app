@@ -11,15 +11,24 @@ internal data class MenuDto(
     val description: String? = null,
     @SerialName("publication_state") val publicationState: String,
     @SerialName("price_minor_units") val priceMinorUnits: Long? = null,
+    @SerialName("restaurants") val restaurant: MenuRestaurantDto? = null,
+    @SerialName("menu_items") val items: List<MenuItemDto> = emptyList(),
+)
+
+/** Only the part of the owning restaurant a menu needs: the currency its prices are in. */
+@Serializable
+internal data class MenuRestaurantDto(
+    @SerialName("currency_code") val currencyCode: String,
 )
 
 @Serializable
 internal data class MenuItemDto(
-    @SerialName("menu_id") val menuId: String,
+    @SerialName("menu_id") val menuId: String = "",
     @SerialName("dish_id") val dishId: String,
     @SerialName("price_minor_units") val priceMinorUnits: Long,
     val position: Int,
     @SerialName("is_enabled") val isEnabled: Boolean,
+    @SerialName("dishes") val dish: DishDto? = null,
 )
 
 @Serializable
