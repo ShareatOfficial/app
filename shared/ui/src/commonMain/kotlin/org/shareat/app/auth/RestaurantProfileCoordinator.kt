@@ -10,30 +10,42 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.AccountStatus
+import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.AuthSessionState
+import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.repository.AccountRepository
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
+import org.shareat.app.domain.repository.RestaurantWorkspaceRepository
 
 sealed interface RestaurantProfileGateState {
     data object Checking : RestaurantProfileGateState
-    data object Allowed : RestaurantProfileGateState
-    data object OnboardingRequired : RestaurantProfileGateState
+
+    /**
+     * The session may access the main application. A null [role] denotes a guest; a restaurant
+     * role is emitted only after its profile has been found, so the app can select the owner
+     * landing destination without doing a second profile request.
+     */
+    data class Allowed(
+        val role: AccountRole? = null,
+        val restaurant: Restaurant? = null,
+    ) : RestaurantProfileGateState
     data class Failure(val error: RepositoryError) : RestaurantProfileGateState
 }
 
 /**
  * Observes the authenticated account and determines whether it may use the app or must complete
- * restaurant onboarding. The navigation scene decorator renders this state without coupling the
- * root application composable to onboarding UI.
+ * the restaurant workspace bootstrap. A new owner receives a draft workspace before the app
+ * exposes its management landing.
  */
 class RestaurantProfileCoordinator(
     private val sessions: SessionCoordinator,
     private val auth: AuthRepository,
     private val accounts: AccountRepository,
     private val restaurants: RestaurantRepository,
+    private val restaurantWorkspace: RestaurantWorkspaceRepository,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val _state = MutableStateFlow<RestaurantProfileGateState>(RestaurantProfileGateState.Checking)
@@ -44,7 +56,7 @@ class RestaurantProfileCoordinator(
             sessions.state.collectLatest { sessionState ->
                 when (sessionState) {
                     AuthSessionState.Initializing -> _state.value = RestaurantProfileGateState.Checking
-                    AuthSessionState.Unauthenticated -> _state.value = RestaurantProfileGateState.Allowed
+                    AuthSessionState.Unauthenticated -> _state.value = RestaurantProfileGateState.Allowed()
                     AuthSessionState.RefreshUnavailable -> _state.value =
                         RestaurantProfileGateState.Failure(RepositoryError.Offline)
                     is AuthSessionState.Authenticated -> checkProfile(sessionState)
@@ -58,10 +70,6 @@ class RestaurantProfileCoordinator(
         scope.launch { checkProfile(authenticated) }
     }
 
-    fun completeOnboarding() {
-        _state.value = RestaurantProfileGateState.Allowed
-    }
-
     suspend fun signOut(): RepositoryResult<Unit> = auth.signOut()
 
     private suspend fun checkProfile(authenticated: AuthSessionState.Authenticated) {
@@ -71,7 +79,7 @@ class RestaurantProfileCoordinator(
             is RepositoryResult.Failure -> return fail(result.error)
         }
         if (account.role == AccountRole.Customer) {
-            _state.value = RestaurantProfileGateState.Allowed
+            _state.value = RestaurantProfileGateState.Allowed(role = AccountRole.Customer)
             return
         }
         if (account.status != AccountStatus.Active) {
@@ -79,11 +87,24 @@ class RestaurantProfileCoordinator(
             return
         }
         when (val result = restaurants.getRestaurantForOwner(account.id)) {
-            is RepositoryResult.Success -> _state.value = RestaurantProfileGateState.Allowed
-            is RepositoryResult.Failure -> _state.value = when (result.error) {
-                is RepositoryError.NotFound -> RestaurantProfileGateState.OnboardingRequired
-                else -> RestaurantProfileGateState.Failure(result.error)
+            is RepositoryResult.Success -> _state.value = RestaurantProfileGateState.Allowed(
+                role = AccountRole.Restaurant,
+                restaurant = result.value,
+            )
+            is RepositoryResult.Failure -> when (result.error) {
+                is RepositoryError.NotFound -> bootstrapWorkspace(account.id)
+                else -> _state.value = RestaurantProfileGateState.Failure(result.error)
             }
+        }
+    }
+
+    private suspend fun bootstrapWorkspace(ownerAccountId: AccountId) {
+        when (val result = restaurantWorkspace.ensureRestaurantWorkspace(ownerAccountId)) {
+            is RepositoryResult.Success -> _state.value = RestaurantProfileGateState.Allowed(
+                role = AccountRole.Restaurant,
+                restaurant = result.value,
+            )
+            is RepositoryResult.Failure -> fail(result.error)
         }
     }
 

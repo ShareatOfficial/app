@@ -9,6 +9,7 @@ import org.shareat.app.domain.model.AllergenInformationSource
 import org.shareat.app.domain.model.Currency
 import org.shareat.app.domain.model.DailyOpeningHours
 import org.shareat.app.domain.model.Dish
+import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.EmailAddress
 import org.shareat.app.domain.model.EuAllergen
@@ -190,6 +191,7 @@ internal fun MenuItemDto.toDomain(dish: Dish): MenuDish = MenuDish(
     price = Money(priceMinorUnits, Currency.Euro),
     position = position,
     isEnabled = isEnabled,
+    category = category?.toDishCategory(),
 )
 
 internal fun RestaurantMenuDraft.toSaveRpc(): SaveRestaurantMenuRpc = SaveRestaurantMenuRpc(
@@ -204,6 +206,7 @@ internal fun RestaurantMenuDraft.toSaveRpc(): SaveRestaurantMenuRpc = SaveRestau
             priceMinorUnits = item.price.minorUnits,
             position = position,
             isEnabled = item.isEnabled,
+            category = item.category?.toDatabaseValue(),
         )
     },
 )
@@ -223,6 +226,21 @@ private fun MenuPublicationState.toDatabaseValue(): String = when (this) {
     MenuPublicationState.Published -> "published"
     MenuPublicationState.Unpublished -> "unpublished"
     MenuPublicationState.Disabled -> "disabled"
+}
+
+private fun DishCategory.toDatabaseValue(): String = when (this) {
+    DishCategory.Starters -> "starters"
+    DishCategory.MainCourses -> "main_courses"
+    DishCategory.Desserts -> "desserts"
+    DishCategory.SmallBites -> "small_bites"
+}
+
+private fun String.toDishCategory(): DishCategory? = when (this) {
+    "starters" -> DishCategory.Starters
+    "main_courses" -> DishCategory.MainCourses
+    "desserts" -> DishCategory.Desserts
+    "small_bites" -> DishCategory.SmallBites
+    else -> null
 }
 
 private fun EuAllergen.toDatabaseValue(): String = when (this) {

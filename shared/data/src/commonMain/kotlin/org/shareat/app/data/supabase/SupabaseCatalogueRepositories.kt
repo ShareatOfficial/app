@@ -23,8 +23,10 @@ import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.repository.AccountRepository
 import org.shareat.app.domain.repository.DishRepository
 import org.shareat.app.domain.repository.MenuRepository
+import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
+import org.shareat.app.domain.repository.RestaurantWorkspaceRepository
 import kotlin.time.Duration.Companion.hours
 
 internal class SupabaseAccountRepository(
@@ -134,6 +136,39 @@ internal class SupabaseRestaurantRepository(
 
     private fun restaurantImageUrl(path: String): String =
         client.storage.from("restaurant-images").publicUrl(path)
+}
+
+/**
+ * The server performs this operation in one transaction and derives ownership from auth.uid().
+ * [ownerAccountId] is intentionally not sent to Supabase: it only lets callers and fake data use
+ * the same repository contract without making ownership client-controlled.
+ */
+internal class SupabaseRestaurantWorkspaceRepository(
+    private val client: SupabaseClient,
+    private val restaurants: RestaurantRepository,
+) : RestaurantWorkspaceRepository {
+    override suspend fun ensureRestaurantWorkspace(
+        ownerAccountId: AccountId,
+    ): RepositoryResult<Restaurant> {
+        val restaurantId = when (val result = supabaseResult {
+            client.postgrest.rpc(function = "ensure_restaurant_workspace").decodeAs<String>()
+        }) {
+            is RepositoryResult.Success -> RestaurantId(result.value)
+            is RepositoryResult.Failure -> return result
+        }
+        return when (val result = restaurants.getRestaurant(restaurantId)) {
+            is RepositoryResult.Success -> {
+                // The RPC never receives ownerAccountId. Authentication and ownership are resolved
+                // by auth.uid(); this check still catches a caller/session mismatch explicitly.
+                if (result.value.ownerAccountId == ownerAccountId) {
+                    result
+                } else {
+                    RepositoryResult.Failure(RepositoryError.Forbidden)
+                }
+            }
+            is RepositoryResult.Failure -> result
+        }
+    }
 }
 
 internal class SupabaseDishRepository(

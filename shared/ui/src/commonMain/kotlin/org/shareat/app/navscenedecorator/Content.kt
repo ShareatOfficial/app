@@ -30,8 +30,10 @@ data class TopLevelNavigationItem(
     val icon: ImageVector,
 )
 
-val TOP_LEVEL_NAV_ITEMS = listOf(
-    TopLevelNavigationItem(HomeKey, "Home", Icons.Default.Home),
+val TOP_LEVEL_NAV_ITEMS = topLevelNavigationItems(HomeKey)
+
+fun topLevelNavigationItems(homeRoute: NavKey) = listOf(
+    TopLevelNavigationItem(homeRoute, "Home", Icons.Default.Home),
     TopLevelNavigationItem(LastActivityKey, "Actividad", Icons.Default.History),
     TopLevelNavigationItem(SettingsKey, "Settings", Icons.Default.Settings),
 )

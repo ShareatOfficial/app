@@ -27,14 +27,15 @@ import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
+import org.shareat.app.domain.repository.RestaurantWorkspaceRepository
 import org.shareat.app.navigation.NavigationState
 import org.shareat.app.navigation.Navigator
 import org.shareat.app.navigation.login.LoginNavigationImpl
 import org.shareat.feature.home.ui.navigation.HomeKey
 import org.shareat.feature.login.ui.LoginKey
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.profile.ui.profile.ProfileKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
+import org.shareat.feature.restauranthome.ui.navigation.RestaurantHomeKey
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -42,13 +43,14 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class RestaurantProfileCoordinatorTest {
     @Test
-    fun restaurantWithoutProfileRequiresOnboardingUntilItCompletes() = runTest {
+    fun restaurantWithoutProfileBootstrapsAWorkspaceAndIsAllowed() = runTest {
         val fixture = fixture(restaurantResult = RepositoryResult.Failure(RepositoryError.NotFound("restaurant", "owner")))
         runCurrent()
 
-        assertIs<RestaurantProfileGateState.OnboardingRequired>(fixture.gate.state.value)
-        fixture.gate.completeOnboarding()
-        assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        val allowed = assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        assertEquals(AccountRole.Restaurant, allowed.role)
+        assertEquals(restaurant(), allowed.restaurant)
+        assertEquals(1, fixture.workspace.calls)
     }
 
     @Test
@@ -62,18 +64,42 @@ class RestaurantProfileCoordinatorTest {
         fixture.gate.retry()
         runCurrent()
 
-        assertIs<RestaurantProfileGateState.OnboardingRequired>(fixture.gate.state.value)
+        assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        assertEquals(1, fixture.workspace.calls)
     }
 
     @Test
     fun customerAndRestaurantWithProfileBypassOnboarding() = runTest {
         val customer = fixture(role = AccountRole.Customer)
         runCurrent()
-        assertIs<RestaurantProfileGateState.Allowed>(customer.gate.state.value)
+        assertEquals(
+            AccountRole.Customer,
+            assertIs<RestaurantProfileGateState.Allowed>(customer.gate.state.value).role,
+        )
 
         val owner = fixture(restaurantResult = RepositoryResult.Success(restaurant()))
         runCurrent()
-        assertIs<RestaurantProfileGateState.Allowed>(owner.gate.state.value)
+        val allowed = assertIs<RestaurantProfileGateState.Allowed>(owner.gate.state.value)
+        assertEquals(AccountRole.Restaurant, allowed.role)
+        assertEquals(restaurant(), allowed.restaurant)
+        assertEquals(0, owner.workspace.calls)
+    }
+
+    @Test
+    fun bootstrapFailureIsRetryable() = runTest {
+        val workspace = GateRestaurantWorkspaceRepository(
+            RepositoryResult.Failure(RepositoryError.Offline),
+        )
+        val fixture = fixture(workspace = workspace)
+        runCurrent()
+
+        assertIs<RestaurantProfileGateState.Failure>(fixture.gate.state.value)
+        workspace.result = RepositoryResult.Success(restaurant())
+        fixture.gate.retry()
+        runCurrent()
+
+        assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        assertEquals(2, workspace.calls)
     }
 
     @Test
@@ -83,21 +109,38 @@ class RestaurantProfileCoordinatorTest {
         fixture.gate.signOut()
         runCurrent()
 
-        assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        val allowed = assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        assertEquals(null, allowed.role)
     }
 
     @Test
-    fun restaurantRegistrationNavigatesDirectlyToOnboarding() = runTest {
+    fun switchingLandingToRestaurantHomeClearsCustomerHistory() {
+        val state = NavigationState(
+            startRoute = HomeKey,
+            topLevelRoute = mutableStateOf(SettingsKey),
+            backStacks = mapOf(
+                HomeKey to NavBackStack(HomeKey, ProfileKey),
+                RestaurantHomeKey to NavBackStack(RestaurantHomeKey),
+                SettingsKey to NavBackStack(SettingsKey),
+            ),
+        )
+
+        state.resetToLandingRoute(RestaurantHomeKey)
+
+        assertEquals(RestaurantHomeKey, state.startRoute)
+        assertEquals(RestaurantHomeKey, state.topLevelRoute)
+        assertEquals(listOf(HomeKey), state.backStacks.getValue(HomeKey).toList())
+    }
+
+    @Test
+    fun restaurantRegistrationCompletesTheStandardLoginFlow() = runTest {
         val fixture = fixture(role = AccountRole.Customer)
         runCurrent()
         fixture.navigationState.backStacks.getValue(HomeKey).add(LoginKey())
 
-        LoginNavigationImpl(fixture.navigator).onRestaurantRegistrationSuccess()
+        LoginNavigationImpl(fixture.navigator).onLoginSuccess()
 
-        assertEquals(
-            RestaurantOnboardingKey,
-            fixture.navigationState.backStacks.getValue(HomeKey).last(),
-        )
+        assertEquals(emptyList(), fixture.navigationState.backStacks.getValue(HomeKey).toList())
     }
 
     private fun TestScope.fixture(
@@ -106,6 +149,9 @@ class RestaurantProfileCoordinatorTest {
             RepositoryError.NotFound("restaurant", "owner"),
         ),
         restaurants: GateRestaurantRepository = GateRestaurantRepository(restaurantResult),
+        workspace: GateRestaurantWorkspaceRepository = GateRestaurantWorkspaceRepository(
+            RepositoryResult.Success(restaurant()),
+        ),
     ): GateFixture {
         val account = Account(
             id = AccountId("owner"),
@@ -120,6 +166,7 @@ class RestaurantProfileCoordinatorTest {
             auth = auth,
             accounts = GateAccountRepository(account),
             restaurants = restaurants,
+            restaurantWorkspace = workspace,
             scope = backgroundScope,
         )
         val navigationState = NavigationState(
@@ -134,6 +181,7 @@ class RestaurantProfileCoordinatorTest {
             gate,
             navigationState,
             Navigator(navigationState, sessions),
+            workspace,
         )
     }
 }
@@ -142,6 +190,7 @@ private data class GateFixture(
     val gate: RestaurantProfileCoordinator,
     val navigationState: NavigationState,
     val navigator: Navigator,
+    val workspace: GateRestaurantWorkspaceRepository,
 )
 
 private class GateAuthRepository(account: Account) : AuthRepository {
@@ -176,6 +225,17 @@ private class GateRestaurantRepository(
     override suspend fun getRestaurantForOwner(accountId: AccountId) = result
     override suspend fun createRestaurantProfile(ownerAccountId: AccountId, draft: RestaurantProfileDraft) = result
     override suspend fun updateRestaurant(restaurant: Restaurant) = RepositoryResult.Success(restaurant)
+}
+
+private class GateRestaurantWorkspaceRepository(
+    var result: RepositoryResult<Restaurant>,
+) : RestaurantWorkspaceRepository {
+    var calls = 0
+
+    override suspend fun ensureRestaurantWorkspace(ownerAccountId: AccountId): RepositoryResult<Restaurant> {
+        calls += 1
+        return result
+    }
 }
 
 private fun restaurant(): Restaurant = Restaurant(

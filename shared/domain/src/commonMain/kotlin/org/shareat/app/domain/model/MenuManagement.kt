@@ -20,6 +20,11 @@ data class MenuItemDraft(
     val price: Money,
     val position: Int,
     val isEnabled: Boolean = true,
+    /**
+     * Kept when an existing menu is saved so owner edits do not erase its classification.
+     * Backends that do not yet persist dish categories must preserve their stored value.
+     */
+    val category: DishCategory? = null,
 ) {
     init { require(position >= 0) }
 }

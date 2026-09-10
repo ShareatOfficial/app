@@ -129,6 +129,7 @@ internal data class MenuItemDto(
     val currency: String,
     val position: Int,
     @SerialName("is_enabled") val isEnabled: Boolean,
+    val category: String? = null,
 )
 
 @Serializable
@@ -147,6 +148,7 @@ internal data class MenuItemUpdateDto(
     @SerialName("price_minor_units") val priceMinorUnits: Long,
     val position: Int,
     @SerialName("is_enabled") val isEnabled: Boolean,
+    val category: String? = null,
 )
 
 @Serializable

@@ -36,6 +36,16 @@ interface RestaurantRepository {
     suspend fun updateRestaurant(restaurant: Restaurant): RepositoryResult<Restaurant>
 }
 
+/**
+ * Creates the private, editable starter workspace for a newly registered restaurant.
+ *
+ * Implementations must be idempotent: when an owner already has a restaurant, they return it
+ * unchanged and must not add or replace the menu or starter dishes.
+ */
+interface RestaurantWorkspaceRepository {
+    suspend fun ensureRestaurantWorkspace(ownerAccountId: AccountId): RepositoryResult<Restaurant>
+}
+
 interface MenuRepository {
     suspend fun getMenus(restaurantId: RestaurantId): RepositoryResult<List<Menu>>
     suspend fun getPublishedMenu(restaurantId: RestaurantId): RepositoryResult<MenuDetails>

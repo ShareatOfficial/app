@@ -20,17 +20,19 @@ import org.koin.compose.koinInject
 import org.shareat.app.auth.RestaurantProfileCoordinator
 import org.shareat.app.auth.RestaurantProfileGateState
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingGateErrorScreen
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingScreen
 
 /**
- * Replaces the fully decorated app scene while an existing restaurant account must create its
- * profile. Apply this after navigation-chrome decorators so onboarding never exposes app chrome.
+ * Replaces the fully decorated app scene while an authenticated restaurant account is being
+ * checked or bootstrapped. Apply this after navigation-chrome decorators so the management
+ * landing is never shown before its starter workspace is ready.
  */
 @Composable
 fun <T : Any> rememberRestaurantProfileGateSceneDecoratorStrategy(
     restaurantProfiles: RestaurantProfileCoordinator = koinInject(),
+    gateStateOverride: RestaurantProfileGateState? = null,
 ): RestaurantProfileGateSceneDecoratorStrategy<T> {
-    val gateState by restaurantProfiles.state.collectAsState()
+    val observedGateState by restaurantProfiles.state.collectAsState()
+    val gateState = gateStateOverride ?: observedGateState
     val currentGateState = rememberUpdatedState(gateState)
     val scope = rememberCoroutineScope()
     val onLogout: () -> Unit = remember(restaurantProfiles, scope) {
@@ -78,8 +80,7 @@ private class RestaurantProfileGateScene<T : Any>(
                 }
             }
 
-            RestaurantProfileGateState.Allowed -> scene.content()
-            RestaurantProfileGateState.OnboardingRequired -> RestaurantOnboardingScreen()
+            is RestaurantProfileGateState.Allowed -> scene.content()
             is RestaurantProfileGateState.Failure -> {
                 RestaurantOnboardingGateErrorScreen(onRetry, onLogout)
             }

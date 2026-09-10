@@ -62,7 +62,14 @@ class FakeMenuRepository(
         if (existing == null) data.menus += menu else data.menus[data.menus.indexOf(existing)] = menu
         data.menuItems.removeAll { it.menuId == id }
         data.menuItems += draft.items.sortedBy { it.position }.mapIndexed { position, item ->
-            MenuItem(id, item.dishId, item.price, position, item.isEnabled)
+            MenuItem(
+                menuId = id,
+                dishId = item.dishId,
+                price = item.price,
+                position = position,
+                isEnabled = item.isEnabled,
+                category = item.category,
+            )
         }
         return details(id)
     }
