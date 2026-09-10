@@ -4,18 +4,20 @@ select plan(16);
 select is(
     (select count(*) from pg_tables where schemaname = 'public' and tablename in (
         'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods',
-        'dishes', 'allergens', 'dish_allergens', 'reviews'
+        'menus', 'menu_items', 'dishes', 'restaurant_dishes', 'allergens', 'dish_allergens',
+        'reviews', 'restaurant_reviews', 'dish_reviews'
     )),
-    8::bigint,
-    'all eight public tables exist'
+    13::bigint,
+    'all thirteen public tables exist'
 );
 
 select is(
     (select count(*) from pg_tables where schemaname = 'public' and rowsecurity and tablename in (
         'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods',
-        'dishes', 'allergens', 'dish_allergens', 'reviews'
+        'menus', 'menu_items', 'dishes', 'restaurant_dishes', 'allergens', 'dish_allergens',
+        'reviews', 'restaurant_reviews', 'dish_reviews'
     )),
-    8::bigint,
+    13::bigint,
     'RLS is enabled on every public table'
 );
 
@@ -40,8 +42,14 @@ select ok(
 );
 
 select has_index('public', 'restaurants', 'restaurants_owner_account_id_key', 'one restaurant per owner');
-select has_index('public', 'reviews', 'reviews_author_restaurant_uidx', 'restaurant reviews are unique per author');
-select has_index('public', 'reviews', 'reviews_author_dish_uidx', 'dish reviews are unique per author');
+select has_index(
+    'public', 'restaurant_reviews', 'restaurant_reviews_author_account_id_restaurant_id_key',
+    'restaurant reviews are unique per author'
+);
+select has_index(
+    'public', 'dish_reviews', 'dish_reviews_author_account_id_dish_id_key',
+    'dish reviews are unique per author'
+);
 
 select is(
     (
@@ -52,7 +60,7 @@ select is(
         where n.nspname = 'public' and t.relname = 'reviews' and c.contype = 'c'
     ),
     5::bigint,
-    'reviews has target, rating, comment, visibility and moderation checks'
+    'reviews has target type, rating, comment, visibility and moderation checks'
 );
 
 select ok(has_table_privilege('anon', 'public.restaurants', 'select'), 'anonymous may select restaurants');

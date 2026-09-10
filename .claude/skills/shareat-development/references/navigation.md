@@ -119,7 +119,7 @@ Registered exception (`feature/restaurant-screen-ui`, 2026-09-01; revised 2026-0
 
 The general rule: when a screen opens with part of its data already in the key, it fetches the remainder, not the whole aggregate — and its skeleton covers only the part still in flight.
 
-The first version carried menus, dishes, prices and allergens too, so the screen issued no call at all when opening. That part was reverted: to fill the payload, home had to assemble the published menu of **every** restaurant in the feed (`getPublishedMenu` plus its dishes' reviews, ~5 requests per restaurant) and throw it away for all but the one tapped — ~2s of home's request across only 5 restaurants. The header still travels because home already holds it, and it is what avoids the flash on open.
+The first version carried menus, dishes, prices and allergens too, so the screen issued no call at all when opening. That part was reverted: to fill the payload, home had to assemble the published menu of **every** restaurant in the feed (`getPublishedMenus` plus its dishes' reviews, ~5 requests per restaurant) and throw it away for all but the one tapped — ~2s of home's request across only 5 restaurants. The header still travels because home already holds it, and it is what avoids the flash on open.
 
 Put data in a key when the caller already holds it for its own screen (re-fetching would be redundant), it is a serializable presentation model owned by the destination feature, and the screen still has its own domain load path — the payload is a starting point, never the only source of truth.
 

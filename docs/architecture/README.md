@@ -47,6 +47,8 @@ No depende de `data`, `ui`, Compose, DTO, almacenamiento ni clientes de red. `:s
 
 Los modelos viven siempre en un paquete `model/` dentro de su propia capa y su propio módulo, nunca declarados junto al use case, repositorio o ViewModel que los consume: `:feature:<nombre>:domain` los declara en `…feature/<nombre>/domain/model/` y `:shared:domain` en `org.shareat.app.domain.model`. Un fichero de use case contiene el use case, no los tipos que recibe o devuelve.
 
+Cada interfaz de repositorio vive en su propio fichero, con el nombre de la interfaz (`MenuRepository.kt`), y lo mismo vale para cada implementación (`SupabaseMenuRepository.kt`, `FakeMenuRepository.kt`). Un fichero que agrupa varios repositorios crece hasta que ya no se sabe dónde mirar y obliga a tocar el mismo fichero desde trabajos independientes.
+
 Única excepción sobre Koin: un módulo `domain` puede publicar su propio módulo Koin aislado en un paquete `di` que enlaza la interfaz de un use case con su implementación. Las entidades, use cases y repositorios siguen recibiendo sus dependencias por constructor y nunca resuelven nada por sí mismos. `:shared:domain` lo hace en `org.shareat.app.domain.usecase.di.sharedDomainModule`.
 
 Un use case que necesitan varias features vive en `:shared:domain`, no en la feature que lo escribió primero: una feature nunca importa el `domain` de otra. Así, `GetRestaurantsUseCase` (listado de home) y `GetRestaurantUseCase` (detalle) viven ahí, sobre los mismos repositorios y con un ensamblador por agregado (`RestaurantSummariesAssembler` y `RestaurantDetailsAssembler`). Cada use case expone un único método público; dos consultas distintas son dos use cases distintos, no dos métodos en una interfaz.
@@ -61,6 +63,8 @@ Contiene:
 - mappers entre representaciones externas y dominio.
 
 Depende de `domain`. Los DTO y detalles del proveedor no pueden formar parte de la API pública que consume `domain` o `ui`. `data`, incluido `:shared:data`, no aplica plugins de Compose ni declara dependencias o recursos Compose.
+
+La regla de modelos también aplica aquí: los DTO viven en un paquete `model/` de su propia fuente de datos (`org.shareat.app.data.supabase.model`) y los mappers a dominio en `…supabase.mapper`, agrupados por agregado (`MenuMappers.kt`, `DishMappers.kt`), no dentro del fichero del repositorio que los usa.
 
 ### `ui`
 

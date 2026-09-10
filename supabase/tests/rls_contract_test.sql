@@ -19,9 +19,18 @@ insert into public.restaurants (
     ('30000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001', 'Draft', 'Street 2', 'Madrid', '28002', 'draft'),
     ('30000000-0000-4000-8000-000000000003', '20000000-0000-4000-8000-000000000003', 'Other draft', 'Street 3', 'Madrid', '28003', 'draft');
 
-insert into public.dishes (id, restaurant_id, name, is_enabled) values
-    ('50000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'Visible dish', true),
-    ('50000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000003', 'Other dish', true);
+insert into public.dishes (id, name, is_enabled) values
+    ('50000000-0000-4000-8000-000000000001', 'Visible dish', true),
+    ('50000000-0000-4000-8000-000000000002', 'Other dish', true);
+insert into public.restaurant_dishes (dish_id, restaurant_id) values
+    ('50000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001'),
+    ('50000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000003');
+
+-- A dish only reaches a public read path through a published menu of a published restaurant.
+insert into public.menus (id, restaurant_id, name, publication_state) values
+    ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'Carta', 'published');
+insert into public.menu_items (menu_id, dish_id, price_minor_units, position, is_enabled) values
+    ('40000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000001', 1000, 0, true);
 
 select is(
     (select role from public.accounts where id = '10000000-0000-4000-8000-000000000001'),
@@ -125,12 +134,12 @@ select results_eq(
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 set local role authenticated;
 select lives_ok(
-    $$insert into public.reviews (author_account_id, restaurant_id, rating, comment) values ('10000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 5, 'Excellent')$$,
+    $$select public.save_review('restaurant', '30000000-0000-4000-8000-000000000001', null, 5::smallint, 'Excellent', 'public', null)$$,
     'customer may review a published restaurant'
 );
 select lives_ok(
-    $$update public.reviews set rating = 4 where author_account_id = '10000000-0000-4000-8000-000000000001' and restaurant_id = '30000000-0000-4000-8000-000000000001'$$,
-    'customer may update their review'
+    $$select public.save_review('restaurant', '30000000-0000-4000-8000-000000000001', null, 4::smallint, 'Excellent', 'public', null)$$,
+    'saving the same target updates the review instead of duplicating it'
 );
 select throws_ok(
     $$update public.accounts set role = 'restaurant' where id = '10000000-0000-4000-8000-000000000001'$$,
@@ -141,7 +150,7 @@ select throws_ok(
     '42501'
 );
 select lives_ok(
-    $$insert into public.reviews (author_account_id, dish_id, rating, visibility) values ('10000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000001', 4, 'private')$$,
+    $$select public.save_review('dish', null, '50000000-0000-4000-8000-000000000001', 4::smallint, null, 'private', null)$$,
     'customer may create a private dish review'
 );
 reset role;
@@ -159,7 +168,7 @@ reset role;
 select set_config('request.jwt.claim.sub', '20000000-0000-4000-8000-000000000001', true);
 set local role authenticated;
 select throws_ok(
-    $$insert into public.reviews (author_account_id, restaurant_id, rating) values ('20000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 5)$$,
+    $$select public.save_review('restaurant', '30000000-0000-4000-8000-000000000001', null, 5::smallint, null, 'public', null)$$,
     '42501'
 );
 select lives_ok(

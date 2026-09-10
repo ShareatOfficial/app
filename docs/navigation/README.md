@@ -121,7 +121,7 @@ Origen: `feature/restaurant-screen-ui`, 2026-09-01. Revisado el 2026-09-07 por c
 
 `isRefreshing` queda reservado al *pull to refresh*, que sí recarga el restaurante entero (`GetRestaurantUseCase`) porque el usuario pide explícitamente datos frescos.
 
-La versión inicial transportaba también menús, platos, precios y alérgenos, de modo que la pantalla no pedía nada al abrirse. Se revirtió esa parte: para poder rellenar el payload, home tenía que ensamblar el menú publicado de **cada** restaurante del feed (`getPublishedMenu` + reviews de sus platos, unas 5 peticiones por restaurante) y descartarlo salvo para el que el usuario tocase. Medido sobre 5 restaurantes eran ~2 s de las peticiones de home. La cabecera sí viaja porque home ya la tiene cargada y es lo que evita el parpadeo al abrir.
+La versión inicial transportaba también menús, platos, precios y alérgenos, de modo que la pantalla no pedía nada al abrirse. Se revirtió esa parte: para poder rellenar el payload, home tenía que ensamblar el menú publicado de **cada** restaurante del feed (`getPublishedMenus` + reviews de sus platos, unas 5 peticiones por restaurante) y descartarlo salvo para el que el usuario tocase. Medido sobre 5 restaurantes eran ~2 s de las peticiones de home. La cabecera sí viaja porque home ya la tiene cargada y es lo que evita el parpadeo al abrir.
 
 Cuándo transportar un dato en la key:
 
