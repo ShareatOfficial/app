@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -75,21 +76,31 @@ internal fun RestaurantHeaderCard(
                         contentScale = ContentScale.Crop,
                     )
                 }
-                Text(
-                    text = address,
+                Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(12.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.labelLarge,
-                )
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                ) {
+                    Text(
+                        text = address,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(text = name, style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.headlineMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 description?.takeIf { it.isNotBlank() }?.let {
                     Text(
                         text = it,
@@ -144,19 +155,25 @@ internal fun ManagementDishCard(
         Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (dish.imageUrl == null) {
                 DishImagePlaceholder(
-                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).sizeIn(minWidth = 80.dp, minHeight = 80.dp),
+                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).size(88.dp),
                 )
             } else {
                 AsyncImage(
                     model = dish.imageUrl,
                     contentDescription = dish.imageDescription,
-                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).sizeIn(minWidth = 80.dp, minHeight = 80.dp),
+                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).size(88.dp),
                     contentScale = ContentScale.Crop,
                 )
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = dish.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    Text(
+                        text = dish.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                     if (showEdit) {
                         IconButton(onClick = onEditClick, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
                             Icon(Icons.Filled.Edit, contentDescription = stringResource(Res.string.restaurant_home_dish_edit))

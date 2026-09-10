@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeMode
 import shareat.feature.restauranthome.ui.generated.resources.Res
@@ -36,6 +37,8 @@ internal fun CustomerModeTopBar(mode: RestaurantHomeMode, onModeToggle: () -> Un
                     if (isManagement) Res.string.restaurant_home_management else Res.string.restaurant_home_preview,
                 ),
                 style = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         },
         actions = {

@@ -6,17 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -46,6 +41,7 @@ import org.shareat.feature.restauranthome.ui.model.RestaurantHomeMode
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeUiState
 import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
 import org.shareat.feature.restauranthome.ui.model.imageUploadFrom
+import org.shareat.feature.restauranthome.ui.model.toDisplayAddress
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.CustomerModeTopBar
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.DishEditBottomSheet
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.ErrorContent
@@ -62,6 +58,7 @@ import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_add_dish
 
 private val ScreenPadding = 16.dp
+private val ContentMaxWidth = 760.dp
 
 /** Owner landing screen with an in-app FileKit image picker and validated uploads. */
 @Composable
@@ -246,18 +243,24 @@ private fun RestaurantHomeLoadedContent(
             dish.allergens.none { it in uiState.excludedAllergens } &&
             (isManagement || (restaurant.isPublished && dish.isPublished))
     }
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = ScreenPadding, end = ScreenPadding, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.TopCenter) {
+        LazyColumn(
+            modifier = Modifier.widthIn(max = ContentMaxWidth).fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = ScreenPadding,
+                top = ScreenPadding,
+                end = ScreenPadding,
+                bottom = 32.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
         item {
             RestaurantHeaderCard(
                 name = restaurant.name,
                 description = restaurant.description,
                 imageUrl = restaurant.imageUrl,
                 imageDescription = restaurant.imageDescription,
-                address = restaurant.address.streetLine,
+                address = restaurant.address.toDisplayAddress(),
                 ratingLabel = restaurant.ratingLabel,
                 reviewCount = restaurant.reviewCount,
                 isManagement = isManagement,
@@ -277,30 +280,31 @@ private fun RestaurantHomeLoadedContent(
                 onRestaurantPublicationChange = onRestaurantPublicationChange,
             )
         }
-        if (isManagement) {
-            item {
-                Button(
-                    onClick = onAddDishClick,
-                    modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp),
-                ) {
-                    Text(stringResource(Res.string.restaurant_home_add_dish))
+            if (isManagement) {
+                item {
+                    Button(
+                        onClick = onAddDishClick,
+                        modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp),
+                    ) {
+                        Text(stringResource(Res.string.restaurant_home_add_dish))
+                    }
                 }
             }
-        }
-        if (filteredDishes.isEmpty()) {
-            item {
-                RestaurantHomeEmptyContent(
-                    isManagement = isManagement,
-                    onAddDishClick = onAddDishClick,
-                )
-            }
-        } else {
-            items(filteredDishes, key = { it.id }) { dish ->
-                ManagementDishCard(
-                    dish = dish,
-                    showEdit = isManagement,
-                    onEditClick = { onEditDishClick(dish.id) },
-                )
+            if (filteredDishes.isEmpty()) {
+                item {
+                    RestaurantHomeEmptyContent(
+                        isManagement = isManagement,
+                        onAddDishClick = onAddDishClick,
+                    )
+                }
+            } else {
+                items(filteredDishes, key = { it.id }) { dish ->
+                    ManagementDishCard(
+                        dish = dish,
+                        showEdit = isManagement,
+                        onEditClick = { onEditDishClick(dish.id) },
+                    )
+                }
             }
         }
     }

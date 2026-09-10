@@ -12,7 +12,9 @@ The screen supports:
 - publishing or unpublishing the restaurant together with its single menu;
 - filtering the menu by dish category and excluded allergens;
 - adding dishes and editing their photo, name, description, price, allergens, and publication state;
-- showing ratings without exposing customer review actions to restaurant accounts.
+- showing ratings without exposing customer review actions to restaurant accounts;
+- adapting content and sheets to compact and wide windows, with 48 dp touch targets, wrapping
+  filters, safe-area/IME padding, field-specific keyboards, and Next/Done focus actions.
 
 Restaurant and dish mutations verify the active authenticated owner. Multi-step catalogue writes
 use compensation so a failed menu update does not leave an orphaned or partially edited dish.

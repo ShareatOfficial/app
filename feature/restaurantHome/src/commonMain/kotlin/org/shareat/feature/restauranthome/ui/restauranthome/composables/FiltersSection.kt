@@ -2,19 +2,20 @@ package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.DishCategory
@@ -26,6 +27,7 @@ import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_hid
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_published
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_publish_restaurant
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun FiltersSection(
     categories: List<DishCategory>,
@@ -40,16 +42,18 @@ internal fun FiltersSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (categories.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                item {
-                    FilterChip(
-                        selected = selectedCategory == null,
-                        onClick = { onCategoryClick(null) },
-                        label = { Text(stringResource(Res.string.restaurant_home_all_categories)) },
-                        modifier = Modifier.heightIn(min = 48.dp),
-                    )
-                }
-                items(categories, key = { it.name }) { category ->
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = selectedCategory == null,
+                    onClick = { onCategoryClick(null) },
+                    label = { Text(stringResource(Res.string.restaurant_home_all_categories)) },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                )
+                categories.forEach { category ->
                     FilterChip(
                         selected = category == selectedCategory,
                         onClick = { onCategoryClick(category) },
@@ -61,8 +65,12 @@ internal fun FiltersSection(
         }
         if (allergens.isNotEmpty()) {
             Text(stringResource(Res.string.restaurant_home_allergen_filter), style = MaterialTheme.typography.labelLarge)
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(allergens, key = { it.name }) { allergen ->
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                allergens.forEach { allergen ->
                     FilterChip(
                         selected = allergen in excludedAllergens,
                         onClick = { onAllergenClick(allergen) },
@@ -73,13 +81,24 @@ internal fun FiltersSection(
             }
         }
         if (showPublicationSwitch) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(Res.string.restaurant_home_publish_restaurant), style = MaterialTheme.typography.titleSmall)
+            androidx.compose.material3.ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .padding(top = 2.dp)
+                    .toggleable(
+                        value = isRestaurantPublished,
+                        role = Role.Switch,
+                        onValueChange = onRestaurantPublicationChange,
+                    )
+                    .semantics(mergeDescendants = true) {},
+                headlineContent = {
+                    Text(
+                        stringResource(Res.string.restaurant_home_publish_restaurant),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                },
+                supportingContent = {
                     Text(
                         stringResource(
                             if (isRestaurantPublished) Res.string.restaurant_home_published
@@ -88,9 +107,11 @@ internal fun FiltersSection(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                }
-                Switch(checked = isRestaurantPublished, onCheckedChange = onRestaurantPublicationChange)
-            }
+                },
+                trailingContent = {
+                    Switch(checked = isRestaurantPublished, onCheckedChange = null)
+                },
+            )
         }
     }
 }

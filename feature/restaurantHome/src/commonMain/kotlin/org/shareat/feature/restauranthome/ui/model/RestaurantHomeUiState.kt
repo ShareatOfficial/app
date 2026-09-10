@@ -61,6 +61,13 @@ data class RestaurantAddressUiState(
     val countryCode: String,
 )
 
+/** A compact address suitable for the image overlay, without empty separators. */
+internal fun RestaurantAddressUiState.toDisplayAddress(): String = listOfNotNull(
+    streetLine.trim().takeIf(String::isNotEmpty),
+    listOf(postalCode.trim(), locality.trim()).filter(String::isNotEmpty).joinToString(" ").takeIf(String::isNotEmpty),
+    region?.trim()?.takeIf(String::isNotEmpty),
+).joinToString(", ")
+
 data class RestaurantDishUiState(
     val id: String,
     val name: String,

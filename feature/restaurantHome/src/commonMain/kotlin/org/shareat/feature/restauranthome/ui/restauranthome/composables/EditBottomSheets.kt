@@ -3,14 +3,17 @@ package org.shareat.feature.restauranthome.ui.restauranthome.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -23,6 +26,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.EuAllergen
@@ -70,9 +79,19 @@ internal fun RestaurantEditBottomSheet(
     onRequestImage: (() -> Unit)?,
     onSave: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        EditSheetContent(title = stringResource(Res.string.restaurant_home_edit_restaurant)) {
-            ImageChangeButton(onClick = onRequestImage, hasPendingImage = form.pendingImageUpload != null)
+    val focusManager = LocalFocusManager.current
+    val dismissSheet = rememberDismissSheet(focusManager, onDismiss)
+    val saveAndClearFocus = rememberSaveAndClearFocus(focusManager, onSave)
+
+    ModalBottomSheet(onDismissRequest = dismissSheet) {
+        EditSheetContent(
+            title = stringResource(Res.string.restaurant_home_edit_restaurant),
+            actions = { EditActions(isSaving = form.isSaving, onDismiss = dismissSheet, onSave = saveAndClearFocus) },
+        ) {
+            ImageChangeButton(
+                onClick = onRequestImage?.let { { focusManager.clearFocus(); it() } },
+                hasPendingImage = form.pendingImageUpload != null,
+            )
             OutlinedTextField(
                 value = form.name,
                 onValueChange = onNameChange,
@@ -81,6 +100,9 @@ internal fun RestaurantEditBottomSheet(
                 supportingText = if (form.validation.nameInvalid) {{ Text(stringResource(Res.string.restaurant_home_restaurant_name_invalid)) }} else null,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !form.isSaving,
+                singleLine = true,
+                keyboardOptions = nameKeyboardOptions(ImeAction.Next),
+                keyboardActions = nextKeyboardAction(focusManager),
             )
             OutlinedTextField(
                 value = form.streetLine,
@@ -90,6 +112,9 @@ internal fun RestaurantEditBottomSheet(
                 supportingText = if (form.validation.streetInvalid) {{ Text(stringResource(Res.string.restaurant_home_street_invalid)) }} else null,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !form.isSaving,
+                singleLine = true,
+                keyboardOptions = nameKeyboardOptions(ImeAction.Next),
+                keyboardActions = nextKeyboardAction(focusManager),
             )
             OutlinedTextField(
                 value = form.locality,
@@ -99,6 +124,9 @@ internal fun RestaurantEditBottomSheet(
                 supportingText = if (form.validation.localityInvalid) {{ Text(stringResource(Res.string.restaurant_home_locality_invalid)) }} else null,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !form.isSaving,
+                singleLine = true,
+                keyboardOptions = nameKeyboardOptions(ImeAction.Next),
+                keyboardActions = nextKeyboardAction(focusManager),
             )
             OutlinedTextField(
                 value = form.postalCode,
@@ -108,6 +136,9 @@ internal fun RestaurantEditBottomSheet(
                 supportingText = if (form.validation.postalCodeInvalid) {{ Text(stringResource(Res.string.restaurant_home_postal_code_invalid)) }} else null,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !form.isSaving,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                keyboardActions = nextKeyboardAction(focusManager),
             )
             OutlinedTextField(
                 value = form.region,
@@ -115,6 +146,9 @@ internal fun RestaurantEditBottomSheet(
                 label = { Text(stringResource(Res.string.restaurant_home_region)) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !form.isSaving,
+                singleLine = true,
+                keyboardOptions = nameKeyboardOptions(ImeAction.Next),
+                keyboardActions = nextKeyboardAction(focusManager),
             )
             OutlinedTextField(
                 value = form.description,
@@ -123,6 +157,11 @@ internal fun RestaurantEditBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 enabled = !form.isSaving,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = doneKeyboardAction(focusManager),
             )
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(stringResource(Res.string.restaurant_home_types_title), style = MaterialTheme.typography.titleSmall)
@@ -133,7 +172,6 @@ internal fun RestaurantEditBottomSheet(
                 )
             }
             form.error?.let { Text(it.label(), color = MaterialTheme.colorScheme.error) }
-            EditActions(isSaving = form.isSaving, onDismiss = onDismiss, onSave = onSave)
         }
     }
 }
@@ -151,9 +189,19 @@ internal fun DishEditBottomSheet(
     onRequestImage: (() -> Unit)?,
     onSave: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        EditSheetContent(title = stringResource(if (form.dishId == null) Res.string.restaurant_home_add_dish else Res.string.restaurant_home_edit_dish)) {
-            ImageChangeButton(onClick = onRequestImage, hasPendingImage = form.pendingImageUpload != null)
+    val focusManager = LocalFocusManager.current
+    val dismissSheet = rememberDismissSheet(focusManager, onDismiss)
+    val saveAndClearFocus = rememberSaveAndClearFocus(focusManager, onSave)
+
+    ModalBottomSheet(onDismissRequest = dismissSheet) {
+        EditSheetContent(
+            title = stringResource(if (form.dishId == null) Res.string.restaurant_home_add_dish else Res.string.restaurant_home_edit_dish),
+            actions = { EditActions(isSaving = form.isSaving, onDismiss = dismissSheet, onSave = saveAndClearFocus) },
+        ) {
+            ImageChangeButton(
+                onClick = onRequestImage?.let { { focusManager.clearFocus(); it() } },
+                hasPendingImage = form.pendingImageUpload != null,
+            )
             OutlinedTextField(
                 value = form.name,
                 onValueChange = onNameChange,
@@ -162,6 +210,9 @@ internal fun DishEditBottomSheet(
                 supportingText = if (form.validation.nameInvalid) {{ Text(stringResource(Res.string.restaurant_home_restaurant_name_invalid)) }} else null,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !form.isSaving,
+                singleLine = true,
+                keyboardOptions = nameKeyboardOptions(ImeAction.Next),
+                keyboardActions = nextKeyboardAction(focusManager),
             )
             OutlinedTextField(
                 value = form.description,
@@ -170,6 +221,11 @@ internal fun DishEditBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 enabled = !form.isSaving,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = nextKeyboardAction(focusManager),
             )
             OutlinedTextField(
                 value = form.price,
@@ -179,29 +235,69 @@ internal fun DishEditBottomSheet(
                 supportingText = if (form.validation.priceInvalid) {{ Text(stringResource(Res.string.restaurant_home_price_invalid)) }} else null,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !form.isSaving,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                keyboardActions = doneKeyboardAction(focusManager),
             )
             Text(stringResource(Res.string.restaurant_home_allergens), style = MaterialTheme.typography.titleSmall)
-            AllergenPicker(selected = form.allergens, enabled = !form.isSaving, onAllergenClick = onAllergenClick)
+            AllergenPicker(
+                selected = form.allergens,
+                enabled = !form.isSaving,
+                onAllergenClick = {
+                    focusManager.clearFocus()
+                    onAllergenClick(it)
+                },
+            )
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(Res.string.restaurant_home_publish_dish), style = MaterialTheme.typography.titleSmall)
-                Switch(checked = form.isPublished, onCheckedChange = onPublishedChange, enabled = !form.isSaving)
+                Switch(
+                    checked = form.isPublished,
+                    onCheckedChange = {
+                        focusManager.clearFocus()
+                        onPublishedChange(it)
+                    },
+                    enabled = !form.isSaving,
+                )
             }
             form.error?.let { Text(it.label(), color = MaterialTheme.colorScheme.error) }
-            EditActions(isSaving = form.isSaving, onDismiss = onDismiss, onSave = onSave)
         }
     }
 }
 
 @Composable
-private fun EditSheetContent(title: String, content: @Composable ColumnScope.() -> Unit) {
+private fun EditSheetContent(
+    title: String,
+    actions: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Column(
-        modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(horizontal = 20.dp, vertical = 8.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        content = {
+        // ModalBottomSheet already consumes the platform safe-area insets. Keeping only IME
+        // padding here avoids a second navigation-bar inset while still lifting the actions.
+        modifier = Modifier.fillMaxWidth().imePadding().padding(horizontal = 20.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 640.dp)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
+                .weight(1f, fill = false)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             Text(title, style = MaterialTheme.typography.headlineSmall)
             content()
-        },
-    )
+        }
+        Column(
+            modifier = Modifier
+                .widthIn(max = 640.dp)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 8.dp, bottom = 12.dp),
+        ) {
+            actions()
+        }
+    }
 }
 
 @Composable
@@ -220,23 +316,56 @@ private fun ImageChangeButton(onClick: (() -> Unit)?, hasPendingImage: Boolean) 
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 private fun AllergenPicker(selected: Set<EuAllergen>, enabled: Boolean, onAllergenClick: (EuAllergen) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        EuAllergen.entries.chunked(3).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                row.forEach { allergen ->
-                    FilterChip(
-                        selected = allergen in selected,
-                        onClick = { onAllergenClick(allergen) },
-                        enabled = enabled,
-                        label = { Text(allergen.label()) },
-                        modifier = Modifier.weight(1f).sizeIn(minHeight = 48.dp),
-                    )
-                }
-            }
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        EuAllergen.entries.forEach { allergen ->
+            FilterChip(
+                selected = allergen in selected,
+                onClick = { onAllergenClick(allergen) },
+                enabled = enabled,
+                label = { Text(allergen.label()) },
+                modifier = Modifier.sizeIn(minHeight = 48.dp),
+            )
         }
     }
 }
+
+private fun nameKeyboardOptions(imeAction: ImeAction): KeyboardOptions = KeyboardOptions(
+    capitalization = KeyboardCapitalization.Words,
+    keyboardType = KeyboardType.Text,
+    imeAction = imeAction,
+)
+
+private fun nextKeyboardAction(focusManager: FocusManager) = androidx.compose.foundation.text.KeyboardActions(
+    onNext = { focusManager.moveFocus(FocusDirection.Next) },
+)
+
+private fun doneKeyboardAction(focusManager: FocusManager) = androidx.compose.foundation.text.KeyboardActions(
+    onDone = { focusManager.clearFocus() },
+)
+
+@Composable
+private fun rememberDismissSheet(focusManager: FocusManager, onDismiss: () -> Unit): () -> Unit =
+    androidx.compose.runtime.remember(focusManager, onDismiss) {
+        {
+            focusManager.clearFocus(force = true)
+            onDismiss()
+        }
+    }
+
+@Composable
+private fun rememberSaveAndClearFocus(focusManager: FocusManager, onSave: () -> Unit): () -> Unit =
+    androidx.compose.runtime.remember(focusManager, onSave) {
+        {
+            focusManager.clearFocus(force = true)
+            onSave()
+        }
+    }
 
 @Composable
 private fun EditActions(isSaving: Boolean, onDismiss: () -> Unit, onSave: () -> Unit) {
