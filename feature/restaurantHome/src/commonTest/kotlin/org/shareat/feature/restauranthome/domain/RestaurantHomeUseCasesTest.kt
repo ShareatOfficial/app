@@ -10,7 +10,6 @@ import org.shareat.app.domain.model.AccountStatus
 import org.shareat.app.domain.model.AllergenDeclaration
 import org.shareat.app.domain.model.AuthSession
 import org.shareat.app.domain.model.AuthSessionState
-import org.shareat.app.domain.model.Currency
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.DishDraft
@@ -65,7 +64,7 @@ class RestaurantHomeUseCasesTest {
 
         val result = fixture.loadHome()()
 
-        val home = assertIs<RepositoryResult.Success<*>>(result).value as org.shareat.feature.restauranthome.domain.model.OwnerRestaurantHome
+        val home = assertIs<RepositoryResult.Success<*>>(result).value as org.shareat.feature.restauranthome.domain.model.RestaurantHome
         assertEquals(RatingSummary(averageTenths = 45, ratingCount = 2), home.restaurantRatingSummary)
         assertEquals(2, home.menu?.dishes?.size)
         assertFalse(home.menu!!.dishes[1].menuDish.dish.isEnabled)
@@ -437,7 +436,7 @@ private class Fixture {
     val images = TestImageRepository()
 
     private fun authorizer() = RestaurantOwnerAuthorizer(auth, accounts)
-    fun loadHome() = LoadOwnerRestaurantHomeUseCaseImpl(authorizer(), restaurants, menu, reviews)
+    fun loadHome() = GetRestaurantHomeUseCaseImpl(authorizer(), restaurants, menu, reviews)
     fun updateInfo() = UpdateOwnerRestaurantInfoUseCaseImpl(authorizer(), restaurants)
     fun updatePublication() = UpdateRestaurantPublicationStateUseCaseImpl(authorizer(), restaurants, menu)
     fun updateDish() = UpdateOwnerDishUseCaseImpl(authorizer(), restaurants, dishes, menu)

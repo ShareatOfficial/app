@@ -8,7 +8,7 @@ import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.Review
 
 /** The complete private management view of the authenticated restaurant owner's profile. */
-data class OwnerRestaurantHome(
+data class RestaurantHome(
     val restaurant: Restaurant,
     val restaurantRatingSummary: RatingSummary,
     val menu: OwnerRestaurantMenu?,

@@ -33,7 +33,7 @@ import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RepositoryError
-import org.shareat.feature.restauranthome.domain.LoadOwnerRestaurantHomeUseCase
+import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
@@ -41,7 +41,7 @@ import org.shareat.feature.restauranthome.domain.UpdateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCase
 import org.shareat.feature.restauranthome.domain.UpdateRestaurantPublicationStateUseCase
 import org.shareat.feature.restauranthome.domain.model.OwnerRatedMenuDish
-import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantHome
+import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantMenu
 import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishUpdate
@@ -49,7 +49,6 @@ import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantInfoDraft
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeEditor
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeMode
-import org.shareat.feature.restauranthome.ui.model.toRestaurantHomeData
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -74,7 +73,7 @@ class RestaurantHomeViewModelTest {
         assertEquals(listOf("Arroz", "Tarta"), loaded.restaurant.dishes.map { it.name })
 
         viewModel.onModeToggle()
-        assertEquals(RestaurantHomeMode.CUSTOMER_PREVIEW, viewModel.uiState.value.mode)
+        assertEquals(RestaurantHomeMode.CUSTOMER_PREVIEW, viewModel.uiState.value.visonMode)
     }
 
     @Test
@@ -242,8 +241,8 @@ class RestaurantHomeViewModelTest {
     }
 
     private fun viewModelFor(
-        home: OwnerRestaurantHome = ownerHome(),
-        onLoadHome: (() -> RepositoryResult<OwnerRestaurantHome>)? = null,
+        home: RestaurantHome = ownerHome(),
+        onLoadHome: (() -> RepositoryResult<RestaurantHome>)? = null,
         onUpdateRestaurant: () -> Unit = {},
         onRestaurantDraft: (OwnerRestaurantInfoDraft) -> Unit = {},
         onPublicationChange: (RestaurantPublicationState) -> Unit = {},
@@ -252,27 +251,27 @@ class RestaurantHomeViewModelTest {
         onReplaceDishImage: (DishId, ImageUpload) -> RepositoryResult<org.shareat.app.domain.model.ImageRef> = { _, _ -> error("unused") },
     ): RestaurantHomeViewModel {
         return RestaurantHomeViewModel(
-            loadOwnerRestaurantHome = LoadOwnerRestaurantHomeUseCase {
+            loadOwnerRestaurantHome = {
                 onLoadHome?.invoke() ?: RepositoryResult.Success(home)
             },
             createOwnerDish = CreateOwnerDishUseCase(onCreateDish),
-            updateOwnerRestaurantInfo = UpdateOwnerRestaurantInfoUseCase { draft ->
+            updateOwnerRestaurantInfo = { draft ->
                 onUpdateRestaurant()
                 onRestaurantDraft(draft)
                 RepositoryResult.Success(home.restaurant.copy(name = draft.name, address = draft.address))
             },
-            updateRestaurantPublicationState = UpdateRestaurantPublicationStateUseCase { state ->
+            updateRestaurantPublicationState = { state ->
                 onPublicationChange(state)
                 RepositoryResult.Success(home.restaurant.copy(publicationState = state))
             },
-            replaceOwnerRestaurantImage = ReplaceOwnerRestaurantImageUseCase { error("unused") },
+            replaceOwnerRestaurantImage = { error("unused") },
             updateOwnerDish = UpdateOwnerDishUseCase(onUpdateDish),
             replaceOwnerDishImage = ReplaceOwnerDishImageUseCase(onReplaceDishImage),
         )
     }
 }
 
-private fun newDishUpdate(home: OwnerRestaurantHome): OwnerDishUpdate {
+private fun newDishUpdate(home: RestaurantHome): OwnerDishUpdate {
     val dish = Dish(DishId("dish-new"), home.restaurant.id, "Croquetas", isEnabled = false)
     val menu = requireNotNull(home.menu).menu
     val details = MenuDetails(
@@ -282,7 +281,7 @@ private fun newDishUpdate(home: OwnerRestaurantHome): OwnerDishUpdate {
     return OwnerDishUpdate(dish, details)
 }
 
-private fun newPublishedDishUpdate(home: OwnerRestaurantHome): OwnerDishUpdate {
+private fun newPublishedDishUpdate(home: RestaurantHome): OwnerDishUpdate {
     val dish = Dish(DishId("dish-new"), home.restaurant.id, "Croquetas", isEnabled = true)
     val menu = requireNotNull(home.menu).menu
     val details = MenuDetails(
@@ -304,7 +303,7 @@ private fun dishReview(dishId: DishId): Review = Review(
     updatedAt = IsoTimestamp("2026-01-01T10:00:00Z"),
 )
 
-private fun ownerHome(): OwnerRestaurantHome {
+private fun ownerHome(): RestaurantHome {
     val restaurant = Restaurant(
         id = RestaurantId("restaurant"),
         ownerAccountId = AccountId("owner"),
@@ -315,7 +314,7 @@ private fun ownerHome(): OwnerRestaurantHome {
     )
     val enabled = Dish(DishId("dish-1"), restaurant.id, "Arroz", isEnabled = true)
     val disabled = Dish(DishId("dish-2"), restaurant.id, "Tarta", isEnabled = false)
-    return OwnerRestaurantHome(
+    return RestaurantHome(
         restaurant = restaurant,
         restaurantRatingSummary = RatingSummary.Unrated,
         menu = OwnerRestaurantMenu(

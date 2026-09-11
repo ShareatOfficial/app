@@ -3,10 +3,10 @@ package org.shareat.feature.restauranthome.ui.di
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
-import org.shareat.feature.restauranthome.domain.LoadOwnerRestaurantHomeUseCase
+import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCaseImpl
-import org.shareat.feature.restauranthome.domain.LoadOwnerRestaurantHomeUseCaseImpl
+import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCaseImpl
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCaseImpl
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
@@ -24,8 +24,8 @@ import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeViewMo
 val restaurantHomeUiModule: Module = module {
     factory { RestaurantOwnerAuthorizer(get(), get()) }
 
-    factory<LoadOwnerRestaurantHomeUseCase> {
-        LoadOwnerRestaurantHomeUseCaseImpl(get(), get(), get(), get())
+    factory<GetRestaurantHomeUseCase> {
+        GetRestaurantHomeUseCaseImpl(get(), get(), get(), get())
     }
     factory<CreateOwnerDishUseCase> {
         CreateOwnerDishUseCaseImpl(get(), get(), get(), get())

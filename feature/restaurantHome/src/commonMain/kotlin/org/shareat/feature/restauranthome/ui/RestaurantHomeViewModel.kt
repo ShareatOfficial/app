@@ -14,7 +14,7 @@ import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
-import org.shareat.feature.restauranthome.domain.LoadOwnerRestaurantHomeUseCase
+import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
@@ -25,7 +25,7 @@ import org.shareat.feature.restauranthome.domain.model.OwnerDishDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishUpdate
 import org.shareat.feature.restauranthome.domain.model.OwnerRatedMenuDish
-import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantHome
+import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantInfoDraft
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
 import org.shareat.feature.restauranthome.ui.model.DishFormValidation
@@ -45,7 +45,7 @@ import org.shareat.feature.restauranthome.ui.model.toRestaurantHomeData
 @Stable
 @KoinViewModel
 class RestaurantHomeViewModel(
-    private val loadOwnerRestaurantHome: LoadOwnerRestaurantHomeUseCase,
+    private val loadOwnerRestaurantHome: GetRestaurantHomeUseCase,
     private val createOwnerDish: CreateOwnerDishUseCase,
     private val updateOwnerRestaurantInfo: UpdateOwnerRestaurantInfoUseCase,
     private val updateRestaurantPublicationState: UpdateRestaurantPublicationStateUseCase,
@@ -53,7 +53,7 @@ class RestaurantHomeViewModel(
     private val updateOwnerDish: UpdateOwnerDishUseCase,
     private val replaceOwnerDishImage: ReplaceOwnerDishImageUseCase,
 ) : ViewModel() {
-    private var ownerHome: OwnerRestaurantHome? = null
+    private var ownerHome: RestaurantHome? = null
 
     private val _uiState = MutableStateFlow(RestaurantHomeUiState())
     val uiState: StateFlow<RestaurantHomeUiState> = _uiState.asStateFlow()
@@ -66,7 +66,7 @@ class RestaurantHomeViewModel(
 
     fun onModeToggle() {
         _uiState.value = _uiState.value.copy(
-            mode = if (_uiState.value.mode == RestaurantHomeMode.MANAGEMENT) {
+            visonMode = if (_uiState.value.visonMode == RestaurantHomeMode.MANAGEMENT) {
                 RestaurantHomeMode.CUSTOMER_PREVIEW
             } else {
                 RestaurantHomeMode.MANAGEMENT

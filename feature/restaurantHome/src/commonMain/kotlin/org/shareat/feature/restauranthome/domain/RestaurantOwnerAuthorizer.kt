@@ -12,7 +12,7 @@ class RestaurantOwnerAuthorizer(
     private val authRepository: AuthRepository,
     private val accountRepository: AccountRepository,
 ) {
-    suspend fun authorize(): RepositoryResult<Account> {
+    suspend fun authorize(): RepositoryResult<Account> { // TODO simplify the authorize repository. The layers does supposed to do this. They just need, is authorized. Yes or No. Nothing else. :)
         val session = when (val result = authRepository.currentSession()) {
             is RepositoryResult.Success -> result.value
                 ?: return RepositoryResult.Failure(RepositoryError.Unauthenticated)

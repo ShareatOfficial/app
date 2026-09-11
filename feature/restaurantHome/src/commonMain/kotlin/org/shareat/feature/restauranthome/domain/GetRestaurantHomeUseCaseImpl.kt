@@ -1,7 +1,6 @@
 package org.shareat.feature.restauranthome.domain
 
 import org.shareat.app.domain.model.DishId
-import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewTarget
 import org.shareat.app.domain.repository.MenuRepository
@@ -10,20 +9,21 @@ import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.domain.repository.ReviewRepository
 import org.shareat.feature.restauranthome.domain.model.OwnerRatedMenuDish
-import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantHome
 import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantMenu
+import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 
-class LoadOwnerRestaurantHomeUseCaseImpl(
-    private val authorizer: RestaurantOwnerAuthorizer,
+class GetRestaurantHomeUseCaseImpl(
+    private val authorizer: RestaurantOwnerAuthorizer, // TODO change this with authorized repository
     private val restaurantRepository: RestaurantRepository,
     private val menuRepository: MenuRepository,
     private val reviewRepository: ReviewRepository,
-) : LoadOwnerRestaurantHomeUseCase {
-    override suspend fun invoke(): RepositoryResult<OwnerRestaurantHome> {
+) : GetRestaurantHomeUseCase {
+    override suspend fun invoke(): RepositoryResult<RestaurantHome> {
         val owner = when (val result = authorizer.authorize()) {
             is RepositoryResult.Success -> result.value
             is RepositoryResult.Failure -> return result
         }
+
         val restaurant = when (val result = restaurantRepository.getRestaurantForOwner(owner.id)) {
             is RepositoryResult.Success -> result.value
             is RepositoryResult.Failure -> return result
@@ -62,13 +62,22 @@ class LoadOwnerRestaurantHomeUseCaseImpl(
                         )
                     },
                 )
+
                 is RepositoryResult.Failure -> return reviews
             }
         }
         return RepositoryResult.Success(
-            OwnerRestaurantHome(restaurant, ratingSummary, ownerMenu),
+            RestaurantHome(restaurant, ratingSummary, ownerMenu),
         )
     }
+
+    // TODO surround the entire invoke in a try catch to return the error. And divide the code in little more compressible parts
+//    private suspend fun getAccount(): Account? {
+//        return when (val result = authorizer.authorize()) {
+//            is RepositoryResult.Success -> result.value
+//            is RepositoryResult.Failure -> null
+//        }
+//    }
 
     private suspend fun reviewsFor(
         dishIds: Set<DishId>,

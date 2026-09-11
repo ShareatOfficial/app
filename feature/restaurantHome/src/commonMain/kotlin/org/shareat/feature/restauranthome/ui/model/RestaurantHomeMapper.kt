@@ -5,9 +5,9 @@ import org.shareat.app.domain.model.AllergenInformationSource
 import org.shareat.app.domain.model.Money
 import org.shareat.app.domain.model.RatingSummary
 import org.shareat.feature.restauranthome.domain.model.OwnerRatedMenuDish
-import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantHome
+import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 
-internal fun OwnerRestaurantHome.toRestaurantHomeData(): RestaurantHomeData = RestaurantHomeData(
+internal fun RestaurantHome.toRestaurantHomeData(): RestaurantHomeData = RestaurantHomeData(
     id = restaurant.id.value,
     name = restaurant.name,
     description = restaurant.description,

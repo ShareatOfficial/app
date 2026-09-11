@@ -2,7 +2,6 @@ package org.shareat.feature.restauranthome.ui.restauranthome
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,7 +33,6 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
-import org.shareat.app.domain.model.ImageUpload
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeEditor
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeMode
@@ -166,7 +164,7 @@ fun RestaurantHomeScreenStateless(
         modifier = modifier.fillMaxSize(),
         topBar = {
             CustomerModeTopBar(
-                mode = uiState.mode,
+                mode = uiState.visonMode,
                 onModeToggle = onModeToggle,
             )
         },
@@ -176,7 +174,7 @@ fun RestaurantHomeScreenStateless(
                 modifier = Modifier.padding(padding),
             )
             is RestaurantHomeContent.Error -> ErrorContent(
-                error = content.reason,
+                error = content.error,
                 onRetryClick = onRetryClick,
                 modifier = Modifier.padding(padding),
             )
@@ -237,7 +235,7 @@ private fun RestaurantHomeLoadedContent(
     onEditDishClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isManagement = uiState.mode == RestaurantHomeMode.MANAGEMENT
+    val isManagement = uiState.visonMode == RestaurantHomeMode.MANAGEMENT
     val filteredDishes = restaurant.dishes.filter { dish ->
         (uiState.selectedCategory == null || dish.category == uiState.selectedCategory) &&
             dish.allergens.none { it in uiState.excludedAllergens } &&

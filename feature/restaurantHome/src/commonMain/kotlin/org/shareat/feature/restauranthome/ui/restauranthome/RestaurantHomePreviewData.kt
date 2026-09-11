@@ -46,7 +46,7 @@ internal object RestaurantHomePreviewData {
     )
 
     val loaded = RestaurantHomeUiState(content = RestaurantHomeContent.Loaded(restaurant))
-    val preview = loaded.copy(mode = RestaurantHomeMode.CUSTOMER_PREVIEW)
+    val preview = loaded.copy(visonMode = RestaurantHomeMode.CUSTOMER_PREVIEW)
     val error = RestaurantHomeUiState(content = RestaurantHomeContent.Error(RestaurantHomeError.OFFLINE))
     val empty = RestaurantHomeUiState(content = RestaurantHomeContent.Empty)
     val restaurantEditor = loaded.copy(

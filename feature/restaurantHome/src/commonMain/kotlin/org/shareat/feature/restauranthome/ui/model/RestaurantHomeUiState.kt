@@ -5,20 +5,19 @@ import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.ImageUpload
 import org.shareat.app.domain.model.RestaurantPublicationState
 
-/** The owner can switch between managing the catalogue and its public-facing simulation. */
 enum class RestaurantHomeMode { MANAGEMENT, CUSTOMER_PREVIEW }
 
 data class RestaurantHomeUiState(
     val content: RestaurantHomeContent = RestaurantHomeContent.Loading,
-    val mode: RestaurantHomeMode = RestaurantHomeMode.MANAGEMENT,
-    val selectedCategory: DishCategory? = null,
+    val visonMode: RestaurantHomeMode = RestaurantHomeMode.MANAGEMENT,
+    val selectedCategory: DishCategory? = null, // Is this a good name?
     val excludedAllergens: Set<EuAllergen> = emptySet(),
     val editor: RestaurantHomeEditor? = null,
 )
 
 sealed interface RestaurantHomeContent {
     data object Loading : RestaurantHomeContent
-    data class Error(val reason: RestaurantHomeError) : RestaurantHomeContent
+    data class Error(val error: RestaurantHomeError) : RestaurantHomeContent
     data object Empty : RestaurantHomeContent
     data class Loaded(val restaurant: RestaurantHomeData) : RestaurantHomeContent
 }
@@ -43,14 +42,14 @@ data class RestaurantHomeData(
     val imageUrl: String?,
     val imageDescription: String?,
     val address: RestaurantAddressUiState,
-    val ratingLabel: String?,
-    val reviewCount: Int,
+    val ratingLabel: String?, // Check this value
+    val reviewCount: Int, // Check this value
     val publicationState: RestaurantPublicationState,
-    val categories: List<DishCategory>,
+    val categories: List<DishCategory>, // hamburger, salads, sandwiches, etc.
     val allergens: List<EuAllergen>,
     val dishes: List<RestaurantDishUiState>,
 ) {
-    val isPublished: Boolean get() = publicationState == RestaurantPublicationState.Published
+    val isPublished: Boolean get() = publicationState == RestaurantPublicationState.Published // this can be move to domain and here just call the state to isPublished.
 }
 
 data class RestaurantAddressUiState(
