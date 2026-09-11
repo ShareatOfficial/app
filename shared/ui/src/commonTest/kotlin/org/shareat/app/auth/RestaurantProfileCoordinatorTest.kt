@@ -87,6 +87,19 @@ class RestaurantProfileCoordinatorTest {
     }
 
     @Test
+    fun completingALoginThatIsNoLongerOnTopDoesNothing() = runTest {
+        val fixture = fixture(role = AccountRole.Customer)
+        runCurrent()
+        val homeStack = fixture.navigationState.backStacks.getValue(HomeKey)
+
+        // The onboarding gate can move the stack while LoginScreen is still composed, so its
+        // effect may fire late. That used to crash the app.
+        fixture.navigator.completeLogin()
+
+        assertEquals(listOf(HomeKey), homeStack.toList())
+    }
+
+    @Test
     fun restaurantRegistrationNavigatesDirectlyToOnboarding() = runTest {
         val fixture = fixture(role = AccountRole.Customer)
         runCurrent()
