@@ -1,12 +1,13 @@
 package org.shareat.app.domain.model
 
-/** Owner-editable representation of the restaurant's single menu. */
+/** Owner-editable menu. A null [menuId] adds another menu to the restaurant. */
 data class RestaurantMenuDraft(
     val restaurantId: RestaurantId,
     val menuId: MenuId? = null,
     val name: String,
     val description: String? = null,
     val publicationState: MenuPublicationState = MenuPublicationState.Draft,
+    val price: Money? = null,
     val items: List<MenuItemDraft>,
 ) {
     init {

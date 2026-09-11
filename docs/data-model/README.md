@@ -37,16 +37,18 @@ Las excepciones por festivos o cierres puntuales se añadirán más adelante sin
 
 Un plato pertenece al catálogo de un restaurante. El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`.
 ```text
-Restaurant 1 — 1 Menu (MVP)
-Restaurant 1 — N Dish
-Menu       N — N Dish  (MenuItem)
+Restaurant 1 — N Menu
+Restaurant 1 — N Dish   (vía restaurant_dishes)
+Menu       N — N Dish   (MenuItem)
 ```
 
-Un restaurante publica un único menú en el MVP. Solo ese menú `Published` y sus platos habilitados llegan a una lectura pública, vía `MenuRepository.getPublishedMenu`; el ensamblado de esa regla vive en `PublishedMenuAssembler` (`:shared:domain`), del que dependen tanto `GetRestaurantMenuUseCase` como `RestaurantDetailsAssembler`, no repetido en cada pantalla. «Sin menú publicado» no es un error: el assembler lo traduce a `Success(null)` y reserva `Failure` para fallos reales de lectura.
+Un menú pertenece a un único restaurante y un restaurante puede tener varios, aunque hoy publique uno solo. `MenuRepository.getPublishedMenus` devuelve por eso una lista: los menús `Published` de un restaurante `Published`, con sus platos habilitados. La regla se ensambla en `PublishedMenuAssembler` (`:shared:domain`), del que dependen tanto `GetRestaurantMenuUseCase` como `RestaurantDetailsAssembler`, no repetida en cada pantalla. La pantalla de restaurante todavía muestra el primero; «sin menú publicado» no es un error, sino una lista vacía que el assembler traduce a `Success(null)`, reservando `Failure` para fallos reales de lectura.
 
-El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`. El precio, la posición, la disponibilidad y la categoría (`DishCategory`: entrantes, principales, postres, para picar) dentro de un menú pertenecen a `MenuItem`, porque pueden variar entre menús. `MenuItem.category` es opcional: los fixtures la rellenan y el mapper de Supabase la deja a `null` hasta que exista la columna correspondiente (issue #64).
+El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`. El precio, la posición, la disponibilidad y la categoría (`DishCategory`: entrantes, principales, postres, para picar) dentro de un menú pertenecen a `MenuItem`, porque pueden variar entre menús: el mismo plato puede costar distinto en la carta y en el menú del día. `MenuItem.category` es opcional: los fixtures la rellenan y el mapper de Supabase la deja a `null` hasta que exista la columna correspondiente (issue #64).
 
-El precio usa unidades menores (`Money.minorUnits`): `1_800` representa 18,00 EUR. No se usa `Double` para valores monetarios.
+`Menu.price` es opcional y representa el precio cerrado de un menú de precio fijo; una carta lo deja a `null` y cobra plato a plato. Ambos precios usan unidades menores (`Money.minorUnits`): `1_800` representa 18,00 EUR. No se usa `Double` para valores monetarios.
+
+La moneda la determina el restaurante, no cada relación menú-plato: vive en `Restaurant.currency` (`restaurants.currency_code`) y el mapper de Supabase la aplica al construir cada `Money`. Guardarla en `menu_items` repetía en cada fila un dato que ya determinaba el restaurante.
 
 Cada plato admite una imagen opcional en el MVP. Los alérgenos usan el catálogo de 14 grupos de la UE, una nota opcional y una fuente que deja claro que la información procede del restaurante.
 
@@ -59,11 +61,17 @@ ReviewTarget.Restaurant
 ReviewTarget.Dish
 ```
 
+En persistencia eso son tres tablas: `reviews` con lo que toda reseña comparte (autor, `target_type`, valoración, comentario, visibilidad, moderación y fechas) y una hija por tipo de target, `restaurant_reviews` y `dish_reviews`, cada una con `review_id` como clave primaria y el FK a su entidad.
+
+`target_type` no es redundante: es lo que hace declarativas las dos invariantes del diseño. La clave `(id, author_account_id, target_type)` de la madre es a la que apuntan las hijas, de modo que el `author_account_id` que llevan no puede divergir del de la madre y «una reseña por autor y target» sigue siendo un `unique` normal sobre la hija. Que exista exactamente una hija lo garantiza un *constraint trigger* diferido a commit, porque madre e hija se escriben en la misma transacción.
+
+Las escrituras van por el RPC `save_review`, que hace ese upsert transaccional. Las lecturas van por dos vistas `security_invoker` que aplanan madre e hija, `restaurant_review_details` y `dish_review_details`, para que el cliente siga leyendo una fila por reseña. `ReviewRepository` y `ReviewTarget` no cambian.
+
 Solo una cuenta customer activa puede escribir reviews. Existe como máximo una por autor y target; `saveReview` actualiza la existente. La valoración es un entero entre 1 y 5, el comentario y la fecha de visita son opcionales, y creación y última actualización se registran por separado.
 
-El proyecto desplegado guarda tres alérgenos con ids más cortos que los canónicos de las migraciones (`gluten` en vez de `cereals_containing_gluten`, `soy` en vez de `soybeans`, `sulphites` en vez de `sulphur_dioxide_and_sulphites`). La base de datos remota ha divergido de `supabase/migrations/`. Hasta que se reconcilien, la lectura (`String.toEuAllergenOrNull`) acepta ambas grafías y la escritura (`EuAllergen.toDatabaseValue`) sigue emitiendo solo la canónica.
+Los tres alérgenos que el proyecto desplegado guardaba con ids más cortos que los canónicos (`gluten`, `soy`, `sulphites`) se renombraron a la grafía de las migraciones en `20260910120000_normalize_menu_and_dish_catalogue.sql`. Cada alérgeno es direccionable ahora por un único id, así que `String.toEuAllergenOrNull` ya no acepta grafías alternativas.
 
-Regla general de mapeo de catálogo: **un valor desconocido se descarta, nunca hace fallar el agregado que lo contiene**. `toEuAllergenOrNull` devuelve `null` para un id no reconocido y `DishDto.toDomain` lo omite. Antes lanzaba, y un único alérgeno inesperado tumbaba la carta entera del restaurante: `getPublishedMenu` fallaba, el ensamblador devolvía `menu = null` y la pantalla mostraba "todavía no ha publicado su carta" en lugar de un error.
+Regla general de mapeo de catálogo: **un valor desconocido se descarta, nunca hace fallar el agregado que lo contiene**. `toEuAllergenOrNull` devuelve `null` para un id no reconocido y `DishDto.toDomain` lo omite. Antes lanzaba, y un único alérgeno inesperado tumbaba la carta entera del restaurante: `getPublishedMenus` fallaba, el ensamblador devolvía `menu = null` y la pantalla mostraba "todavía no ha publicado su carta" en lugar de un error.
 
 Las reviews públicas de varios platos se piden en lote con `ReviewRepository.getPublicDishReviews(dishIds)`, una sola consulta por sección, en vez de una por plato. La misma regla aplica a una lista de restaurantes: `DishRepository.getDishesByRestaurant(restaurantIds)` y `ReviewRepository.getRestaurantRatingSummaries(restaurantIds)` resuelven una página entera en una consulta cada uno. **Una consulta por página, nunca una por elemento**: un ensamblador que itera una lista llamando a un repositorio por elemento multiplica los viajes de red por el tamaño de la página (ver `RestaurantSummariesAssembler`). Los ids viajan en la query string, así que las implementaciones de Supabase parten los filtros `in` en lotes (`selectInBatches`).
 
@@ -97,6 +105,14 @@ Hay dos agregados, uno por pantalla, y la diferencia entre ambos es el menú:
 ## Persistencia Supabase
 
 Las migraciones versionadas viven en `supabase/migrations`. La identidad de `accounts.id` coincide con `auth.users.id`; el trigger de registro valida una única vez `customer|restaurant`, crea `accounts` y crea `customer_profiles` cuando corresponde. La autorización posterior consulta tablas protegidas por RLS, nunca metadata mutable del JWT.
+
+La fila de `dishes` no guarda a qué restaurante pertenece el plato: ese vínculo vive en `restaurant_dishes`, con `dish_id` como clave primaria, así que un plato sigue siendo de un único restaurante. Se hace así para que la propiedad no dependa de estar en un menú: un plato de catálogo recién creado, todavía sin menú, tiene dueño desde el primer momento y sus políticas RLS cuelgan de `private.owns_dish(dish_id)`.
+
+Ese orden importa al escribir. `save_restaurant_dish` genera el uuid del plato en vez de leerlo con `returning`, porque `returning` también evalúa la política de SELECT y un plato aún no vinculado no lo puede leer nadie. El dominio no cambia: `Dish.restaurantId` sigue existiendo y el repositorio lo rellena leyendo `restaurant_dishes` junto al plato.
+
+La relación N-N menú/plato se materializa en `menu_items`, cuya clave es `(menu_id, dish_id)` y cuyos únicos atributos propios son los que dependen de ese par: precio, posición y disponibilidad. No repite `restaurant_id` —lo determina `menu_id`— ni `currency` —lo determina el restaurante—. La invariante que antes garantizaban las claves foráneas compuestas (un menú no puede listar el plato de otro restaurante) la impone ahora el trigger `private.assert_menu_item_restaurants_match`, y las políticas RLS de propietario cuelgan de `private.owns_menu(menu_id)`.
+
+Por la misma razón `dishes` ya no guarda `allergen_source`: se derivaba de los alérgenos y la nota que la propia fila ya contiene, y el dominio lo reconstruye en `AllergenDeclaration.source`.
 
 Los agregados de rating son vistas `security_invoker` que solo consideran reviews públicas y visibles.
 

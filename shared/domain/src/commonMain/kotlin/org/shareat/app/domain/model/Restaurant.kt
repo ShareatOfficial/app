@@ -84,6 +84,7 @@ data class Restaurant(
     val publicPhone: String? = null,
     val address: PostalAddress,
     val openingHours: WeeklyOpeningHours,
+    val currency: Currency = Currency.Euro,
     val publicationState: RestaurantPublicationState,
 ) {
     init {

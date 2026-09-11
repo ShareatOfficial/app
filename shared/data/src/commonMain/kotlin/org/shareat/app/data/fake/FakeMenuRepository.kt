@@ -1,13 +1,13 @@
 package org.shareat.app.data.fake
 
+import org.shareat.app.domain.model.Menu
 import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.MenuDish
 import org.shareat.app.domain.model.MenuId
-import org.shareat.app.domain.model.RestaurantMenuDraft
-import org.shareat.app.domain.model.Menu
 import org.shareat.app.domain.model.MenuItem
 import org.shareat.app.domain.model.MenuPublicationState
 import org.shareat.app.domain.model.RestaurantId
+import org.shareat.app.domain.model.RestaurantMenuDraft
 import org.shareat.app.domain.repository.MenuRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
@@ -21,16 +21,17 @@ class FakeMenuRepository(
         empty = { emptyList() },
     )
 
-    override suspend fun getPublishedMenu(restaurantId: RestaurantId): RepositoryResult<MenuDetails> = scenario.result(
+    override suspend fun getPublishedMenus(
+        restaurantId: RestaurantId,
+    ): RepositoryResult<List<MenuDetails>> = scenario.result(
         populated = {
-            val menu = data.menus.firstOrNull {
-                it.restaurantId == restaurantId && it.publicationState == MenuPublicationState.Published
-            } ?: return RepositoryResult.Failure(RepositoryError.NotFound("PublishedMenu", restaurantId.value))
-            details(menu.id, sellableOnly = true)
+            data.menus
+                .filter {
+                    it.restaurantId == restaurantId && it.publicationState == MenuPublicationState.Published
+                }
+                .map { details(it.id, sellableOnly = true) }
         },
-        empty = {
-            return RepositoryResult.Failure(RepositoryError.NotFound("PublishedMenu", restaurantId.value))
-        },
+        empty = { emptyList() },
     )
 
     override suspend fun getMenu(id: MenuId): RepositoryResult<MenuDetails> = scenario.result(
@@ -56,9 +57,16 @@ class FakeMenuRepository(
     )
 
     private fun save(draft: RestaurantMenuDraft): MenuDetails {
-        val existing = data.menus.firstOrNull { it.restaurantId == draft.restaurantId }
-        val id = existing?.id ?: MenuId("menu-${draft.restaurantId.value}")
-        val menu = Menu(id, draft.restaurantId, draft.name.trim(), draft.description?.trim()?.ifEmpty { null }, draft.publicationState)
+        val existing = draft.menuId?.let { menuId -> data.menus.firstOrNull { it.id == menuId } }
+        val id = existing?.id ?: MenuId("menu-${draft.restaurantId.value}-${data.menus.size + 1}")
+        val menu = Menu(
+            id = id,
+            restaurantId = draft.restaurantId,
+            name = draft.name.trim(),
+            description = draft.description?.trim()?.ifEmpty { null },
+            publicationState = draft.publicationState,
+            price = draft.price,
+        )
         if (existing == null) data.menus += menu else data.menus[data.menus.indexOf(existing)] = menu
         data.menuItems.removeAll { it.menuId == id }
         data.menuItems += draft.items.sortedBy { it.position }.mapIndexed { position, item ->

@@ -95,7 +95,7 @@ Restaurants cannot rate dishes or restaurants.
 - **Comments and visibility:** a rating may include an optional comment. The author chooses whether the whole review is public or private. A private review is visible only to its author.
 - **Moderation:** public reviews are published immediately. Signed-in users can report them; moderators can hide them while investigating and restore or remove them, with an audit trail. Restaurant owners cannot suppress reviews themselves.
 - **Allergens:** optional, restaurant-supplied information in the MVP. The restaurant is responsible for keeping it accurate; Shareat must display its source and a notice to confirm allergens directly with the restaurant. Customers can filter a menu by allergen; the filter only offers the allergens that menu's dishes declare, and a dish with no declaration is never hidden by it, because absence of a declaration is not absence of the allergen. Allergen *verification* remains post-MVP.
-- **Menus:** a restaurant publishes one menu. The public restaurant screen displays it immediately, with no selector; draft, unpublished, and disabled menus never reach a public read path.
+- **Menus:** a restaurant publishes one menu. The public restaurant screen displays it immediately, with no selector; draft, unpublished, and disabled menus never reach a public read path. The schema no longer limits a restaurant to one menu, so this is an MVP product decision, not a storage constraint. A menu may carry an optional fixed price for a set menu; an a la carte menu prices each dish instead.
 
 ## 4. MVP and post-MVP boundary
 

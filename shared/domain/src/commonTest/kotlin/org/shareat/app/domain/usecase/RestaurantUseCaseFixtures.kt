@@ -161,14 +161,17 @@ internal class FakeMenuRepository(
     override suspend fun getMenus(restaurantId: RestaurantId): RepositoryResult<List<Menu>> =
         RepositoryResult.Success(menusByRestaurant[restaurantId].orEmpty())
 
-    override suspend fun getPublishedMenu(restaurantId: RestaurantId): RepositoryResult<MenuDetails> {
-        val menu = menusByRestaurant[restaurantId].orEmpty()
-            .firstOrNull { it.publicationState == MenuPublicationState.Published }
-            ?: return RepositoryResult.Failure(RepositoryError.NotFound("PublishedMenu", restaurantId.value))
-        // Mirrors the real contract: a public read only ever sees sellable items.
-        val items = dishesByMenu[menu.id].orEmpty().filter { it.isEnabled && it.dish.isEnabled }
-        return RepositoryResult.Success(MenuDetails(menu = menu, items = items))
-    }
+    override suspend fun getPublishedMenus(
+        restaurantId: RestaurantId,
+    ): RepositoryResult<List<MenuDetails>> = RepositoryResult.Success(
+        menusByRestaurant[restaurantId].orEmpty()
+            .filter { it.publicationState == MenuPublicationState.Published }
+            .map { menu ->
+                // Mirrors the real contract: a public read only ever sees sellable items.
+                val items = dishesByMenu[menu.id].orEmpty().filter { it.isEnabled && it.dish.isEnabled }
+                MenuDetails(menu = menu, items = items)
+            },
+    )
 
     override suspend fun getMenu(id: MenuId): RepositoryResult<MenuDetails> {
         val menu = menusByRestaurant.values.flatten().firstOrNull { it.id == id }
@@ -230,7 +233,7 @@ internal class FakeReviewRepository(
 
 internal object FailingMenuRepository : MenuRepository {
     override suspend fun getMenus(restaurantId: RestaurantId) = unavailable<List<Menu>>()
-    override suspend fun getPublishedMenu(restaurantId: RestaurantId) = unavailable<MenuDetails>()
+    override suspend fun getPublishedMenus(restaurantId: RestaurantId) = unavailable<List<MenuDetails>>()
     override suspend fun getMenu(id: MenuId) = unavailable<MenuDetails>()
     override suspend fun saveMenu(draft: RestaurantMenuDraft) = unavailable<MenuDetails>()
     override suspend fun deleteMenu(id: MenuId) = unavailable<Unit>()

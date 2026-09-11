@@ -24,9 +24,17 @@ insert into public.restaurants (
 );
 insert into public.restaurant_opening_periods (restaurant_id, weekday, position, opens_at, closes_at) values
     ('93000000-0000-4000-8000-000000000001', 1, 0, '13:00', '16:00');
-insert into public.dishes (id, restaurant_id, name, description, allergen_source, is_enabled) values
-    ('95000000-0000-4000-8000-000000000001', '93000000-0000-4000-8000-000000000001', 'Local dish', 'For repository tests.', 'restaurant', true);
+insert into public.dishes (id, name, description, is_enabled) values
+    ('95000000-0000-4000-8000-000000000001', 'Local dish', 'For repository tests.', true);
+insert into public.restaurant_dishes (dish_id, restaurant_id) values
+    ('95000000-0000-4000-8000-000000000001', '93000000-0000-4000-8000-000000000001');
 insert into public.dish_allergens (dish_id, allergen_id) values
     ('95000000-0000-4000-8000-000000000001', 'milk');
-insert into public.reviews (id, author_account_id, restaurant_id, rating, comment) values
-    ('96000000-0000-4000-8000-000000000001', '91000000-0000-4000-8000-000000000001', '93000000-0000-4000-8000-000000000001', 5, 'Local public review');
+insert into public.reviews (id, author_account_id, target_type, rating, comment) values
+    ('96000000-0000-4000-8000-000000000001', '91000000-0000-4000-8000-000000000001', 'restaurant', 5, 'Local public review');
+insert into public.restaurant_reviews (review_id, author_account_id, restaurant_id) values
+    ('96000000-0000-4000-8000-000000000001', '91000000-0000-4000-8000-000000000001', '93000000-0000-4000-8000-000000000001');
+insert into public.menus (id, restaurant_id, name, description, publication_state, price_minor_units) values
+    ('94000000-0000-4000-8000-000000000001', '93000000-0000-4000-8000-000000000001', 'Local set menu', 'Fixed price fixture.', 'published', 1800);
+insert into public.menu_items (menu_id, dish_id, price_minor_units, position, is_enabled) values
+    ('94000000-0000-4000-8000-000000000001', '95000000-0000-4000-8000-000000000001', 1250, 0, true);
