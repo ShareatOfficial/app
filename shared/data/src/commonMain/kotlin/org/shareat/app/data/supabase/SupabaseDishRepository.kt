@@ -8,7 +8,7 @@ import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
 import org.shareat.app.data.supabase.mapper.toDomain
 import org.shareat.app.data.supabase.mapper.toSaveRpc
-import org.shareat.app.data.supabase.model.RestaurantDishDto
+import org.shareat.app.data.supabase.model.DishDto
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishDraft
 import org.shareat.app.domain.model.DishId
@@ -16,13 +16,10 @@ import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.DishRepository
 import org.shareat.app.domain.repository.RepositoryResult
 
-/**
- * A dish is always read through restaurant_dishes: that is what says whose it is, and nesting the
- * dish and its allergens under it turns three round trips into one.
- */
-internal val OwnedDishColumns = Columns.raw(
-    "restaurant_id,dishes(id,name,description,image_path,image_alt_text,allergen_note," +
-        "is_enabled,dish_allergens(allergen_id))",
+/** The allergens travel nested inside their dish, so a catalogue read is a single round trip. */
+internal val DishColumns = Columns.raw(
+    "id,restaurant_id,name,description,image_path,image_alt_text,allergen_note,is_enabled," +
+        "dish_allergens(allergen_id)",
 )
 
 internal class SupabaseDishRepository(
@@ -33,7 +30,7 @@ internal class SupabaseDishRepository(
     }
 
     override suspend fun getDishes(restaurantId: RestaurantId): RepositoryResult<List<Dish>> = supabaseResult {
-        ownedDishes("restaurant_id", setOf(restaurantId.value))
+        dishesWhere("restaurant_id", setOf(restaurantId.value))
     }
 
     override suspend fun getDishesByRestaurant(
@@ -42,7 +39,7 @@ internal class SupabaseDishRepository(
         if (restaurantIds.isEmpty()) {
             emptyMap()
         } else {
-            ownedDishes("restaurant_id", restaurantIds.map(RestaurantId::value).toSet())
+            dishesWhere("restaurant_id", restaurantIds.map(RestaurantId::value).toSet())
                 .groupBy(Dish::restaurantId)
         }
     }
@@ -64,16 +61,14 @@ internal class SupabaseDishRepository(
     }
 
     internal suspend fun loadDishes(ids: Set<String>): List<Dish> =
-        if (ids.isEmpty()) emptyList() else ownedDishes("dish_id", ids)
+        if (ids.isEmpty()) emptyList() else dishesWhere("id", ids)
 
-    private suspend fun ownedDishes(column: String, values: Set<String>): List<Dish> =
+    private suspend fun dishesWhere(column: String, values: Set<String>): List<Dish> =
         selectInBatches(values) { batch ->
-            client.from("restaurant_dishes").select(OwnedDishColumns) {
+            client.from("dishes").select(DishColumns) {
                 filter { isIn(column, batch) }
-            }.decodeList<RestaurantDishDto>()
-        }.mapNotNull { owned ->
-            owned.dish?.toDomain(RestaurantId(owned.restaurantId), ::dishImageUrl)
-        }
+            }.decodeList<DishDto>()
+        }.map { it.toDomain(::dishImageUrl) }
 
     private fun dishImageUrl(path: String): String = client.storage.from("dish-images").publicUrl(path)
 }

@@ -12,11 +12,10 @@ import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.RestaurantId
 
 internal fun DishDto.toDomain(
-    restaurantId: RestaurantId,
     publicImageUrl: (String) -> String,
 ): Dish = Dish(
     id = DishId(id),
-    restaurantId = restaurantId,
+    restaurantId = RestaurantId(restaurantId),
     name = name,
     description = description,
     image = imagePath?.let { ImageRef(publicImageUrl(it), imageAltText) },

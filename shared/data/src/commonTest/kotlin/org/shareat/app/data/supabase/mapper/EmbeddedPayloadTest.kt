@@ -8,7 +8,6 @@ import org.shareat.app.data.supabase.model.MenuDto
 import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.domain.model.Currency
 import org.shareat.app.domain.model.EuAllergen
-import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.Weekday
 
 /**
@@ -28,6 +27,7 @@ class EmbeddedPayloadTest {
              "publication_state":"published","price_minor_units":2950,
              "restaurants":{"currency_code":"EUR"},
              "menu_items":[{"dishes":{"id":"d0000004-0004-0004-0004-000000000001",
+               "restaurant_id":"a4444444-4444-4444-4444-444444444444",
                "name":"Dragon Roll","image_path":null,"is_enabled":true,
                "description":"Roll de tempura","allergen_note":null,
                "dish_allergens":[{"allergen_id":"cereals_containing_gluten"},
@@ -46,8 +46,9 @@ class EmbeddedPayloadTest {
         val item = dto.items.single()
         assertEquals(1_350, item.priceMinorUnits)
 
-        val dish = assertNotNull(item.dish).toDomain(RestaurantId(dto.restaurantId)) { it }
+        val dish = assertNotNull(item.dish).toDomain { it }
         assertEquals("Dragon Roll", dish.name)
+        assertEquals(dto.restaurantId, dish.restaurantId.value)
         assertEquals(
             setOf(EuAllergen.CerealsContainingGluten, EuAllergen.Crustaceans, EuAllergen.Soybeans),
             assertNotNull(dish.allergenDeclaration).allergens,

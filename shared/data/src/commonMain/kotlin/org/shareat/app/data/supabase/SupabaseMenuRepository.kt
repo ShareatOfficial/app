@@ -29,8 +29,8 @@ private val MenuColumns = Columns.raw("$MenuFields,restaurants(currency_code)")
 private val MenuDetailColumns = Columns.raw(
     "$MenuFields,restaurants(currency_code)," +
         "menu_items(dish_id,price_minor_units,position,is_enabled," +
-        "dishes(id,name,description,image_path,image_alt_text,allergen_note,is_enabled," +
-        "dish_allergens(allergen_id)))",
+        "dishes(id,restaurant_id,name,description,image_path,image_alt_text,allergen_note," +
+        "is_enabled,dish_allergens(allergen_id)))",
 )
 
 internal class SupabaseMenuRepository(
@@ -90,7 +90,7 @@ private fun MenuDto.toDetails(publicImageUrl: (String) -> String): MenuDetails {
             .sortedBy(MenuItemDto::position)
             .mapNotNull { item ->
                 item.dish
-                    ?.toDomain(RestaurantId(restaurantId), publicImageUrl)
+                    ?.toDomain(publicImageUrl)
                     ?.let { dish -> item.toDomain(dish, currency) }
             },
     )

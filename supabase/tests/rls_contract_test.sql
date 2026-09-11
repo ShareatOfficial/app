@@ -19,12 +19,9 @@ insert into public.restaurants (
     ('30000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001', 'Draft', 'Street 2', 'Madrid', '28002', 'draft'),
     ('30000000-0000-4000-8000-000000000003', '20000000-0000-4000-8000-000000000003', 'Other draft', 'Street 3', 'Madrid', '28003', 'draft');
 
-insert into public.dishes (id, name, is_enabled) values
-    ('50000000-0000-4000-8000-000000000001', 'Visible dish', true),
-    ('50000000-0000-4000-8000-000000000002', 'Other dish', true);
-insert into public.restaurant_dishes (dish_id, restaurant_id) values
-    ('50000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001'),
-    ('50000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000003');
+insert into public.dishes (id, restaurant_id, name, is_enabled) values
+    ('50000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'Visible dish', true),
+    ('50000000-0000-4000-8000-000000000002', '30000000-0000-4000-8000-000000000003', 'Other dish', true);
 
 -- A dish only reaches a public read path through a published menu of a published restaurant.
 insert into public.menus (id, restaurant_id, name, publication_state) values

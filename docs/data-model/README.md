@@ -38,7 +38,7 @@ Las excepciones por festivos o cierres puntuales se añadirán más adelante sin
 Un plato pertenece al catálogo de un restaurante. El nombre, la descripción, la imagen y los alérgenos pertenecen a `Dish`.
 ```text
 Restaurant 1 — N Menu
-Restaurant 1 — N Dish   (vía restaurant_dishes)
+Restaurant 1 — N Dish
 Menu       N — N Dish   (MenuItem)
 ```
 
@@ -106,9 +106,9 @@ Hay dos agregados, uno por pantalla, y la diferencia entre ambos es el menú:
 
 Las migraciones versionadas viven en `supabase/migrations`. La identidad de `accounts.id` coincide con `auth.users.id`; el trigger de registro valida una única vez `customer|restaurant`, crea `accounts` y crea `customer_profiles` cuando corresponde. La autorización posterior consulta tablas protegidas por RLS, nunca metadata mutable del JWT.
 
-La fila de `dishes` no guarda a qué restaurante pertenece el plato: ese vínculo vive en `restaurant_dishes`, con `dish_id` como clave primaria, así que un plato sigue siendo de un único restaurante. Se hace así para que la propiedad no dependa de estar en un menú: un plato de catálogo recién creado, todavía sin menú, tiene dueño desde el primer momento y sus políticas RLS cuelgan de `private.owns_dish(dish_id)`.
+`dishes.restaurant_id` nombra el único restaurante al que pertenece el plato, y de ahí cuelga `private.owns_dish(dish_id)`. Se probó a sacar esa columna a una tabla `restaurant_dishes` y se revirtió: con `dish_id` como clave primaria era un desdoble 1:1 de la misma información, no ganaba nada en normalización —que un plato sea de un restaurante es una dependencia funcional de la clave del plato— y costaba un join en cada lectura de catálogo, además de un nombre de tabla puente que se lee como una N—N que nunca fue.
 
-Ese orden importa al escribir. `save_restaurant_dish` genera el uuid del plato en vez de leerlo con `returning`, porque `returning` también evalúa la política de SELECT y un plato aún no vinculado no lo puede leer nadie. El dominio no cambia: `Dish.restaurantId` sigue existiendo y el repositorio lo rellena leyendo `restaurant_dishes` junto al plato.
+Derivar el restaurante del plato a través de `menu_items → menus` se descartó por dos motivos: no puede expresar «un plato de un solo restaurante» (nada impediría que estuviera en las cartas de dos), y `archive_restaurant_dish` borra a propósito las líneas de menú del plato, así que archivar dejaría el plato sin dueño y sin forma de recuperarlo.
 
 La relación N-N menú/plato se materializa en `menu_items`, cuya clave es `(menu_id, dish_id)` y cuyos únicos atributos propios son los que dependen de ese par: precio, posición y disponibilidad. No repite `restaurant_id` —lo determina `menu_id`— ni `currency` —lo determina el restaurante—. La invariante que antes garantizaban las claves foráneas compuestas (un menú no puede listar el plato de otro restaurante) la impone ahora el trigger `private.assert_menu_item_restaurants_match`, y las políticas RLS de propietario cuelgan de `private.owns_menu(menu_id)`.
 

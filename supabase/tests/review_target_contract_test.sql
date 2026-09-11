@@ -16,10 +16,8 @@ insert into public.restaurants (
 ) values
     ('30000000-0000-4000-8000-000000000201', '20000000-0000-4000-8000-000000000201', 'Reviewed', 'Street 1', 'Madrid', '28001', 'published');
 
-insert into public.dishes (id, name, is_enabled) values
-    ('50000000-0000-4000-8000-000000000201', 'Reviewed dish', true);
-insert into public.restaurant_dishes (dish_id, restaurant_id) values
-    ('50000000-0000-4000-8000-000000000201', '30000000-0000-4000-8000-000000000201');
+insert into public.dishes (id, restaurant_id, name, is_enabled) values
+    ('50000000-0000-4000-8000-000000000201', '30000000-0000-4000-8000-000000000201', 'Reviewed dish', true);
 insert into public.menus (id, restaurant_id, name, publication_state) values
     ('40000000-0000-4000-8000-000000000201', '30000000-0000-4000-8000-000000000201', 'Carta', 'published');
 insert into public.menu_items (menu_id, dish_id, price_minor_units, position, is_enabled) values

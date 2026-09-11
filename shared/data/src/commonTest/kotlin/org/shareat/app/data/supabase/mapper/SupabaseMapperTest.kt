@@ -13,7 +13,6 @@ import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.domain.model.Currency
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.PostalAddress
-import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.Weekday
@@ -49,11 +48,12 @@ class SupabaseMapperTest {
     fun dishDtoMapsFixedEuAllergens() {
         val dish = DishDto(
             id = "dish-id",
+            restaurantId = "restaurant-id",
             name = "Dish",
             allergenNote = "Ask the restaurant",
             isEnabled = true,
             allergens = listOf(EmbeddedAllergenDto("milk"), EmbeddedAllergenDto("cereals_containing_gluten")),
-        ).toDomain(restaurantId = RestaurantId("restaurant-id"), publicImageUrl = { it })
+        ).toDomain(publicImageUrl = { it })
 
         val declaration = assertNotNull(dish.allergenDeclaration)
         assertEquals(setOf(EuAllergen.Milk, EuAllergen.CerealsContainingGluten), declaration.allergens)
@@ -131,10 +131,11 @@ class SupabaseMapperTest {
 
     private fun dishWithAllergens(allergens: Set<String>) = DishDto(
         id = "dish-id",
+        restaurantId = "restaurant-id",
         name = "Dish",
         isEnabled = true,
         allergens = allergens.map(::EmbeddedAllergenDto),
-    ).toDomain(restaurantId = RestaurantId("restaurant-id"), publicImageUrl = { it })
+    ).toDomain(publicImageUrl = { it })
 
     private fun menuDto(priceMinorUnits: Long?) = MenuDto(
         id = "menu-id",
