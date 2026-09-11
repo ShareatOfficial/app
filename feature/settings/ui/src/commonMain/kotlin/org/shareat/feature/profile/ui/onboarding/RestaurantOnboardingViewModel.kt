@@ -114,13 +114,17 @@ private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
     val city = state.city.trim()
     val postcode = state.postcode.trim()
     val email = state.publicEmail.trim()
+    // The address is optional here: the owner completes it from settings, and it only becomes
+    // mandatory to publish. Half of one is still rejected, because half an address is not one.
+    val addressStarted = street.isNotEmpty() || city.isNotEmpty() || postcode.isNotEmpty()
     var errors = OnboardingFieldErrors(
         name = if (name.isEmpty()) "Introduce el nombre del restaurante." else null,
-        street = if (street.isEmpty()) "Introduce la calle y el número." else null,
-        city = if (city.isEmpty()) "Introduce la ciudad." else null,
+        street = if (addressStarted && street.isEmpty()) "Introduce la calle y el número." else null,
+        city = if (addressStarted && city.isEmpty()) "Introduce la ciudad." else null,
         postcode = when {
-            postcode.isEmpty() -> "Introduce el código postal."
-            !postcode.matches(Regex("\\d{5}")) -> "Introduce un código postal español de 5 cifras."
+            addressStarted && postcode.isEmpty() -> "Introduce el código postal."
+            postcode.isNotEmpty() && !postcode.matches(Regex("\\d{5}")) ->
+                "Introduce un código postal español de 5 cifras."
             else -> null
         },
         email = if (email.isNotEmpty() && !email.matches(Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))) {
@@ -152,14 +156,18 @@ private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
             description = state.description.trim().ifEmpty { null },
             publicEmail = email.takeIf { it.isNotEmpty() }?.let(::EmailAddress),
             publicPhone = state.publicPhone.trim().ifEmpty { null },
-            address = PostalAddress(
-                streetLine = street,
-                locality = city,
-                postalCode = postcode,
-                region = state.province.trim().ifEmpty { null },
-                countryCode = "ES",
-                coordinates = null,
-            ),
+            address = if (addressStarted) {
+                PostalAddress(
+                    streetLine = street,
+                    locality = city,
+                    postalCode = postcode,
+                    region = state.province.trim().ifEmpty { null },
+                    countryCode = "ES",
+                    coordinates = null,
+                )
+            } else {
+                null
+            },
             openingHours = WeeklyOpeningHours(mappedHours),
         ),
     )

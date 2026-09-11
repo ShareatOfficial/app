@@ -29,7 +29,7 @@ En el MVP una cuenta de restaurante administra exactamente un restaurante. El co
 
 ## Restaurante y horario
 
-`Restaurant` contiene dirección postal estructurada, coordenadas opcionales, contacto público y horario semanal. Cada día admite cero o más periodos para representar cierres y horarios partidos. Un periodo cuya hora de cierre sea anterior a la apertura termina después de medianoche.
+`Restaurant` contiene dirección postal estructurada, coordenadas opcionales, contacto público y horario semanal. `address` es **opcional**: un restaurante puede quedarse en borrador sin ella y completarla después desde ajustes. Deja de serlo justo en una frontera, publicarse, y esa regla vive en la base (`restaurants_published_requires_address`), no en la pantalla que envía el cambio: `update_restaurant_settings` la comprueba antes para devolver un mensaje legible, y el `check` la sostiene aunque alguien escriba por otra vía. Media dirección se trata como ninguna, tanto al mapear desde Postgres como en los formularios. Cada día admite cero o más periodos para representar cierres y horarios partidos. Un periodo cuya hora de cierre sea anterior a la apertura termina después de medianoche.
 
 Las excepciones por festivos o cierres puntuales se añadirán más adelante sin convertir el horario semanal en texto libre.
 

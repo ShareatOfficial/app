@@ -39,7 +39,7 @@ class SupabaseMapperTest {
         assertEquals(RestaurantPublicationState.Published, restaurant.publicationState)
         assertEquals(Weekday.Monday, restaurant.openingHours.days.single().day)
         assertEquals(13, restaurant.openingHours.days.single().periods.single().opensAt.hour)
-        assertEquals(-3.7, restaurant.address.coordinates?.longitude)
+        assertEquals(-3.7, restaurant.address?.coordinates?.longitude)
         assertEquals("https://images.example/restaurant-id/hero.jpg", restaurant.heroImage?.url)
         assertEquals(Currency.Euro, restaurant.currency)
     }

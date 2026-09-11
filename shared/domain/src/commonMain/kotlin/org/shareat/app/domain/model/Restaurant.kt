@@ -82,7 +82,8 @@ data class Restaurant(
     val heroImage: ImageRef? = null,
     val publicEmail: EmailAddress? = null,
     val publicPhone: String? = null,
-    val address: PostalAddress,
+    /** Null while the owner has not filled it in; a [RestaurantPublicationState.Published] restaurant always has one. */
+    val address: PostalAddress? = null,
     val openingHours: WeeklyOpeningHours,
     val currency: Currency = Currency.Euro,
     val publicationState: RestaurantPublicationState,
@@ -90,6 +91,9 @@ data class Restaurant(
     init {
         require(name.isNotBlank())
         require(publicPhone == null || publicPhone.isNotBlank())
+        require(publicationState != RestaurantPublicationState.Published || address != null) {
+            "A published restaurant needs an address"
+        }
     }
 }
 
@@ -99,15 +103,16 @@ data class RestaurantProfileDraft(
     val description: String? = null,
     val publicEmail: EmailAddress? = null,
     val publicPhone: String? = null,
-    val address: PostalAddress,
+    /** Onboarding may finish without one; settings completes it before the restaurant goes public. */
+    val address: PostalAddress? = null,
     val openingHours: WeeklyOpeningHours = WeeklyOpeningHours(emptyList()),
 ) {
     init {
         require(name.isNotBlank())
         require(description == null || description.isNotBlank())
         require(publicPhone == null || publicPhone.isNotBlank())
-        require(address.countryCode == "ES")
-        require(address.coordinates == null)
+        require(address == null || address.countryCode == "ES")
+        require(address == null || address.coordinates == null)
         require(openingHours.days.all { it.periods.size <= 1 })
     }
 }

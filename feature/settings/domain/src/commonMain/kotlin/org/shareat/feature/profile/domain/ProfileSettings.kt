@@ -27,7 +27,7 @@ data class UpdateRestaurantInfoParams(
     val description: String?,
     val publicEmail: EmailAddress?,
     val publicPhone: String?,
-    val address: PostalAddress,
+    val address: PostalAddress?,
     val openingHours: WeeklyOpeningHours,
     val publicationState: RestaurantPublicationState,
 )

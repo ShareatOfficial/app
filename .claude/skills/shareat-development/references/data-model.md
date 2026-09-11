@@ -31,7 +31,7 @@ In the MVP, one restaurant account manages exactly one restaurant. `Account.logi
 
 ## Restaurant and schedule
 
-`Restaurant` has a structured postal address, optional coordinates, public contact info, and a weekly schedule. Each day can have zero or more periods (to represent closures and split hours). A period whose closing time is before its opening time ends after midnight.
+`Restaurant` has a structured postal address, optional coordinates, public contact info, and a weekly schedule. `address` is **nullable**: a restaurant may stay in draft without one and complete it later from settings. It becomes mandatory at exactly one boundary — publishing — and that rule lives in the database (`restaurants_published_requires_address`), not in whichever screen submits the change; `update_restaurant_settings` checks it first only so the owner gets a readable message. Half an address is treated as none, both when mapping from Postgres and in the forms. Each day can have zero or more periods (to represent closures and split hours). A period whose closing time is before its opening time ends after midnight.
 
 Holiday/one-off closure exceptions are a future addition — don't turn the weekly schedule into free text to accommodate them.
 

@@ -38,14 +38,20 @@ internal fun RestaurantDto.toDomain(
     },
     publicEmail = publicEmail?.let(::EmailAddress),
     publicPhone = publicPhone,
-    address = PostalAddress(
-        streetLine = streetLine,
-        locality = locality,
-        postalCode = postalCode,
-        region = region,
-        countryCode = countryCode,
-        coordinates = latitude?.let { GeoCoordinates(it, requireNotNull(longitude)) },
-    ),
+    // Partial rows are treated as no address at all: a half address is not one, and only a
+    // published restaurant is guaranteed to have the three parts, by database constraint.
+    address = if (streetLine == null || locality == null || postalCode == null) {
+        null
+    } else {
+        PostalAddress(
+            streetLine = streetLine,
+            locality = locality,
+            postalCode = postalCode,
+            region = region,
+            countryCode = countryCode ?: "ES",
+            coordinates = latitude?.let { GeoCoordinates(it, requireNotNull(longitude)) },
+        )
+    },
     openingHours = WeeklyOpeningHours(
         openingPeriods.groupBy { it.weekday }.entries.sortedBy { it.key }.map { (weekday, rows) ->
             DailyOpeningHours(
@@ -72,9 +78,9 @@ internal fun Restaurant.toUpdateSettingsRpc(): UpdateRestaurantSettingsRpc =
         description = description,
         publicEmail = publicEmail?.value,
         publicPhone = publicPhone,
-        streetLine = address.streetLine,
-        locality = address.locality,
-        postalCode = address.postalCode,
+        streetLine = address?.streetLine.orEmpty(),
+        locality = address?.locality.orEmpty(),
+        postalCode = address?.postalCode.orEmpty(),
         publicationState = when (publicationState) {
             RestaurantPublicationState.Draft -> "draft"
             RestaurantPublicationState.Published -> "published"
@@ -102,10 +108,10 @@ internal fun RestaurantProfileDraft.toCreateProfileRpc(): CreateRestaurantProfil
         description = description.orEmpty(),
         publicEmail = publicEmail?.value.orEmpty(),
         publicPhone = publicPhone.orEmpty(),
-        streetLine = address.streetLine,
-        locality = address.locality,
-        postalCode = address.postalCode,
-        region = address.region.orEmpty(),
+        streetLine = address?.streetLine.orEmpty(),
+        locality = address?.locality.orEmpty(),
+        postalCode = address?.postalCode.orEmpty(),
+        region = address?.region.orEmpty(),
         openingPeriods = openingHours.days.flatMap { hours ->
             hours.periods.map { period ->
                 CreateOpeningPeriodDto(

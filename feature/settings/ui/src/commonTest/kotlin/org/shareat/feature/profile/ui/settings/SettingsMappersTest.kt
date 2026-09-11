@@ -62,7 +62,7 @@ class SettingsMappersTest {
         val periods = params.openingHours.days.first { it.day == Weekday.Monday }.periods
         assertEquals(LocalTime(10, 0), periods.first().opensAt)
         assertEquals(original.openingHours.days.first().periods[1], periods[1])
-        assertEquals(original.address.coordinates, params.address.coordinates)
+        assertEquals(original.address?.coordinates, params.address?.coordinates)
     }
 
     @Test
@@ -103,6 +103,46 @@ class SettingsMappersTest {
 
         val params = assertIs<RestaurantSettingsMappingResult.Success>(result).params
         assertEquals(RestaurantPublicationState.Disabled, params.publicationState)
+    }
+
+    @Test
+    fun aDraftWithoutAnAddressIsSavedAsIs() {
+        val original = restaurantFixture().copy(
+            address = null,
+            publicationState = RestaurantPublicationState.Draft,
+        )
+
+        val result = original.toUiState().toUpdateParams(original)
+
+        val params = assertIs<RestaurantSettingsMappingResult.Success>(result).params
+        assertNull(params.address)
+        assertEquals(RestaurantPublicationState.Draft, params.publicationState)
+    }
+
+    @Test
+    fun publishingWithoutAnAddressIsRejectedBeforeReachingTheServer() {
+        val original = restaurantFixture().copy(
+            address = null,
+            publicationState = RestaurantPublicationState.Draft,
+        )
+
+        val result = original.toUiState().copy(isPublished = true).toUpdateParams(original)
+
+        assertIs<RestaurantSettingsMappingResult.Failure>(result)
+    }
+
+    @Test
+    fun publishingWithOnlyHalfAnAddressIsRejected() {
+        val original = restaurantFixture().copy(
+            address = null,
+            publicationState = RestaurantPublicationState.Draft,
+        )
+
+        val result = original.toUiState()
+            .copy(isPublished = true, streetAddress = "Calle Mayor 1", city = "", postcode = "")
+            .toUpdateParams(original)
+
+        assertIs<RestaurantSettingsMappingResult.Failure>(result)
     }
 }
 
