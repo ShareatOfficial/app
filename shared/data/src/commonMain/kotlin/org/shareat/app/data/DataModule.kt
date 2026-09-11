@@ -47,10 +47,9 @@ fun supabaseDataModule(config: SupabaseConfig = SupabaseConfig.fromBuildConfig()
     single { createShareatSupabaseClient(config, getOrNull<SecureSessionStorage>()) }
     single<AuthRepository> { SupabaseAuthRepository(get()) }
     single<AccountRepository> { SupabaseAccountRepository(get()) }
-    single { SupabaseDishRepository(get()) }
-    single<DishRepository> { get<SupabaseDishRepository>() }
+    single<DishRepository> { SupabaseDishRepository(get()) }
     single<RestaurantRepository> { SupabaseRestaurantRepository(get()) }
-    single<MenuRepository> { SupabaseMenuRepository(get(), get()) }
+    single<MenuRepository> { SupabaseMenuRepository(get()) }
     single<ReviewRepository> { SupabaseReviewRepository(get()) }
     single<ImageRepository> { SupabaseImageRepository(get()) }
 }

@@ -6,18 +6,19 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class DishDto(
     val id: String,
+    @SerialName("restaurant_id") val restaurantId: String,
     val name: String,
     val description: String? = null,
     @SerialName("image_path") val imagePath: String? = null,
     @SerialName("image_alt_text") val imageAltText: String? = null,
     @SerialName("allergen_note") val allergenNote: String? = null,
     @SerialName("is_enabled") val isEnabled: Boolean,
+    @SerialName("dish_allergens") val allergens: List<EmbeddedAllergenDto> = emptyList(),
 )
 
 @Serializable
-internal data class RestaurantDishDto(
-    @SerialName("dish_id") val dishId: String,
-    @SerialName("restaurant_id") val restaurantId: String,
+internal data class EmbeddedAllergenDto(
+    @SerialName("allergen_id") val allergenId: String,
 )
 
 @Serializable

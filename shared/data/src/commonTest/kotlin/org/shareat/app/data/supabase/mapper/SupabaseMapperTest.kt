@@ -5,14 +5,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.shareat.app.data.supabase.model.DishDto
+import org.shareat.app.data.supabase.model.EmbeddedAllergenDto
+import org.shareat.app.data.supabase.model.EmbeddedOpeningPeriodDto
 import org.shareat.app.data.supabase.model.MenuDto
 import org.shareat.app.data.supabase.model.MenuItemDto
-import org.shareat.app.data.supabase.model.OpeningPeriodDto
 import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.domain.model.Currency
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.PostalAddress
-import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.Weekday
@@ -33,15 +33,13 @@ class SupabaseMapperTest {
             latitude = 40.4,
             longitude = -3.7,
             publicationState = "published",
-        ).toDomain(
-            periods = listOf(OpeningPeriodDto("restaurant-id", 1, 0, "13:30:00", "16:00:00")),
-            publicImageUrl = { "https://images.example/$it" },
-        )
+            openingPeriods = listOf(EmbeddedOpeningPeriodDto(1, 0, "13:30:00", "16:00:00")),
+        ).toDomain(publicImageUrl = { "https://images.example/$it" })
 
         assertEquals(RestaurantPublicationState.Published, restaurant.publicationState)
         assertEquals(Weekday.Monday, restaurant.openingHours.days.single().day)
         assertEquals(13, restaurant.openingHours.days.single().periods.single().opensAt.hour)
-        assertEquals(-3.7, restaurant.address.coordinates?.longitude)
+        assertEquals(-3.7, restaurant.address?.coordinates?.longitude)
         assertEquals("https://images.example/restaurant-id/hero.jpg", restaurant.heroImage?.url)
         assertEquals(Currency.Euro, restaurant.currency)
     }
@@ -50,14 +48,12 @@ class SupabaseMapperTest {
     fun dishDtoMapsFixedEuAllergens() {
         val dish = DishDto(
             id = "dish-id",
+            restaurantId = "restaurant-id",
             name = "Dish",
             allergenNote = "Ask the restaurant",
             isEnabled = true,
-        ).toDomain(
-            restaurantId = RestaurantId("restaurant-id"),
-            allergens = setOf("milk", "cereals_containing_gluten"),
-            publicImageUrl = { it },
-        )
+            allergens = listOf(EmbeddedAllergenDto("milk"), EmbeddedAllergenDto("cereals_containing_gluten")),
+        ).toDomain(publicImageUrl = { it })
 
         val declaration = assertNotNull(dish.allergenDeclaration)
         assertEquals(setOf(EuAllergen.Milk, EuAllergen.CerealsContainingGluten), declaration.allergens)
@@ -106,13 +102,11 @@ class SupabaseMapperTest {
             postalCode = "28001",
             countryCode = "ES",
             publicationState = "draft",
-        ).toDomain(
-            periods = listOf(
-                OpeningPeriodDto("restaurant-id", 1, 0, "09:00:00", "13:00:00"),
-                OpeningPeriodDto("restaurant-id", 1, 1, "17:00:00", "22:30:00"),
+            openingPeriods = listOf(
+                EmbeddedOpeningPeriodDto(1, 0, "09:00:00", "13:00:00"),
+                EmbeddedOpeningPeriodDto(1, 1, "17:00:00", "22:30:00"),
             ),
-            publicImageUrl = { it },
-        )
+        ).toDomain(publicImageUrl = { it })
 
         val rpc = restaurant.toUpdateSettingsRpc()
 
@@ -137,13 +131,11 @@ class SupabaseMapperTest {
 
     private fun dishWithAllergens(allergens: Set<String>) = DishDto(
         id = "dish-id",
+        restaurantId = "restaurant-id",
         name = "Dish",
         isEnabled = true,
-    ).toDomain(
-        restaurantId = RestaurantId("restaurant-id"),
-        allergens = allergens,
-        publicImageUrl = { it },
-    )
+        allergens = allergens.map(::EmbeddedAllergenDto),
+    ).toDomain(publicImageUrl = { it })
 
     private fun menuDto(priceMinorUnits: Long?) = MenuDto(
         id = "menu-id",

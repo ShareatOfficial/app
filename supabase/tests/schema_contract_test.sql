@@ -4,20 +4,20 @@ select plan(16);
 select is(
     (select count(*) from pg_tables where schemaname = 'public' and tablename in (
         'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods',
-        'menus', 'menu_items', 'dishes', 'restaurant_dishes', 'allergens', 'dish_allergens',
+        'menus', 'menu_items', 'dishes', 'allergens', 'dish_allergens',
         'reviews', 'restaurant_reviews', 'dish_reviews'
     )),
-    13::bigint,
-    'all thirteen public tables exist'
+    12::bigint,
+    'all twelve public tables exist'
 );
 
 select is(
     (select count(*) from pg_tables where schemaname = 'public' and rowsecurity and tablename in (
         'accounts', 'customer_profiles', 'restaurants', 'restaurant_opening_periods',
-        'menus', 'menu_items', 'dishes', 'restaurant_dishes', 'allergens', 'dish_allergens',
+        'menus', 'menu_items', 'dishes', 'allergens', 'dish_allergens',
         'reviews', 'restaurant_reviews', 'dish_reviews'
     )),
-    13::bigint,
+    12::bigint,
     'RLS is enabled on every public table'
 );
 

@@ -5,6 +5,7 @@ import org.shareat.app.domain.model.EmailAddress
 import org.shareat.app.domain.model.LocalTime
 import org.shareat.app.domain.model.OpeningPeriod
 import org.shareat.app.domain.model.Restaurant
+import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.Weekday
 import org.shareat.app.domain.model.WeeklyOpeningHours
@@ -25,9 +26,9 @@ internal fun Restaurant.toUiState(): SettingsUiState.Restaurant = SettingsUiStat
     description = description.orEmpty(),
     phone = publicPhone.orEmpty(),
     email = publicEmail?.value.orEmpty(),
-    streetAddress = address.streetLine,
-    city = address.locality,
-    postcode = address.postalCode,
+    streetAddress = address?.streetLine.orEmpty(),
+    city = address?.locality.orEmpty(),
+    postcode = address?.postalCode.orEmpty(),
     isPublished = publicationState == RestaurantPublicationState.Published,
     openingHours = OpeningDay.entries.map { uiDay ->
         val domainDay = uiDay.toDomain()
@@ -54,8 +55,10 @@ internal fun SettingsUiState.Restaurant.toUpdateParams(
 ): RestaurantSettingsMappingResult {
     val trimmedName = name.trim()
     if (trimmedName.isEmpty()) return mappingFailure("Restaurant name cannot be empty.")
-    if (streetAddress.isBlank() || city.isBlank() || postcode.isBlank()) {
-        return mappingFailure("Street address, city and postcode are required.")
+    // A draft may have no address at all, but a partly filled one is always a mistake.
+    val addressStarted = streetAddress.isNotBlank() || city.isNotBlank() || postcode.isNotBlank()
+    if (addressStarted && (streetAddress.isBlank() || city.isBlank() || postcode.isBlank())) {
+        return mappingFailure("Street address, city and postcode go together.")
     }
 
     val mappedEmail = email.trim().takeIf(String::isNotEmpty)?.let { value ->
@@ -86,6 +89,21 @@ internal fun SettingsUiState.Restaurant.toUpdateParams(
         mappedDays += DailyOpeningHours(day, periods)
     }
 
+    // A restaurant may sit in draft with no address, but going public needs the whole of it.
+    val mappedAddress: PostalAddress? = runCatching {
+        PostalAddress(
+            streetLine = streetAddress.trim(),
+            locality = city.trim(),
+            postalCode = postcode.trim(),
+            region = original.address?.region,
+            countryCode = original.address?.countryCode ?: "ES",
+            coordinates = original.address?.coordinates,
+        )
+    }.getOrNull()
+    if (isPublished && mappedAddress == null) {
+        return mappingFailure("Add a street, a town and a postcode before publishing.")
+    }
+
     return RestaurantSettingsMappingResult.Success(
         UpdateRestaurantInfoParams(
             restaurantId = original.id,
@@ -93,11 +111,7 @@ internal fun SettingsUiState.Restaurant.toUpdateParams(
             description = description.trim().ifBlank { null },
             publicEmail = mappedEmail,
             publicPhone = phone.trim().ifBlank { null },
-            address = original.address.copy(
-                streetLine = streetAddress.trim(),
-                locality = city.trim(),
-                postalCode = postcode.trim(),
-            ),
+            address = mappedAddress,
             openingHours = WeeklyOpeningHours(mappedDays),
             publicationState = when {
                 isPublished -> RestaurantPublicationState.Published

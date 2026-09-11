@@ -220,7 +220,7 @@ This is a product model, not a final database schema.
 
 - **Account:** identity, role, status, verification state.
 - **CustomerProfile:** display name, avatar, preferences, privacy settings.
-- **Restaurant:** owner account, name, description, address/location, category, verification state, publication state.
+- **Restaurant:** owner account, name, description, address/location, category, verification state, publication state. The address is optional while the restaurant is a draft — onboarding does not demand it and the owner completes it from settings — but it is mandatory to publish, enforced by the `restaurants_published_requires_address` constraint rather than by the screen that happens to submit the change.
 - **Dish:** restaurant, name, description, image, allergen data, enabled state.
 - **MenuItem:** menu, dish, price, position, enabled state, dish category; join entity that permits a dish to appear in more than one menu.
 - **Review:** customer, target type, target ID, rating, comment, moderation state, timestamps.

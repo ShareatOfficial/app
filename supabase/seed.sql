@@ -24,10 +24,8 @@ insert into public.restaurants (
 );
 insert into public.restaurant_opening_periods (restaurant_id, weekday, position, opens_at, closes_at) values
     ('93000000-0000-4000-8000-000000000001', 1, 0, '13:00', '16:00');
-insert into public.dishes (id, name, description, is_enabled) values
-    ('95000000-0000-4000-8000-000000000001', 'Local dish', 'For repository tests.', true);
-insert into public.restaurant_dishes (dish_id, restaurant_id) values
-    ('95000000-0000-4000-8000-000000000001', '93000000-0000-4000-8000-000000000001');
+insert into public.dishes (id, restaurant_id, name, description, is_enabled) values
+    ('95000000-0000-4000-8000-000000000001', '93000000-0000-4000-8000-000000000001', 'Local dish', 'For repository tests.', true);
 insert into public.dish_allergens (dish_id, allergen_id) values
     ('95000000-0000-4000-8000-000000000001', 'milk');
 insert into public.reviews (id, author_account_id, target_type, rating, comment) values

@@ -101,7 +101,7 @@ private fun RestaurantSummary.toCardUiState(): RestaurantCardUiState = Restauran
     heroImageDescription = restaurant.heroImage?.alternativeText,
     ratingLabel = ratingSummary.averageTenths.toRatingLabel(),
     isOpen = isOpen,
-    address = "${restaurant.address.streetLine}, ${restaurant.address.locality}",
+    address = restaurant.address?.let { "${it.streetLine}, ${it.locality}" }.orEmpty(),
     dishReviews = dishHighlights.map { highlight ->
         DishReviewUiState(
             dishName = highlight.dish.name,

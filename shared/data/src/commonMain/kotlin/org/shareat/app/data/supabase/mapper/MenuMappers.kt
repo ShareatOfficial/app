@@ -15,7 +15,9 @@ import org.shareat.app.domain.model.Money
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.RestaurantMenuDraft
 
-internal fun MenuDto.toDomain(currency: Currency): Menu = Menu(
+internal fun MenuDto.currency(): Currency = restaurant?.currencyCode?.toCurrency() ?: Currency.Euro
+
+internal fun MenuDto.toDomain(currency: Currency = currency()): Menu = Menu(
     id = MenuId(id),
     restaurantId = RestaurantId(restaurantId),
     name = name,

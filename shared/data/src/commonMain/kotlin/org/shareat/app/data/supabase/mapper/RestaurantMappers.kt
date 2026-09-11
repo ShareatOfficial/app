@@ -2,7 +2,7 @@ package org.shareat.app.data.supabase.mapper
 
 import org.shareat.app.data.supabase.model.CreateOpeningPeriodDto
 import org.shareat.app.data.supabase.model.CreateRestaurantProfileRpc
-import org.shareat.app.data.supabase.model.OpeningPeriodDto
+import org.shareat.app.data.supabase.model.EmbeddedOpeningPeriodDto
 import org.shareat.app.data.supabase.model.OpeningPeriodUpdateDto
 import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.data.supabase.model.UpdateRestaurantSettingsRpc
@@ -23,7 +23,6 @@ import org.shareat.app.domain.model.Weekday
 import org.shareat.app.domain.model.WeeklyOpeningHours
 
 internal fun RestaurantDto.toDomain(
-    periods: List<OpeningPeriodDto>,
     publicImageUrl: (String) -> String,
 ): Restaurant = Restaurant(
     id = RestaurantId(id),
@@ -39,19 +38,25 @@ internal fun RestaurantDto.toDomain(
     },
     publicEmail = publicEmail?.let(::EmailAddress),
     publicPhone = publicPhone,
-    address = PostalAddress(
-        streetLine = streetLine,
-        locality = locality,
-        postalCode = postalCode,
-        region = region,
-        countryCode = countryCode,
-        coordinates = latitude?.let { GeoCoordinates(it, requireNotNull(longitude)) },
-    ),
+    // Partial rows are treated as no address at all: a half address is not one, and only a
+    // published restaurant is guaranteed to have the three parts, by database constraint.
+    address = if (streetLine == null || locality == null || postalCode == null) {
+        null
+    } else {
+        PostalAddress(
+            streetLine = streetLine,
+            locality = locality,
+            postalCode = postalCode,
+            region = region,
+            countryCode = countryCode ?: "ES",
+            coordinates = latitude?.let { GeoCoordinates(it, requireNotNull(longitude)) },
+        )
+    },
     openingHours = WeeklyOpeningHours(
-        periods.groupBy { it.weekday }.entries.sortedBy { it.key }.map { (weekday, rows) ->
+        openingPeriods.groupBy { it.weekday }.entries.sortedBy { it.key }.map { (weekday, rows) ->
             DailyOpeningHours(
                 day = Weekday.entries[weekday - 1],
-                periods = rows.sortedBy(OpeningPeriodDto::position).map {
+                periods = rows.sortedBy(EmbeddedOpeningPeriodDto::position).map {
                     OpeningPeriod(it.opensAt.toLocalTime(), it.closesAt.toLocalTime())
                 },
             )
@@ -73,9 +78,9 @@ internal fun Restaurant.toUpdateSettingsRpc(): UpdateRestaurantSettingsRpc =
         description = description,
         publicEmail = publicEmail?.value,
         publicPhone = publicPhone,
-        streetLine = address.streetLine,
-        locality = address.locality,
-        postalCode = address.postalCode,
+        streetLine = address?.streetLine.orEmpty(),
+        locality = address?.locality.orEmpty(),
+        postalCode = address?.postalCode.orEmpty(),
         publicationState = when (publicationState) {
             RestaurantPublicationState.Draft -> "draft"
             RestaurantPublicationState.Published -> "published"
@@ -103,10 +108,10 @@ internal fun RestaurantProfileDraft.toCreateProfileRpc(): CreateRestaurantProfil
         description = description.orEmpty(),
         publicEmail = publicEmail?.value.orEmpty(),
         publicPhone = publicPhone.orEmpty(),
-        streetLine = address.streetLine,
-        locality = address.locality,
-        postalCode = address.postalCode,
-        region = address.region.orEmpty(),
+        streetLine = address?.streetLine.orEmpty(),
+        locality = address?.locality.orEmpty(),
+        postalCode = address?.postalCode.orEmpty(),
+        region = address?.region.orEmpty(),
         openingPeriods = openingHours.days.flatMap { hours ->
             hours.periods.map { period ->
                 CreateOpeningPeriodDto(

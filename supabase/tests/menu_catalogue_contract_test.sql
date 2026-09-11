@@ -13,9 +13,9 @@ select hasnt_column(
     'public', 'dishes', 'allergen_source',
     'the allergen source is derived from the declaration, not stored beside it'
 );
-select hasnt_column(
+select has_column(
     'public', 'dishes', 'restaurant_id',
-    'the restaurant a dish belongs to lives in restaurant_dishes'
+    'a dish names the single restaurant it belongs to'
 );
 select has_column('public', 'restaurants', 'currency_code', 'a restaurant prices in exactly one currency');
 select has_column('public', 'menus', 'price_minor_units', 'a menu may carry an optional fixed price');
@@ -37,12 +37,9 @@ insert into public.restaurants (
     ('30000000-0000-4000-8000-000000000101', '20000000-0000-4000-8000-000000000101', 'Owner', 'Street 1', 'Madrid', '28001', 'published'),
     ('30000000-0000-4000-8000-000000000102', '20000000-0000-4000-8000-000000000102', 'Other', 'Street 2', 'Madrid', '28002', 'published');
 
-insert into public.dishes (id, name, is_enabled) values
-    ('50000000-0000-4000-8000-000000000101', 'Owner dish', true),
-    ('50000000-0000-4000-8000-000000000102', 'Other dish', true);
-insert into public.restaurant_dishes (dish_id, restaurant_id) values
-    ('50000000-0000-4000-8000-000000000101', '30000000-0000-4000-8000-000000000101'),
-    ('50000000-0000-4000-8000-000000000102', '30000000-0000-4000-8000-000000000102');
+insert into public.dishes (id, restaurant_id, name, is_enabled) values
+    ('50000000-0000-4000-8000-000000000101', '30000000-0000-4000-8000-000000000101', 'Owner dish', true),
+    ('50000000-0000-4000-8000-000000000102', '30000000-0000-4000-8000-000000000102', 'Other dish', true);
 
 insert into public.menus (id, restaurant_id, name, publication_state, price_minor_units) values
     ('40000000-0000-4000-8000-000000000101', '30000000-0000-4000-8000-000000000101', 'A la carte', 'published', null),

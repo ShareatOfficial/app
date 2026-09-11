@@ -3,19 +3,24 @@ package org.shareat.app.data.supabase
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
 import org.shareat.app.data.supabase.mapper.toDomain
 import org.shareat.app.data.supabase.mapper.toSaveRpc
-import org.shareat.app.data.supabase.model.DishAllergenDto
 import org.shareat.app.data.supabase.model.DishDto
-import org.shareat.app.data.supabase.model.RestaurantDishDto
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishDraft
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.DishRepository
 import org.shareat.app.domain.repository.RepositoryResult
+
+/** The allergens travel nested inside their dish, so a catalogue read is a single round trip. */
+internal val DishColumns = Columns.raw(
+    "id,restaurant_id,name,description,image_path,image_alt_text,allergen_note,is_enabled," +
+        "dish_allergens(allergen_id)",
+)
 
 internal class SupabaseDishRepository(
     private val client: SupabaseClient,
@@ -25,8 +30,7 @@ internal class SupabaseDishRepository(
     }
 
     override suspend fun getDishes(restaurantId: RestaurantId): RepositoryResult<List<Dish>> = supabaseResult {
-        val owned = ownershipOf(restaurantIds = setOf(restaurantId.value))
-        loadDishes(owned.keys, owned)
+        dishesWhere("restaurant_id", setOf(restaurantId.value))
     }
 
     override suspend fun getDishesByRestaurant(
@@ -35,8 +39,8 @@ internal class SupabaseDishRepository(
         if (restaurantIds.isEmpty()) {
             emptyMap()
         } else {
-            val owned = ownershipOf(restaurantIds = restaurantIds.map(RestaurantId::value).toSet())
-            loadDishes(owned.keys, owned).groupBy(Dish::restaurantId)
+            dishesWhere("restaurant_id", restaurantIds.map(RestaurantId::value).toSet())
+                .groupBy(Dish::restaurantId)
         }
     }
 
@@ -56,58 +60,15 @@ internal class SupabaseDishRepository(
         client.postgrest.rpc(function = "delete_restaurant_dish", parameters = mapOf("p_dish_id" to id.value))
     }
 
-    /** A dish carries no restaurant of its own, so the owning restaurant is read alongside it. */
-    internal suspend fun loadDishes(
-        ids: Set<String>,
-        knownOwnership: Map<String, RestaurantId> = emptyMap(),
-    ): List<Dish> {
-        if (ids.isEmpty()) return emptyList()
-        val ownership = knownOwnership.ifEmpty { ownershipOf(dishIds = ids) }
-        val dishes = selectInBatches(ids) { batch ->
-            client.from("dishes").select {
-                filter { isIn("id", batch) }
+    internal suspend fun loadDishes(ids: Set<String>): List<Dish> =
+        if (ids.isEmpty()) emptyList() else dishesWhere("id", ids)
+
+    private suspend fun dishesWhere(column: String, values: Set<String>): List<Dish> =
+        selectInBatches(values) { batch ->
+            client.from("dishes").select(DishColumns) {
+                filter { isIn(column, batch) }
             }.decodeList<DishDto>()
-        }
-        val allergens = loadAllergens(ids)
-        return dishes.mapNotNull { dish ->
-            ownership[dish.id]?.let { restaurantId ->
-                dish.toDomain(restaurantId, allergens[dish.id].orEmpty(), ::dishImageUrl)
-            }
-        }
-    }
-
-    private suspend fun ownershipOf(
-        dishIds: Set<String> = emptySet(),
-        restaurantIds: Set<String> = emptySet(),
-    ): Map<String, RestaurantId> {
-        val rows = when {
-            restaurantIds.isNotEmpty() -> selectInBatches(restaurantIds) { batch ->
-                client.from("restaurant_dishes").select {
-                    filter { isIn("restaurant_id", batch) }
-                }.decodeList<RestaurantDishDto>()
-            }
-
-            dishIds.isNotEmpty() -> selectInBatches(dishIds) { batch ->
-                client.from("restaurant_dishes").select {
-                    filter { isIn("dish_id", batch) }
-                }.decodeList<RestaurantDishDto>()
-            }
-
-            else -> emptyList()
-        }
-        return rows.associate { it.dishId to RestaurantId(it.restaurantId) }
-    }
-
-    private suspend fun loadAllergens(dishIds: Set<String>): Map<String, Set<String>> {
-        if (dishIds.isEmpty()) return emptyMap()
-        return selectInBatches(dishIds) { batch ->
-            client.from("dish_allergens").select {
-                filter { isIn("dish_id", batch) }
-            }.decodeList<DishAllergenDto>()
-        }
-            .groupBy(DishAllergenDto::dishId, DishAllergenDto::allergenId)
-            .mapValues { it.value.toSet() }
-    }
+        }.map { it.toDomain(::dishImageUrl) }
 
     private fun dishImageUrl(path: String): String = client.storage.from("dish-images").publicUrl(path)
 }

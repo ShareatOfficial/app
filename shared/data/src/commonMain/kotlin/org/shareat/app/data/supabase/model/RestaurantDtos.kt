@@ -13,15 +13,25 @@ internal data class RestaurantDto(
     @SerialName("hero_image_alt_text") val heroImageAltText: String? = null,
     @SerialName("public_email") val publicEmail: String? = null,
     @SerialName("public_phone") val publicPhone: String? = null,
-    @SerialName("street_line") val streetLine: String,
-    val locality: String,
-    @SerialName("postal_code") val postalCode: String,
+    @SerialName("street_line") val streetLine: String? = null,
+    val locality: String? = null,
+    @SerialName("postal_code") val postalCode: String? = null,
     val region: String? = null,
-    @SerialName("country_code") val countryCode: String,
+    @SerialName("country_code") val countryCode: String? = null,
     @SerialName("currency_code") val currencyCode: String = "EUR",
     val latitude: Double? = null,
     val longitude: Double? = null,
     @SerialName("publication_state") val publicationState: String,
+    @SerialName("restaurant_opening_periods") val openingPeriods: List<EmbeddedOpeningPeriodDto> = emptyList(),
+)
+
+/** The schedule as it arrives nested inside its restaurant, without repeating the restaurant id. */
+@Serializable
+internal data class EmbeddedOpeningPeriodDto(
+    val weekday: Int,
+    val position: Int,
+    @SerialName("opens_at") val opensAt: String,
+    @SerialName("closes_at") val closesAt: String,
 )
 
 @Serializable

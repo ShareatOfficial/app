@@ -8,7 +8,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.JsonObject
 import org.shareat.app.data.supabase.model.CustomerProfileDto
 import org.shareat.app.data.supabase.model.DishDto
-import org.shareat.app.data.supabase.model.RestaurantDishDto
 import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.ImageTarget
@@ -78,12 +77,7 @@ internal class SupabaseImageRepository(
                 filter { eq("id", target.dishId.value) }
             }.decodeList<DishDto>().singleOrNull()
                 ?: throw DomainNotFound("dish", target.dishId.value)
-            // Storage groups dish images by restaurant, which the dish row no longer carries.
-            val owner = client.from("restaurant_dishes").select {
-                filter { eq("dish_id", target.dishId.value) }
-            }.decodeList<RestaurantDishDto>().singleOrNull()
-                ?: throw DomainNotFound("restaurant for dish", target.dishId.value)
-            ImageLocation("dish-images", owner.restaurantId, row.imagePath, isPrivate = false)
+            ImageLocation("dish-images", row.restaurantId, row.imagePath, isPrivate = false)
         }
     }
 

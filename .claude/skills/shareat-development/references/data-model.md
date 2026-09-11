@@ -31,7 +31,7 @@ In the MVP, one restaurant account manages exactly one restaurant. `Account.logi
 
 ## Restaurant and schedule
 
-`Restaurant` has a structured postal address, optional coordinates, public contact info, and a weekly schedule. Each day can have zero or more periods (to represent closures and split hours). A period whose closing time is before its opening time ends after midnight.
+`Restaurant` has a structured postal address, optional coordinates, public contact info, and a weekly schedule. `address` is **nullable**: a restaurant may stay in draft without one and complete it later from settings. It becomes mandatory at exactly one boundary — publishing — and that rule lives in the database (`restaurants_published_requires_address`), not in whichever screen submits the change; `update_restaurant_settings` checks it first only so the owner gets a readable message. Half an address is treated as none, both when mapping from Postgres and in the forms. Each day can have zero or more periods (to represent closures and split hours). A period whose closing time is before its opening time ends after midnight.
 
 Holiday/one-off closure exceptions are a future addition — don't turn the weekly schedule into free text to accommodate them.
 
@@ -41,7 +41,7 @@ A dish belongs to one restaurant's catalogue and can appear on several menus —
 
 ```
 Restaurant 1 — N Menu
-Restaurant 1 — N Dish   (through restaurant_dishes)
+Restaurant 1 — N Dish
 Menu       N — N Dish   (through MenuItem)
 ```
 
@@ -119,16 +119,16 @@ Aggregates only include public reviews with `Visible` moderation status. `Rating
 
 Versioned migrations live in `supabase/migrations`. `accounts.id` matches `auth.users.id`; the sign-up trigger validates `customer|restaurant` exactly once, creates `accounts`, and creates `customer_profiles` when appropriate. Authorization afterward queries RLS-protected tables — never mutable JWT metadata.
 
-The `dishes` row does not store which restaurant the dish belongs to: that link lives in
-`restaurant_dishes`, keyed by `dish_id`, so a dish still belongs to exactly one restaurant. It is a
-table rather than a column so ownership does not depend on being on a menu — a freshly created
-catalogue dish has an owner immediately, and the dish RLS policies hang off `private.owns_dish(dish_id)`.
+`dishes.restaurant_id` names the single restaurant a dish belongs to, and `private.owns_dish(dish_id)`
+hangs off it. Moving that column into a `restaurant_dishes` table was tried and reverted: keyed by
+`dish_id` it was a 1:1 split of the same fact, gained nothing in normalisation — a dish belonging to
+a restaurant is a functional dependency on the dish key — and cost a join on every catalogue read,
+under a junction-table name that reads as a many-to-many it never was.
 
-That ordering matters when writing. `save_restaurant_dish` generates the dish uuid instead of
-reading it back with `returning`, because `returning` also evaluates the SELECT policy and a dish
-that is not bound to a restaurant yet is readable by nobody. The domain is unchanged:
-`Dish.restaurantId` still exists and the repository fills it by reading `restaurant_dishes`
-alongside the dish.
+Deriving the restaurant through `menu_items → menus` was rejected for two reasons: it cannot express
+"one restaurant per dish" (nothing would stop a dish appearing on two restaurants' menus), and
+`archive_restaurant_dish` deliberately deletes the dish's menu items, so archiving would leave the
+dish ownerless and unrecoverable.
 
 The menu/dish N-N relation is materialized as `menu_items`, keyed by `(menu_id, dish_id)`, whose only own attributes are the ones that depend on that pair: price, position and availability. It does not repeat `restaurant_id` (determined by `menu_id`) or `currency` (determined by the restaurant). The invariant the composite foreign keys used to guarantee — a menu cannot list another restaurant's dish — is now enforced by the `private.assert_menu_item_restaurants_match` trigger, and the owner RLS policies hang off `private.owns_menu(menu_id)`.
 

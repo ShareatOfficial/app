@@ -34,7 +34,7 @@ class MockRestaurantsTest {
 
         assertTrue(restaurants.all { it.publicationState == RestaurantPublicationState.Published })
         assertEquals(restaurants.size, restaurants.map(Restaurant::name).distinct().size)
-        assertEquals(restaurants.size, restaurants.map { it.address.locality }.distinct().size)
+        assertEquals(restaurants.size, restaurants.map { it.address?.locality }.distinct().size)
     }
 
     @Test

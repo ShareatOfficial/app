@@ -24,6 +24,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,7 +52,36 @@ class RestaurantOnboardingViewModelTest {
 
         assertEquals(0, creates)
         assertNotNull(viewModel.uiState.value.errors.name)
-        assertNotNull(viewModel.uiState.value.errors.street)
+        // The address is not required to finish onboarding; it is required to publish.
+        assertNull(viewModel.uiState.value.errors.street)
+        assertNull(viewModel.uiState.value.errors.city)
+        assertNull(viewModel.uiState.value.errors.postcode)
+    }
+
+    @Test
+    fun onboardingCompletesWithoutAnAddress() = runTest(dispatcher) {
+        var draft: RestaurantProfileDraft? = null
+        val viewModel = viewModel(create = { submitted ->
+            draft = submitted
+            RepositoryResult.Success(restaurantFixture())
+        })
+
+        viewModel.onAction(RestaurantOnboardingAction.NameChanged("Casa Naranja"))
+        viewModel.onAction(RestaurantOnboardingAction.Submit)
+        advanceUntilIdle()
+
+        assertNull(assertNotNull(draft).address)
+    }
+
+    @Test
+    fun aPartlyFilledAddressIsRejected() = runTest(dispatcher) {
+        val viewModel = viewModel(create = { RepositoryResult.Success(restaurantFixture()) })
+
+        viewModel.onAction(RestaurantOnboardingAction.NameChanged("Casa Naranja"))
+        viewModel.onAction(RestaurantOnboardingAction.StreetChanged("Calle Mayor 1"))
+        viewModel.onAction(RestaurantOnboardingAction.Submit)
+        advanceUntilIdle()
+
         assertNotNull(viewModel.uiState.value.errors.city)
         assertNotNull(viewModel.uiState.value.errors.postcode)
     }

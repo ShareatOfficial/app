@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -266,7 +267,15 @@ private fun RestaurantSettings(
     uiState: SettingsUiState.Restaurant,
     callbacks: SettingsCallbacks,
 ) {
+    val listState = rememberLazyListState()
+    // The status text is the first item, while "Save changes" sits at the very bottom: a rejected
+    // save would otherwise report itself off-screen.
+    LaunchedEffect(uiState.errorMessage, uiState.saveSucceeded) {
+        if (uiState.errorMessage != null || uiState.saveSucceeded) listState.animateScrollToItem(0)
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(
             start = 20.dp,

@@ -29,7 +29,7 @@ class LocalSupabaseRepositoryContractTest {
             .single() as Restaurant
         assertEquals("Local Shareat Kitchen", restaurant.name)
 
-        val menuResult = SupabaseMenuRepository(client, dishes).getPublishedMenus(restaurant.id)
+        val menuResult = SupabaseMenuRepository(client).getPublishedMenus(restaurant.id)
         val menu = (assertIs<RepositoryResult.Success<*>>(menuResult).value as List<*>).single() as MenuDetails
         assertEquals(1250, menu.items.single().price.minorUnits)
         assertEquals(1800, menu.menu.price?.minorUnits)
