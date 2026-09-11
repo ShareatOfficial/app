@@ -103,20 +103,20 @@ class RestaurantHomeUseCasesTest {
             OwnerRestaurantInfoDraft(
                 name = "  Casa Actualizada ",
                 description = "  Nueva descripción ",
-                address = fixture.restaurant.address.copy(streetLine = "Calle Nueva 3"),
+                address = requireNotNull(fixture.restaurant.address).copy(streetLine = "Calle Nueva 3"),
             ),
         )
 
         val updated = assertIs<RepositoryResult.Success<Restaurant>>(infoResult).value
         assertEquals("Casa Actualizada", updated.name)
         assertEquals("Nueva descripción", updated.description)
-        assertEquals("Calle Nueva 3", updated.address.streetLine)
+        assertEquals("Calle Nueva 3", updated.address?.streetLine)
         assertEquals(fixture.restaurant.heroImage, updated.heroImage)
         assertEquals(RestaurantPublicationState.Draft, updated.publicationState)
     }
 
     @Test
-    fun publishesMenuBeforeRestaurantAndPreservesEveryMenuItemField() = runTest {
+    fun publishesMenuBeforeRestaurantAndPreservesEveryPersistedMenuField() = runTest {
         val fixture = Fixture()
 
         val published = assertIs<RepositoryResult.Success<Restaurant>>(
@@ -132,11 +132,48 @@ class RestaurantHomeUseCasesTest {
         assertEquals(Money(1200), savedItems[0].price)
         assertEquals(0, savedItems[0].position)
         assertTrue(savedItems[0].isEnabled)
-        assertEquals(DishCategory.MainCourses, savedItems[0].category)
         assertEquals(Money(850), savedItems[1].price)
         assertEquals(1, savedItems[1].position)
         assertFalse(savedItems[1].isEnabled)
-        assertEquals(DishCategory.Desserts, savedItems[1].category)
+        assertEquals(fixture.menu.currentDetails.menu.price, fixture.menu.savedDrafts.single().price)
+    }
+
+    @Test
+    fun publishingWithoutAnEnabledDishFailsBeforeAnyWrite() = runTest {
+        val fixture = Fixture().apply { menu.disableAllItems() }
+
+        val result = fixture.updatePublication()(RestaurantPublicationState.Published)
+
+        assertEquals(
+            RepositoryResult.Failure(
+                RepositoryError.Validation(
+                    "Publish at least one enabled dish before publishing the restaurant",
+                ),
+            ),
+            result,
+        )
+        assertEquals(0, fixture.menu.saveCalls)
+        assertEquals(0, fixture.restaurants.updateCalls)
+        assertTrue(fixture.operations.isEmpty())
+    }
+
+    @Test
+    fun publishingWithoutACompleteAddressFailsBeforeAnyWrite() = runTest {
+        val fixture = Fixture().apply {
+            restaurants.restaurant = restaurant.copy(address = null)
+        }
+
+        val result = fixture.updatePublication()(RestaurantPublicationState.Published)
+
+        assertEquals(
+            RepositoryResult.Failure(
+                RepositoryError.Validation("Add a complete address before publishing the restaurant"),
+            ),
+            result,
+        )
+        assertEquals(0, fixture.menu.saveCalls)
+        assertEquals(0, fixture.restaurants.updateCalls)
+        assertTrue(fixture.operations.isEmpty())
     }
 
     @Test
@@ -240,7 +277,7 @@ class RestaurantHomeUseCasesTest {
     }
 
     @Test
-    fun updatesDishPriceAndAvailabilityWhilePreservingOtherMenuItemsAndCategories() = runTest {
+    fun updatesDishPriceAndAvailabilityWhilePreservingOtherMenuItems() = runTest {
         val fixture = Fixture()
 
         val result = fixture.updateDish()(
@@ -261,10 +298,8 @@ class RestaurantHomeUseCasesTest {
         assertEquals(2, savedMenu.items.size)
         assertEquals(Money(1795), savedMenu.items[0].price)
         assertFalse(savedMenu.items[0].isEnabled)
-        assertEquals(DishCategory.MainCourses, savedMenu.items[0].category)
         assertEquals(fixture.secondDish.id, savedMenu.items[1].dishId)
         assertEquals(Money(850), savedMenu.items[1].price)
-        assertEquals(DishCategory.Desserts, savedMenu.items[1].category)
     }
 
     @Test
@@ -489,7 +524,8 @@ private class TestMenuRepository(
     var saveCalls = 0
     val failedSaveCalls = mutableSetOf<Int>()
     override suspend fun getMenus(restaurantId: RestaurantId): RepositoryResult<List<Menu>> = RepositoryResult.Success(listOf(currentDetails.menu))
-    override suspend fun getPublishedMenu(restaurantId: RestaurantId): RepositoryResult<MenuDetails> = RepositoryResult.Success(currentDetails)
+    override suspend fun getPublishedMenus(restaurantId: RestaurantId): RepositoryResult<List<MenuDetails>> =
+        RepositoryResult.Success(listOf(currentDetails))
     override suspend fun getMenu(id: MenuId): RepositoryResult<MenuDetails> = RepositoryResult.Success(currentDetails)
     override suspend fun saveMenu(draft: RestaurantMenuDraft): RepositoryResult<MenuDetails> {
         saveCalls++
@@ -504,13 +540,13 @@ private class TestMenuRepository(
                 name = draft.name,
                 description = draft.description,
                 publicationState = draft.publicationState,
+                price = draft.price,
             ),
             items = draft.items.mapNotNull { item ->
                 currentItems[item.dishId]?.copy(
                     price = item.price,
                     position = item.position,
                     isEnabled = item.isEnabled,
-                    category = item.category,
                 )
             },
         )
@@ -520,6 +556,12 @@ private class TestMenuRepository(
 
     fun setPublicationState(state: MenuPublicationState) {
         currentDetails = currentDetails.copy(menu = currentDetails.menu.copy(publicationState = state))
+    }
+
+    fun disableAllItems() {
+        currentDetails = currentDetails.copy(
+            items = currentDetails.items.map { it.copy(isEnabled = false) },
+        )
     }
 }
 

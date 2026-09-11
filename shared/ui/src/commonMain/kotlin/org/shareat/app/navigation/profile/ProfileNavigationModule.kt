@@ -44,7 +44,7 @@ val profileNavigationModule = module {
     // Kept solely to satisfy the compiled legacy screen. It has no registered navigation route.
     factory<RestaurantOnboardingNavigation> { parameters ->
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
-        RestaurantOnboardingNavigationImpl(navigator)
+        RestaurantOnboardingNavigationImpl(navigator, get())
     }
     navigation<ProfileKey> { Profile() }
     navigation<SettingsKey> { SettingsScreen() }

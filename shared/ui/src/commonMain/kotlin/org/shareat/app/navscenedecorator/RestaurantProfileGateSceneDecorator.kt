@@ -20,6 +20,7 @@ import org.koin.compose.koinInject
 import org.shareat.app.auth.RestaurantProfileCoordinator
 import org.shareat.app.auth.RestaurantProfileGateState
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingGateErrorScreen
+import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingScreen
 
 /**
  * Replaces the fully decorated app scene while an authenticated restaurant account is being
@@ -81,6 +82,7 @@ private class RestaurantProfileGateScene<T : Any>(
             }
 
             is RestaurantProfileGateState.Allowed -> scene.content()
+            RestaurantProfileGateState.OnboardingRequired -> RestaurantOnboardingScreen()
             is RestaurantProfileGateState.Failure -> {
                 RestaurantOnboardingGateErrorScreen(onRetry, onLogout)
             }

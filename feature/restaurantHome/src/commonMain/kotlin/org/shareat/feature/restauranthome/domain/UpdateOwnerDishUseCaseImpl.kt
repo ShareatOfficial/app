@@ -66,13 +66,13 @@ class UpdateOwnerDishUseCaseImpl(
                 name = menu.menu.name,
                 description = menu.menu.description,
                 publicationState = menu.menu.publicationState,
+                price = menu.menu.price,
                 items = menu.items.map { item ->
                     MenuItemDraft(
                         dishId = item.dish.id,
                         price = if (item.dish.id == dishId) draft.price else item.price,
                         position = item.position,
                         isEnabled = if (item.dish.id == dishId) draft.isEnabled else item.isEnabled,
-                        category = item.category,
                     )
                 },
             ),

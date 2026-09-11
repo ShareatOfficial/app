@@ -23,6 +23,7 @@ import org.shareat.app.navigation.Navigator
 import org.shareat.feature.home.ui.navigation.HomeKey
 import org.shareat.feature.lastactivity.navigation.LastActivityKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
+import org.shareat.feature.restauranthome.ui.navigation.RestaurantHomeKey
 
 data class TopLevelNavigationItem(
     val route: NavKey,
@@ -32,11 +33,19 @@ data class TopLevelNavigationItem(
 
 val TOP_LEVEL_NAV_ITEMS = topLevelNavigationItems(HomeKey)
 
-fun topLevelNavigationItems(homeRoute: NavKey) = listOf(
-    TopLevelNavigationItem(homeRoute, "Home", Icons.Default.Home),
-    TopLevelNavigationItem(LastActivityKey, "Actividad", Icons.Default.History),
-    TopLevelNavigationItem(SettingsKey, "Settings", Icons.Default.Settings),
-)
+fun topLevelNavigationItems(homeRoute: NavKey): List<TopLevelNavigationItem> =
+    if (homeRoute == RestaurantHomeKey) {
+        listOf(
+            TopLevelNavigationItem(RestaurantHomeKey, "Edit menu", Icons.Default.Home),
+            TopLevelNavigationItem(SettingsKey, "Profile", Icons.Default.Settings),
+        )
+    } else {
+        listOf(
+            TopLevelNavigationItem(homeRoute, "Home", Icons.Default.Home),
+            TopLevelNavigationItem(LastActivityKey, "Actividad", Icons.Default.History),
+            TopLevelNavigationItem(SettingsKey, "Settings", Icons.Default.Settings),
+        )
+    }
 
 @Composable
 fun TopLevelNavigationBar(items: List<TopLevelNavigationItem>, navigator: Navigator) {

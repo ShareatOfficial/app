@@ -13,7 +13,7 @@ import org.shareat.feature.subscription.data.subscriptionDataModule
 private val applicationModule: Module = module {
     includes(navigationModule, reviewUiModule)
     single { SessionCoordinator(get()) }
-    single { RestaurantProfileCoordinator(get(), get(), get(), get(), get()) }
+    single { RestaurantProfileCoordinator(get(), get(), get(), get()) }
     factory { parameters -> Navigator(parameters.get(), get()) }
 }
 

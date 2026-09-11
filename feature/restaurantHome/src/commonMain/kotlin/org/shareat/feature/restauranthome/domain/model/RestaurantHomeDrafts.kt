@@ -10,7 +10,7 @@ import org.shareat.app.domain.model.WeeklyOpeningHours
 data class OwnerRestaurantInfoDraft(
     val name: String,
     val description: String?,
-    val address: PostalAddress,
+    val address: PostalAddress?,
     val publicEmail: EmailAddress? = null,
     val publicPhone: String? = null,
     val openingHours: WeeklyOpeningHours? = null,

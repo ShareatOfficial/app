@@ -26,9 +26,23 @@ class UpdateRestaurantPublicationStateUseCaseImpl(
             is RepositoryResult.Failure -> return result
         }
         if (restaurant.ownerAccountId != owner.id) return forbidden()
+        if (state == RestaurantPublicationState.Published && restaurant.address == null) {
+            return RepositoryResult.Failure(
+                RepositoryError.Validation(
+                    "Add a complete address before publishing the restaurant",
+                ),
+            )
+        }
         val menu = when (val result = soleMenuFor(menuRepository, restaurant.id)) {
             is RepositoryResult.Success -> result.value
             is RepositoryResult.Failure -> return result
+        }
+        if (state == RestaurantPublicationState.Published &&
+            menu.items.none { it.isEnabled && it.dish.isEnabled }
+        ) {
+            return RepositoryResult.Failure(
+                RepositoryError.Validation("Publish at least one enabled dish before publishing the restaurant"),
+            )
         }
         val updatedRestaurant = restaurant.copy(publicationState = state)
         val updatedMenu = menu.toDraft(state.toMenuPublicationState())
@@ -99,13 +113,13 @@ private fun MenuDetails.toDraft(state: MenuPublicationState): RestaurantMenuDraf
         name = menu.name,
         description = menu.description,
         publicationState = state,
+        price = menu.price,
         items = items.map { item ->
             MenuItemDraft(
                 dishId = item.dish.id,
                 price = item.price,
                 position = item.position,
                 isEnabled = item.isEnabled,
-                category = item.category,
             )
         },
     )

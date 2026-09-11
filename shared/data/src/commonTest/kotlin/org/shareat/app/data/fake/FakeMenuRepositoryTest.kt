@@ -6,9 +6,7 @@ import kotlin.test.assertIs
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.Menu
 import org.shareat.app.domain.model.MenuDetails
-import org.shareat.app.domain.model.MenuItemDraft
 import org.shareat.app.domain.model.MenuPublicationState
-import org.shareat.app.domain.model.RestaurantMenuDraft
 import org.shareat.app.domain.repository.RepositoryResult
 
 class FakeMenuRepositoryTest {
@@ -54,34 +52,4 @@ class FakeMenuRepositoryTest {
         assertEquals(DishCategory.SmallBites, menuDetails.items.last().category)
     }
 
-    @Test
-    fun savingAMenuPreservesEachDraftCategory() = runSuspend {
-        val repository = FakeMenuRepository(FakeShareatData.preview())
-        val before = assertIs<RepositoryResult.Success<MenuDetails>>(
-            repository.getMenu(FakeIds.carta),
-        ).value
-
-        val saved = assertIs<RepositoryResult.Success<MenuDetails>>(
-            repository.saveMenu(
-                RestaurantMenuDraft(
-                    restaurantId = before.menu.restaurantId,
-                    menuId = before.menu.id,
-                    name = before.menu.name,
-                    description = before.menu.description,
-                    publicationState = before.menu.publicationState,
-                    items = before.items.map { item ->
-                        MenuItemDraft(
-                            dishId = item.dish.id,
-                            price = item.price,
-                            position = item.position,
-                            isEnabled = item.isEnabled,
-                            category = item.category,
-                        )
-                    },
-                ),
-            ),
-        ).value
-
-        assertEquals(before.items.map { it.category }, saved.items.map { it.category })
-    }
 }

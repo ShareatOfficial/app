@@ -1,6 +1,7 @@
 package org.shareat.app.navigation.profile
 
 import org.shareat.app.navigation.Navigator
+import org.shareat.app.auth.RestaurantProfileCoordinator
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingNavigation
 
 /**
@@ -12,8 +13,12 @@ import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingNavigation
  */
 class RestaurantOnboardingNavigationImpl(
     private val navigator: Navigator,
+    private val restaurantProfiles: RestaurantProfileCoordinator,
 ) : RestaurantOnboardingNavigation {
-    override fun onCompleted() = navigator.goHome()
+    override fun onCompleted() {
+        restaurantProfiles.completeOnboarding()
+        navigator.goHome()
+    }
 
     override fun onLogoutSuccess() = navigator.goHome()
 }

@@ -47,9 +47,9 @@ internal data class OpeningPeriodDto(
 internal data class UpdateRestaurantSettingsRpc(
     @SerialName("p_restaurant_id") val restaurantId: String,
     @SerialName("p_name") val name: String,
-    @SerialName("p_description") val description: String?,
-    @SerialName("p_public_email") val publicEmail: String?,
-    @SerialName("p_public_phone") val publicPhone: String?,
+    @SerialName("p_description") val description: String,
+    @SerialName("p_public_email") val publicEmail: String,
+    @SerialName("p_public_phone") val publicPhone: String,
     @SerialName("p_street_line") val streetLine: String,
     @SerialName("p_locality") val locality: String,
     @SerialName("p_postal_code") val postalCode: String,

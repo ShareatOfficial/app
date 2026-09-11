@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.ImageUpload
+import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
@@ -98,14 +99,15 @@ class RestaurantHomeViewModel(
 
     fun onEditRestaurantClick() {
         val current = ownerHome ?: return
+        val address = current.restaurant.address
         _uiState.value = _uiState.value.copy(
             editor = RestaurantHomeEditor.Restaurant(
                 RestaurantEditFormUiState(
                     name = current.restaurant.name,
-                    streetLine = current.restaurant.address.streetLine,
-                    locality = current.restaurant.address.locality,
-                    postalCode = current.restaurant.address.postalCode,
-                    region = current.restaurant.address.region.orEmpty(),
+                    streetLine = address?.streetLine.orEmpty(),
+                    locality = address?.locality.orEmpty(),
+                    postalCode = address?.postalCode.orEmpty(),
+                    region = address?.region.orEmpty(),
                     description = current.restaurant.description.orEmpty(),
                     imageUrl = current.restaurant.heroImage?.url,
                 ),
@@ -189,29 +191,33 @@ class RestaurantHomeViewModel(
     fun onSaveRestaurant() {
         val form = (_uiState.value.editor as? RestaurantHomeEditor.Restaurant)?.form ?: return
         if (form.isSaving) return
+        val home = ownerHome ?: return
+        val addressStarted = form.streetLine.isNotBlank() ||
+            form.locality.isNotBlank() || form.postalCode.isNotBlank()
+        val addressRequired = home.restaurant.publicationState == RestaurantPublicationState.Published
         val validation = RestaurantFormValidation(
             nameInvalid = form.name.isBlank(),
-            streetInvalid = form.streetLine.isBlank(),
-            localityInvalid = form.locality.isBlank(),
-            postalCodeInvalid = form.postalCode.isBlank(),
+            streetInvalid = (addressStarted || addressRequired) && form.streetLine.isBlank(),
+            localityInvalid = (addressStarted || addressRequired) && form.locality.isBlank(),
+            postalCodeInvalid = (addressStarted || addressRequired) && form.postalCode.isBlank(),
         )
         if (validation.nameInvalid || validation.streetInvalid || validation.localityInvalid || validation.postalCodeInvalid) {
             updateRestaurantForm { copy(validation = validation) }
             return
         }
-        val home = ownerHome ?: return
         updateRestaurantForm { copy(isSaving = true, error = null) }
         viewModelScope.launch {
             when (val result = updateOwnerRestaurantInfo(
                 OwnerRestaurantInfoDraft(
                     name = form.name,
                     description = form.description.trim().ifEmpty { null },
-                    address = home.restaurant.address.copy(
+                    address = if (addressStarted) PostalAddress(
                         streetLine = form.streetLine.trim(),
                         locality = form.locality.trim(),
                         postalCode = form.postalCode.trim(),
                         region = form.region.trim().ifEmpty { null },
-                    ),
+                        countryCode = home.restaurant.address?.countryCode ?: "ES",
+                    ) else null,
                     publicEmail = home.restaurant.publicEmail,
                     publicPhone = home.restaurant.publicPhone,
                     openingHours = home.restaurant.openingHours,

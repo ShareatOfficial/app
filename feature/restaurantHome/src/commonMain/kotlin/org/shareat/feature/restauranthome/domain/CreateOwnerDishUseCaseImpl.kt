@@ -53,8 +53,9 @@ class CreateOwnerDishUseCaseImpl(
                 name = menu.menu.name,
                 description = menu.menu.description,
                 publicationState = menu.menu.publicationState,
+                price = menu.menu.price,
                 items = menu.items.map { item ->
-                    MenuItemDraft(item.dish.id, item.price, item.position, item.isEnabled, item.category)
+                    MenuItemDraft(item.dish.id, item.price, item.position, item.isEnabled)
                 } + MenuItemDraft(
                     dishId = dish.id,
                     price = draft.price,

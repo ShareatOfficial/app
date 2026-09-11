@@ -29,12 +29,8 @@ import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.navigation.NavigationState
 import org.shareat.app.navigation.Navigator
-import org.shareat.app.navigation.login.LoginNavigationImpl
 import org.shareat.feature.home.ui.navigation.HomeKey
-import org.shareat.feature.login.ui.LoginKey
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.profile.ui.profile.ProfileKey
-import org.shareat.feature.profile.ui.settings.SettingsKey
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -97,20 +93,6 @@ class RestaurantProfileCoordinatorTest {
         fixture.navigator.completeLogin()
 
         assertEquals(listOf(HomeKey), homeStack.toList())
-    }
-
-    @Test
-    fun restaurantRegistrationNavigatesDirectlyToOnboarding() = runTest {
-        val fixture = fixture(role = AccountRole.Customer)
-        runCurrent()
-        fixture.navigationState.backStacks.getValue(HomeKey).add(LoginKey())
-
-        LoginNavigationImpl(fixture.navigator).onRestaurantRegistrationSuccess()
-
-        assertEquals(
-            RestaurantOnboardingKey,
-            fixture.navigationState.backStacks.getValue(HomeKey).last(),
-        )
     }
 
     private fun TestScope.fixture(

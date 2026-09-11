@@ -55,6 +55,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -155,6 +156,32 @@ class RestaurantHomeViewModelTest {
     }
 
     @Test
+    fun creatingAPublishedDishClosesTheEditorAndShowsItImmediately() = runTest(dispatcher) {
+        var submitted: OwnerDishCreateDraft? = null
+        val viewModel = viewModelFor(
+            onCreateDish = { draft ->
+                submitted = draft
+                RepositoryResult.Success(newPublishedDishUpdate(ownerHome()))
+            },
+        )
+        advanceUntilIdle()
+        viewModel.onAddDishClick()
+        viewModel.onDishNameChanged("Croquetas")
+        viewModel.onDishPriceChanged("9,50")
+        viewModel.onDishPublicationChange(true)
+
+        viewModel.onSaveDish()
+        advanceUntilIdle()
+
+        assertTrue(requireNotNull(submitted).isEnabled)
+        assertNull(viewModel.uiState.value.editor)
+        val loaded = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        val newDish = loaded.restaurant.dishes.single { it.id == "dish-new" }
+        assertEquals("Croquetas", newDish.name)
+        assertTrue(newDish.isPublished)
+    }
+
+    @Test
     fun savesTheCompleteEditableAddressWithoutReplacingUneditedFields() = runTest(dispatcher) {
         var submitted: OwnerRestaurantInfoDraft? = null
         val viewModel = viewModelFor(onRestaurantDraft = { submitted = it })
@@ -251,6 +278,17 @@ private fun newDishUpdate(home: OwnerRestaurantHome): OwnerDishUpdate {
     val details = MenuDetails(
         menu,
         home.menu.dishes.map(OwnerRatedMenuDish::menuDish) + MenuDish(dish, Money(950), position = 2, isEnabled = false),
+    )
+    return OwnerDishUpdate(dish, details)
+}
+
+private fun newPublishedDishUpdate(home: OwnerRestaurantHome): OwnerDishUpdate {
+    val dish = Dish(DishId("dish-new"), home.restaurant.id, "Croquetas", isEnabled = true)
+    val menu = requireNotNull(home.menu).menu
+    val details = MenuDetails(
+        menu,
+        home.menu.dishes.map(OwnerRatedMenuDish::menuDish) +
+            MenuDish(dish, Money(950), position = 2, isEnabled = true),
     )
     return OwnerDishUpdate(dish, details)
 }
