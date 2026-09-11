@@ -16,10 +16,10 @@ class FakeMenuRepositoryTest {
     fun publishedMenuJoinsEnabledDishesInMenuOrder() = runSuspend {
         val repository = FakeMenuRepository(FakeShareatData.preview())
 
-        val result = repository.getPublishedMenu(FakeIds.restaurant)
+        val result = repository.getPublishedMenus(FakeIds.restaurant)
 
-        val details = assertIs<RepositoryResult.Success<*>>(result).value
-        val menuDetails = assertIs<MenuDetails>(details)
+        val menus = assertIs<RepositoryResult.Success<List<MenuDetails>>>(result).value
+        val menuDetails = menus.single()
         assertEquals(FakeIds.carta, menuDetails.menu.id)
         assertEquals(
             listOf(FakeIds.octopus, FakeIds.croquettes, FakeIds.russianSalad),

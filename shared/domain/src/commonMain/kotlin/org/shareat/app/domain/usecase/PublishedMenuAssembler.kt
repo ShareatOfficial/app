@@ -3,7 +3,6 @@ package org.shareat.app.domain.usecase
 import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.MenuRepository
-import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.ReviewRepository
 
@@ -12,10 +11,9 @@ class PublishedMenuAssembler(
     private val reviewRepository: ReviewRepository,
 ) {
     suspend fun assemble(restaurantId: RestaurantId): RepositoryResult<RestaurantMenu?> =
-        when (val result = menuRepository.getPublishedMenu(restaurantId)) {
-            is RepositoryResult.Success -> RepositoryResult.Success(result.value.rated())
-            is RepositoryResult.Failure ->
-                if (result.error is RepositoryError.NotFound) RepositoryResult.Success(null) else result
+        when (val result = menuRepository.getPublishedMenus(restaurantId)) {
+            is RepositoryResult.Success -> RepositoryResult.Success(result.value.firstOrNull()?.rated())
+            is RepositoryResult.Failure -> result
         }
 
     private suspend fun MenuDetails.rated(): RestaurantMenu {

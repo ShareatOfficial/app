@@ -85,7 +85,7 @@ class ProfileUseCasesTest {
                 description = null,
                 publicEmail = null,
                 publicPhone = null,
-                address = original.address.copy(locality = "Madrid"),
+                address = requireNotNull(original.address).copy(locality = "Madrid"),
                 openingHours = original.openingHours,
                 publicationState = RestaurantPublicationState.Published,
             ),
@@ -93,7 +93,7 @@ class ProfileUseCasesTest {
 
         val updated = assertIs<RepositoryResult.Success<Restaurant>>(result).value
         assertEquals("Updated name", updated.name)
-        assertEquals("Madrid", updated.address.locality)
+        assertEquals("Madrid", updated.address?.locality)
         assertEquals(original.ownerAccountId, updated.ownerAccountId)
         assertEquals(original.heroImage, updated.heroImage)
     }

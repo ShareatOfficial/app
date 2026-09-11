@@ -2,7 +2,12 @@ package org.shareat.app.data.supabase
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
-import kotlinx.coroutines.CancellationException
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
+import org.shareat.app.data.supabase.mapper.toDomain
+import org.shareat.app.data.supabase.mapper.toSaveRpc
+import org.shareat.app.data.supabase.model.RatingSummaryDto
+import org.shareat.app.data.supabase.model.ReviewDto
 import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.RatingSummary
@@ -11,15 +16,17 @@ import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
 import org.shareat.app.domain.model.ReviewId
 import org.shareat.app.domain.model.ReviewTarget
-import org.shareat.app.domain.model.ReviewVisibility
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.ReviewRepository
+
+private const val RestaurantReviews = "restaurant_review_details"
+private const val DishReviews = "dish_review_details"
 
 internal class SupabaseReviewRepository(
     private val client: SupabaseClient,
 ) : ReviewRepository {
     override suspend fun getPublicReviews(target: ReviewTarget): RepositoryResult<List<Review>> = supabaseResult {
-        client.from("reviews").select {
+        client.from(target.detailsView()).select {
             filter {
                 when (target) {
                     is ReviewTarget.Restaurant -> eq("restaurant_id", target.restaurantId.value)
@@ -38,7 +45,7 @@ internal class SupabaseReviewRepository(
             emptyMap()
         } else {
             selectInBatches(dishIds.map(DishId::value)) { batch ->
-                client.from("reviews").select {
+                client.from(DishReviews).select {
                     filter {
                         isIn("dish_id", batch)
                         eq("visibility", "public")
@@ -52,9 +59,14 @@ internal class SupabaseReviewRepository(
     }
 
     override suspend fun getReviewsByAuthor(accountId: AccountId): RepositoryResult<List<Review>> = supabaseResult {
-        client.from("reviews").select {
-            filter { eq("author_account_id", accountId.value) }
-        }.decodeList<ReviewDto>().sortedByDescending(ReviewDto::updatedAt).map(ReviewDto::toDomain)
+        listOf(RestaurantReviews, DishReviews)
+            .flatMap { view ->
+                client.from(view).select {
+                    filter { eq("author_account_id", accountId.value) }
+                }.decodeList<ReviewDto>()
+            }
+            .sortedByDescending(ReviewDto::updatedAt)
+            .map(ReviewDto::toDomain)
     }
 
     override suspend fun getRatingSummary(target: ReviewTarget): RepositoryResult<RatingSummary> = supabaseResult {
@@ -89,44 +101,14 @@ internal class SupabaseReviewRepository(
     }
 
     override suspend fun saveReview(draft: ReviewDraft): RepositoryResult<Review> = supabaseResult {
-        val existing = client.from("reviews").select {
-            filter {
-                eq("author_account_id", draft.authorAccountId.value)
-                when (val target = draft.target) {
-                    is ReviewTarget.Restaurant -> eq("restaurant_id", target.restaurantId.value)
-                    is ReviewTarget.Dish -> eq("dish_id", target.dishId.value)
-                }
-            }
-        }.decodeList<ReviewDto>().singleOrNull()
-
-        if (existing == null) {
-            try {
-                client.from("reviews").insert(draft.toInsertDto()) {
-                    select()
-                }.decodeSingle<ReviewDto>().toDomain()
-            } catch (insertError: CancellationException) {
-                throw insertError
-            } catch (insertError: Throwable) {
-                val concurrentlyCreated = client.from("reviews").select {
-                    filter {
-                        eq("author_account_id", draft.authorAccountId.value)
-                        when (val target = draft.target) {
-                            is ReviewTarget.Restaurant -> eq("restaurant_id", target.restaurantId.value)
-                            is ReviewTarget.Dish -> eq("dish_id", target.dishId.value)
-                        }
-                    }
-                }.decodeList<ReviewDto>().singleOrNull() ?: throw insertError
-                client.from("reviews").update(draft.toUpdateDto()) {
-                    select()
-                    filter { eq("id", concurrentlyCreated.id) }
-                }.decodeSingle<ReviewDto>().toDomain()
-            }
-        } else {
-            client.from("reviews").update(draft.toUpdateDto()) {
-                select()
-                filter { eq("id", existing.id) }
-            }.decodeSingle<ReviewDto>().toDomain()
-        }
+        val id = client.postgrest.rpc(
+            function = "save_review",
+            parameters = draft.toSaveRpc(),
+        ).decodeAs<String>()
+        client.from(draft.target.detailsView()).select {
+            filter { eq("id", id) }
+        }.decodeList<ReviewDto>().singleOrNull()?.toDomain()
+            ?: throw DomainNotFound("review", id)
     }
 
     override suspend fun deleteReview(
@@ -142,24 +124,7 @@ internal class SupabaseReviewRepository(
     }
 }
 
-private fun ReviewDraft.toInsertDto(): ReviewInsertDto = ReviewInsertDto(
-    authorAccountId = authorAccountId.value,
-    restaurantId = (target as? ReviewTarget.Restaurant)?.restaurantId?.value,
-    dishId = (target as? ReviewTarget.Dish)?.dishId?.value,
-    rating = rating.value,
-    comment = comment,
-    visibility = visibility.toDatabaseValue(),
-    visitedAt = visitedAt?.value,
-)
-
-private fun ReviewDraft.toUpdateDto(): ReviewUpdateDto = ReviewUpdateDto(
-    rating = rating.value,
-    comment = comment,
-    visibility = visibility.toDatabaseValue(),
-    visitedAt = visitedAt?.value,
-)
-
-private fun ReviewVisibility.toDatabaseValue(): String = when (this) {
-    ReviewVisibility.Public -> "public"
-    ReviewVisibility.Private -> "private"
+private fun ReviewTarget.detailsView(): String = when (this) {
+    is ReviewTarget.Restaurant -> RestaurantReviews
+    is ReviewTarget.Dish -> DishReviews
 }

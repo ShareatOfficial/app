@@ -34,14 +34,15 @@ class Navigator(
         }
     }
 
+    // The restaurant onboarding gate replaces the whole scene while LoginScreen is still composed,
+    // so this can arrive after onboarding already moved the stack elsewhere. A login that is no
+    // longer on top is nothing left to complete, not a programming error.
     fun completeLogin() {
-        val currentStack = state.backStacks[state.topLevelRoute]
-            ?: error("Stack for ${state.topLevelRoute} not found")
-        val loginKey = currentStack.lastOrNull() as? LoginKey
-            ?: error("The current route is not a LoginKey")
+        val currentStack = state.backStacks[state.topLevelRoute] ?: return
+        val loginKey = currentStack.lastOrNull() as? LoginKey ?: return
 
-        currentStack.removeLast()
-        loginKey.redirectRoute?.let(::navigate) ?: currentStack.removeLast()
+        currentStack.removeLastOrNull()
+        loginKey.redirectRoute?.let(::navigate) ?: currentStack.removeLastOrNull()
     }
 
     fun goHome() {

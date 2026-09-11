@@ -14,9 +14,9 @@
     <string name="onboarding_description">Descripción</string>
     <string name="onboarding_email">Correo público</string>
     <string name="onboarding_phone">Teléfono</string>
-    <string name="onboarding_street">Calle y número *</string>
-    <string name="onboarding_city">Ciudad *</string>
-    <string name="onboarding_postcode">Código postal *</string>
+    <string name="onboarding_street">Calle y número</string>
+    <string name="onboarding_city">Ciudad</string>
+    <string name="onboarding_postcode">Código postal</string>
     <string name="onboarding_province">Provincia</string>
     <string name="onboarding_country">País</string>
     <string name="onboarding_spain">España</string>

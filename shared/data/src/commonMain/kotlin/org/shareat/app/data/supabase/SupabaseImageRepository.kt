@@ -6,6 +6,9 @@ import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.JsonObject
+import org.shareat.app.data.supabase.model.CustomerProfileDto
+import org.shareat.app.data.supabase.model.DishDto
+import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.ImageTarget
 import org.shareat.app.domain.model.ImageUpload

@@ -34,7 +34,7 @@ private fun restaurantArgs(
 ): RestaurantArgs = RestaurantArgs(
     id = restaurant.id.value,
     name = restaurant.name,
-    address = "${restaurant.address.streetLine}, ${restaurant.address.locality}",
+    address = restaurant.address?.let { "${it.streetLine}, ${it.locality}" }.orEmpty(),
     isOpen = isOpen,
     heroImageUrl = restaurant.heroImage?.url,
     heroImageDescription = restaurant.heroImage?.alternativeText,

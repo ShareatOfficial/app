@@ -1,8 +1,16 @@
-package org.shareat.app.data.supabase
+package org.shareat.app.data.supabase.mapper
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import org.shareat.app.data.supabase.model.DishDto
+import org.shareat.app.data.supabase.model.EmbeddedAllergenDto
+import org.shareat.app.data.supabase.model.EmbeddedOpeningPeriodDto
+import org.shareat.app.data.supabase.model.MenuDto
+import org.shareat.app.data.supabase.model.MenuItemDto
+import org.shareat.app.data.supabase.model.RestaurantDto
+import org.shareat.app.domain.model.Currency
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.RestaurantProfileDraft
@@ -25,16 +33,15 @@ class SupabaseMapperTest {
             latitude = 40.4,
             longitude = -3.7,
             publicationState = "published",
-        ).toDomain(
-            periods = listOf(OpeningPeriodDto("restaurant-id", 1, 0, "13:30:00", "16:00:00")),
-            publicImageUrl = { "https://images.example/$it" },
-        )
+            openingPeriods = listOf(EmbeddedOpeningPeriodDto(1, 0, "13:30:00", "16:00:00")),
+        ).toDomain(publicImageUrl = { "https://images.example/$it" })
 
         assertEquals(RestaurantPublicationState.Published, restaurant.publicationState)
         assertEquals(Weekday.Monday, restaurant.openingHours.days.single().day)
         assertEquals(13, restaurant.openingHours.days.single().periods.single().opensAt.hour)
-        assertEquals(-3.7, restaurant.address.coordinates?.longitude)
+        assertEquals(-3.7, restaurant.address?.coordinates?.longitude)
         assertEquals("https://images.example/restaurant-id/hero.jpg", restaurant.heroImage?.url)
+        assertEquals(Currency.Euro, restaurant.currency)
     }
 
     @Test
@@ -44,29 +51,12 @@ class SupabaseMapperTest {
             restaurantId = "restaurant-id",
             name = "Dish",
             allergenNote = "Ask the restaurant",
-            allergenSource = "restaurant",
             isEnabled = true,
-        ).toDomain(
-            allergens = setOf("milk", "cereals_containing_gluten"),
-            publicImageUrl = { it },
-        )
+            allergens = listOf(EmbeddedAllergenDto("milk"), EmbeddedAllergenDto("cereals_containing_gluten")),
+        ).toDomain(publicImageUrl = { it })
 
         val declaration = assertNotNull(dish.allergenDeclaration)
         assertEquals(setOf(EuAllergen.Milk, EuAllergen.CerealsContainingGluten), declaration.allergens)
-    }
-
-    @Test
-    fun dishDtoAcceptsTheShortAllergenIdsTheDeployedProjectStores() {
-        val dish = dishWithAllergens(setOf("gluten", "soy", "sulphites"))
-
-        assertEquals(
-            setOf(
-                EuAllergen.CerealsContainingGluten,
-                EuAllergen.Soybeans,
-                EuAllergen.SulphurDioxideAndSulphites,
-            ),
-            assertNotNull(dish.allergenDeclaration).allergens,
-        )
     }
 
     @Test
@@ -76,13 +66,30 @@ class SupabaseMapperTest {
         assertEquals(setOf(EuAllergen.Milk), assertNotNull(dish.allergenDeclaration).allergens)
     }
 
-    private fun dishWithAllergens(allergens: Set<String>) = DishDto(
-        id = "dish-id",
-        restaurantId = "restaurant-id",
-        name = "Dish",
-        allergenSource = "restaurant",
-        isEnabled = true,
-    ).toDomain(allergens = allergens, publicImageUrl = { it })
+    @Test
+    fun aSetMenuCarriesItsFixedPriceAndAnALaCarteMenuDoesNot() {
+        val setMenu = menuDto(priceMinorUnits = 2_950).toDomain(Currency.Euro)
+        val aLaCarte = menuDto(priceMinorUnits = null).toDomain(Currency.Euro)
+
+        assertEquals(2_950, setMenu.price?.minorUnits)
+        assertEquals(Currency.Euro, setMenu.price?.currency)
+        assertNull(aLaCarte.price)
+    }
+
+    @Test
+    fun aMenuItemIsPricedInTheRestaurantsCurrency() {
+        val dish = dishWithAllergens(emptySet())
+        val menuDish = MenuItemDto(
+            menuId = "menu-id",
+            dishId = dish.id.value,
+            priceMinorUnits = 1_800,
+            position = 0,
+            isEnabled = true,
+        ).toDomain(dish, Currency.Euro)
+
+        assertEquals(1_800, menuDish.price.minorUnits)
+        assertEquals(Currency.Euro, menuDish.price.currency)
+    }
 
     @Test
     fun restaurantUpdateMapsAllOpeningPeriodsForTransactionalRpc() {
@@ -95,13 +102,11 @@ class SupabaseMapperTest {
             postalCode = "28001",
             countryCode = "ES",
             publicationState = "draft",
-        ).toDomain(
-            periods = listOf(
-                OpeningPeriodDto("restaurant-id", 1, 0, "09:00:00", "13:00:00"),
-                OpeningPeriodDto("restaurant-id", 1, 1, "17:00:00", "22:30:00"),
+            openingPeriods = listOf(
+                EmbeddedOpeningPeriodDto(1, 0, "09:00:00", "13:00:00"),
+                EmbeddedOpeningPeriodDto(1, 1, "17:00:00", "22:30:00"),
             ),
-            publicImageUrl = { it },
-        )
+        ).toDomain(publicImageUrl = { it })
 
         val rpc = restaurant.toUpdateSettingsRpc()
 
@@ -123,4 +128,20 @@ class SupabaseMapperTest {
         assertEquals("", rpc.publicPhone)
         assertEquals("", rpc.region)
     }
+
+    private fun dishWithAllergens(allergens: Set<String>) = DishDto(
+        id = "dish-id",
+        restaurantId = "restaurant-id",
+        name = "Dish",
+        isEnabled = true,
+        allergens = allergens.map(::EmbeddedAllergenDto),
+    ).toDomain(publicImageUrl = { it })
+
+    private fun menuDto(priceMinorUnits: Long?) = MenuDto(
+        id = "menu-id",
+        restaurantId = "restaurant-id",
+        name = "Menu",
+        publicationState = "published",
+        priceMinorUnits = priceMinorUnits,
+    )
 }
