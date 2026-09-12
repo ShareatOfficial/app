@@ -39,12 +39,21 @@ import kotlin.test.assertIs
 class RestaurantProfileCoordinatorTest {
     @Test
     fun restaurantWithoutProfileRequiresOnboardingUntilItCompletes() = runTest {
-        val fixture = fixture(restaurantResult = RepositoryResult.Failure(RepositoryError.NotFound("restaurant", "owner")))
+        val restaurants = GateRestaurantRepository(
+            RepositoryResult.Failure(RepositoryError.NotFound("restaurant", "owner")),
+        )
+        val fixture = fixture(restaurants = restaurants)
         runCurrent()
 
         assertIs<RestaurantProfileGateState.OnboardingRequired>(fixture.gate.state.value)
+        val restaurant = restaurant()
+        restaurants.result = RepositoryResult.Success(restaurant)
         fixture.gate.completeOnboarding()
-        assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        runCurrent()
+
+        val allowed = assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        assertEquals(AccountRole.Restaurant, allowed.role)
+        assertEquals(restaurant, allowed.restaurant)
     }
 
     @Test
