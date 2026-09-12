@@ -53,6 +53,7 @@ internal data class UpdateRestaurantSettingsRpc(
     @SerialName("p_street_line") val streetLine: String,
     @SerialName("p_locality") val locality: String,
     @SerialName("p_postal_code") val postalCode: String,
+    @SerialName("p_region") val region: String,
     @SerialName("p_publication_state") val publicationState: String,
     @SerialName("p_opening_periods") val openingPeriods: List<OpeningPeriodUpdateDto>,
 )

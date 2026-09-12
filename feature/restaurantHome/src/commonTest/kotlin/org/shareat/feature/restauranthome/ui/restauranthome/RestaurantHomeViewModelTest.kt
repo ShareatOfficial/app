@@ -48,6 +48,7 @@ import org.shareat.feature.restauranthome.domain.model.OwnerDishUpdate
 import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantInfoDraft
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeEditor
+import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeMode
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -240,12 +241,38 @@ class RestaurantHomeViewModelTest {
         assertEquals(2, imageCalls)
     }
 
+    @Test
+    fun restaurantImageFailureKeepsTheEditorOpenAndConfirmsDetailsWereSaved() = runTest(dispatcher) {
+        val viewModel = viewModelFor(
+            onReplaceRestaurantImage = {
+                RepositoryResult.Failure(RepositoryError.Offline)
+            },
+        )
+        advanceUntilIdle()
+        viewModel.onEditRestaurantClick()
+        viewModel.onRestaurantNameChanged("Casa Renombrada")
+        viewModel.onRestaurantImageSelected(ImageUpload(byteArrayOf(1), "image/jpeg", "Fachada"))
+
+        viewModel.onSaveRestaurant()
+        advanceUntilIdle()
+
+        val form = assertIs<RestaurantHomeEditor.Restaurant>(viewModel.uiState.value.editor).form
+        assertEquals(RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED, form.error)
+        assertEquals(
+            "Casa Renombrada",
+            assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content).restaurant.name,
+        )
+    }
+
     private fun viewModelFor(
         home: RestaurantHome = ownerHome(),
         onLoadHome: (() -> RepositoryResult<RestaurantHome>)? = null,
         onUpdateRestaurant: () -> Unit = {},
         onRestaurantDraft: (OwnerRestaurantInfoDraft) -> Unit = {},
         onPublicationChange: (RestaurantPublicationState) -> Unit = {},
+        onReplaceRestaurantImage: (ImageUpload) -> RepositoryResult<org.shareat.app.domain.model.ImageRef> = {
+            error("unused")
+        },
         onCreateDish: (OwnerDishCreateDraft) -> RepositoryResult<OwnerDishUpdate> = { error("unused") },
         onUpdateDish: (DishId, org.shareat.feature.restauranthome.domain.model.OwnerDishDraft) -> RepositoryResult<OwnerDishUpdate> = { _, _ -> error("unused") },
         onReplaceDishImage: (DishId, ImageUpload) -> RepositoryResult<org.shareat.app.domain.model.ImageRef> = { _, _ -> error("unused") },
@@ -264,7 +291,7 @@ class RestaurantHomeViewModelTest {
                 onPublicationChange(state)
                 RepositoryResult.Success(home.restaurant.copy(publicationState = state))
             },
-            replaceOwnerRestaurantImage = { error("unused") },
+            replaceOwnerRestaurantImage = ReplaceOwnerRestaurantImageUseCase(onReplaceRestaurantImage),
             updateOwnerDish = UpdateOwnerDishUseCase(onUpdateDish),
             replaceOwnerDishImage = ReplaceOwnerDishImageUseCase(onReplaceDishImage),
         )

@@ -32,6 +32,7 @@ class SupabaseMapperTest {
             streetLine = "Street 1",
             locality = "Madrid",
             postalCode = "28001",
+            region = "Comunidad de Madrid",
             countryCode = "ES",
             latitude = 40.4,
             longitude = -3.7,
@@ -103,6 +104,7 @@ class SupabaseMapperTest {
             streetLine = "Street 1",
             locality = "Madrid",
             postalCode = "28001",
+            region = "Comunidad de Madrid",
             countryCode = "ES",
             publicationState = "draft",
             openingPeriods = listOf(
@@ -120,6 +122,7 @@ class SupabaseMapperTest {
         assertEquals("", rpc.description)
         assertEquals("", rpc.publicEmail)
         assertEquals("", rpc.publicPhone)
+        assertEquals("Comunidad de Madrid", rpc.region)
     }
 
     @Test

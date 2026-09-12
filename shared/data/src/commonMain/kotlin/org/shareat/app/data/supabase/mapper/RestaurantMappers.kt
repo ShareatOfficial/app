@@ -83,6 +83,7 @@ internal fun Restaurant.toUpdateSettingsRpc(): UpdateRestaurantSettingsRpc =
         streetLine = address?.streetLine.orEmpty(),
         locality = address?.locality.orEmpty(),
         postalCode = address?.postalCode.orEmpty(),
+        region = address?.region.orEmpty(),
         publicationState = when (publicationState) {
             RestaurantPublicationState.Draft -> "draft"
             RestaurantPublicationState.Published -> "published"

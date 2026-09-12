@@ -29,6 +29,7 @@ import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_err
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_image_format
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_image_read
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_image_size
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_image_upload_after_details_saved
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_not_found
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_offline
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_session
@@ -75,6 +76,8 @@ internal fun RestaurantHomeError.label(): String = stringResource(
         RestaurantHomeError.IMAGE_FORMAT_UNSUPPORTED -> Res.string.restaurant_home_error_image_format
         RestaurantHomeError.IMAGE_TOO_LARGE -> Res.string.restaurant_home_error_image_size
         RestaurantHomeError.IMAGE_READ_FAILED -> Res.string.restaurant_home_error_image_read
+        RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED ->
+            Res.string.restaurant_home_error_image_upload_after_details_saved
         RestaurantHomeError.VALIDATION, RestaurantHomeError.UNKNOWN -> Res.string.restaurant_home_error_generic
     },
 )

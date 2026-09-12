@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -34,10 +37,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -47,6 +52,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -268,6 +277,7 @@ private fun RestaurantSettings(
     callbacks: SettingsCallbacks,
 ) {
     val listState = rememberLazyListState()
+    var showOpeningHoursSheet by remember { mutableStateOf(false) }
     // The status text is the first item, while "Save changes" sits at the very bottom: a rejected
     // save would otherwise report itself off-screen.
     LaunchedEffect(uiState.errorMessage, uiState.saveSucceeded) {
@@ -381,29 +391,11 @@ private fun RestaurantSettings(
                 title = "Opening hours",
                 icon = Icons.Outlined.Schedule,
             ) {
-                uiState.openingHours.forEach { hours ->
-                    OpeningHoursRow(
-                        hours = hours,
-                        onOpenChange = {
-                            callbacks.onRestaurantAction(
-                                SettingsRestaurantAction.OpeningDayChanged(hours.day, it),
-                            )
-                        },
-                        onOpeningTimeChange = {
-                            callbacks.onRestaurantAction(
-                                SettingsRestaurantAction.OpeningTimeChanged(hours.day, it),
-                            )
-                        },
-                        onClosingTimeChange = {
-                            callbacks.onRestaurantAction(
-                                SettingsRestaurantAction.ClosingTimeChanged(hours.day, it),
-                            )
-                        },
-                    )
-                    if (hours != uiState.openingHours.last()) {
-                        SettingsDivider()
-                    }
-                }
+                SettingsItem(
+                    leadingIcon = Icons.Outlined.Schedule,
+                    text = "Change opening hours",
+                    onClick = { showOpeningHoursSheet = true },
+                )
             }
         }
         item {
@@ -482,6 +474,17 @@ private fun RestaurantSettings(
                 }
             }
         }
+    }
+
+    if (showOpeningHoursSheet) {
+        OpeningHoursBottomSheet(
+            openingHours = uiState.openingHours,
+            onDismiss = { showOpeningHoursSheet = false },
+            onApply = { openingHours ->
+                callbacks.onRestaurantAction(SettingsRestaurantAction.OpeningHoursChanged(openingHours))
+                showOpeningHoursSheet = false
+            },
+        )
     }
 }
 
@@ -629,6 +632,83 @@ private fun OpeningHoursRow(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OpeningHoursBottomSheet(
+    openingHours: List<OpeningHoursUiState>,
+    onDismiss: () -> Unit,
+    onApply: (List<OpeningHoursUiState>) -> Unit,
+) {
+    // This state intentionally lives only for the sheet's lifetime. Canceling or dismissing the
+    // sheet leaves SettingsUiState untouched; Apply is the single commit into the screen draft.
+    var draft by remember(openingHours) { mutableStateOf(openingHours) }
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .imePadding()
+                .padding(horizontal = 20.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 640.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+                    .heightIn(max = 560.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text("Opening hours", style = MaterialTheme.typography.headlineSmall)
+                draft.forEach { hours ->
+                    OpeningHoursRow(
+                        hours = hours,
+                        onOpenChange = { isOpen ->
+                            draft = draft.replaceHours(hours.day) { copy(isOpen = isOpen) }
+                        },
+                        onOpeningTimeChange = { value ->
+                            draft = draft.replaceHours(hours.day) { copy(openingTime = value) }
+                        },
+                        onClosingTimeChange = { value ->
+                            draft = draft.replaceHours(hours.day) { copy(closingTime = value) }
+                        },
+                    )
+                    if (hours != draft.last()) SettingsDivider()
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .widthIn(max = 640.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 8.dp, bottom = 12.dp),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.sizeIn(minHeight = 48.dp),
+                ) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = { onApply(draft) },
+                    modifier = Modifier.sizeIn(minHeight = 48.dp),
+                ) {
+                    Text("Apply")
+                }
+            }
+        }
+    }
+}
+
+private fun List<OpeningHoursUiState>.replaceHours(
+    day: OpeningDay,
+    transform: OpeningHoursUiState.() -> OpeningHoursUiState,
+): List<OpeningHoursUiState> = map { hours ->
+    if (hours.day == day) hours.transform() else hours
 }
 
 @Composable

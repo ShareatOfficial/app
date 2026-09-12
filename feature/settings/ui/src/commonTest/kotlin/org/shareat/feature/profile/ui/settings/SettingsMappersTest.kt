@@ -45,7 +45,10 @@ class SettingsMappersTest {
 
     @Test
     fun mapsFirstOpeningPeriodToUiAndPreservesTheSecondOnUpdate() {
-        val original = restaurantFixture()
+        val fixture = restaurantFixture()
+        val original = fixture.copy(
+            address = requireNotNull(fixture.address).copy(region = "Comunitat Valenciana"),
+        )
         val state = original.toUiState()
 
         val monday = state.openingHours.first { it.day == OpeningDay.Monday }
@@ -63,6 +66,7 @@ class SettingsMappersTest {
         assertEquals(LocalTime(10, 0), periods.first().opensAt)
         assertEquals(original.openingHours.days.first().periods[1], periods[1])
         assertEquals(original.address?.coordinates, params.address?.coordinates)
+        assertEquals("Comunitat Valenciana", params.address?.region)
     }
 
     @Test

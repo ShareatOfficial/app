@@ -115,7 +115,7 @@ class RestaurantHomeUseCasesTest {
     }
 
     @Test
-    fun publishesMenuBeforeRestaurantAndPreservesEveryPersistedMenuField() = runTest {
+    fun delegatesPublicationToTheCanonicalRestaurantMutation() = runTest {
         val fixture = Fixture()
 
         val published = assertIs<RepositoryResult.Success<Restaurant>>(
@@ -124,36 +124,8 @@ class RestaurantHomeUseCasesTest {
 
         assertEquals(RestaurantPublicationState.Published, published.publicationState)
         assertEquals(RestaurantPublicationState.Published, fixture.restaurants.restaurant.publicationState)
-        assertEquals(MenuPublicationState.Published, fixture.menu.currentDetails.menu.publicationState)
-        assertEquals(listOf("menu:Published", "restaurant:Published"), fixture.operations)
-        val savedItems = fixture.menu.savedDrafts.single().items
-        assertEquals(2, savedItems.size)
-        assertEquals(Money(1200), savedItems[0].price)
-        assertEquals(0, savedItems[0].position)
-        assertTrue(savedItems[0].isEnabled)
-        assertEquals(Money(850), savedItems[1].price)
-        assertEquals(1, savedItems[1].position)
-        assertFalse(savedItems[1].isEnabled)
-        assertEquals(fixture.menu.currentDetails.menu.price, fixture.menu.savedDrafts.single().price)
-    }
-
-    @Test
-    fun publishingWithoutAnEnabledDishFailsBeforeAnyWrite() = runTest {
-        val fixture = Fixture().apply { menu.disableAllItems() }
-
-        val result = fixture.updatePublication()(RestaurantPublicationState.Published)
-
-        assertEquals(
-            RepositoryResult.Failure(
-                RepositoryError.Validation(
-                    "Publish at least one enabled dish before publishing the restaurant",
-                ),
-            ),
-            result,
-        )
+        assertEquals(listOf("restaurant:Published"), fixture.operations)
         assertEquals(0, fixture.menu.saveCalls)
-        assertEquals(0, fixture.restaurants.updateCalls)
-        assertTrue(fixture.operations.isEmpty())
     }
 
     @Test
@@ -176,29 +148,26 @@ class RestaurantHomeUseCasesTest {
     }
 
     @Test
-    fun unpublishesRestaurantBeforeMenuAndMapsDisabledState() = runTest {
+    fun delegatesDraftAndDisabledStatesToTheCanonicalRestaurantMutation() = runTest {
         val fixture = Fixture().apply {
             restaurants.restaurant = restaurant.copy(publicationState = RestaurantPublicationState.Published)
-            menu.setPublicationState(MenuPublicationState.Published)
         }
 
         assertIs<RepositoryResult.Success<Restaurant>>(
             fixture.updatePublication()(RestaurantPublicationState.Draft),
         )
         assertEquals(RestaurantPublicationState.Draft, fixture.restaurants.restaurant.publicationState)
-        assertEquals(MenuPublicationState.Unpublished, fixture.menu.currentDetails.menu.publicationState)
-        assertEquals(listOf("restaurant:Draft", "menu:Unpublished"), fixture.operations)
+        assertEquals(listOf("restaurant:Draft"), fixture.operations)
 
         fixture.operations.clear()
         assertIs<RepositoryResult.Success<Restaurant>>(
             fixture.updatePublication()(RestaurantPublicationState.Disabled),
         )
-        assertEquals(MenuPublicationState.Disabled, fixture.menu.currentDetails.menu.publicationState)
-        assertEquals(listOf("restaurant:Disabled", "menu:Disabled"), fixture.operations)
+        assertEquals(listOf("restaurant:Disabled"), fixture.operations)
     }
 
     @Test
-    fun publishFailureRollsMenuBackAndReturnsTheRestaurantError() = runTest {
+    fun publicationFailureDoesNotAttemptAClientSideRollback() = runTest {
         val fixture = Fixture().apply { restaurants.failedUpdateCalls += 1 }
 
         val result = fixture.updatePublication()(RestaurantPublicationState.Published)
@@ -209,34 +178,8 @@ class RestaurantHomeUseCasesTest {
         )
         assertEquals(RestaurantPublicationState.Draft, fixture.restaurants.restaurant.publicationState)
         assertEquals(MenuPublicationState.Unpublished, fixture.menu.currentDetails.menu.publicationState)
-        assertEquals(
-            listOf("menu:Published", "restaurant:Published", "menu:Unpublished"),
-            fixture.operations,
-        )
-    }
-
-    @Test
-    fun unpublishReturnsConflictWhenRestaurantRollbackFails() = runTest {
-        val fixture = Fixture().apply {
-            restaurants.restaurant = restaurant.copy(publicationState = RestaurantPublicationState.Published)
-            menu.setPublicationState(MenuPublicationState.Published)
-            menu.failedSaveCalls += 1
-            restaurants.failedUpdateCalls += 2
-        }
-
-        val result = fixture.updatePublication()(RestaurantPublicationState.Draft)
-
-        assertEquals(
-            RepositoryResult.Failure(
-                RepositoryError.Conflict(
-                    "Restaurant and menu publication could not be kept consistent because rollback failed",
-                ),
-            ),
-            result,
-        )
-        assertEquals(RestaurantPublicationState.Draft, fixture.restaurants.restaurant.publicationState)
-        assertEquals(MenuPublicationState.Published, fixture.menu.currentDetails.menu.publicationState)
-        assertEquals(2, fixture.restaurants.updateCalls)
+        assertEquals(listOf("restaurant:Published"), fixture.operations)
+        assertEquals(1, fixture.restaurants.updateCalls)
     }
 
     @Test
@@ -245,6 +188,9 @@ class RestaurantHomeUseCasesTest {
         assertIs<RepositoryResult.Success<Restaurant>>(
             fixture.updatePublication()(RestaurantPublicationState.Published),
         )
+        // The database mutation synchronizes the menu in the same transaction. The isolated
+        // repository fixture represents that committed state explicitly.
+        fixture.menu.setPublicationState(MenuPublicationState.Published)
 
         val editResult = fixture.updateDish()(
             fixture.firstDish.id,
@@ -438,7 +384,7 @@ private class Fixture {
     private fun authorizer() = RestaurantOwnerAuthorizer(auth, accounts)
     fun loadHome() = GetRestaurantHomeUseCaseImpl(authorizer(), restaurants, menu, reviews)
     fun updateInfo() = UpdateOwnerRestaurantInfoUseCaseImpl(authorizer(), restaurants)
-    fun updatePublication() = UpdateRestaurantPublicationStateUseCaseImpl(authorizer(), restaurants, menu)
+    fun updatePublication() = UpdateRestaurantPublicationStateUseCaseImpl(authorizer(), restaurants)
     fun updateDish() = UpdateOwnerDishUseCaseImpl(authorizer(), restaurants, dishes, menu)
     fun createDish() = CreateOwnerDishUseCaseImpl(authorizer(), restaurants, dishes, menu)
     fun replaceRestaurantImage() = ReplaceOwnerRestaurantImageUseCaseImpl(authorizer(), restaurants, images)

@@ -227,7 +227,14 @@ class RestaurantHomeViewModel(
                     ownerHome = ownerHome?.copy(restaurant = result.value)
                     val imageResult = form.pendingImageUpload?.let { replaceOwnerRestaurantImage(it) }
                     if (imageResult is RepositoryResult.Failure) {
-                        updateRestaurantForm { copy(isSaving = false, error = imageResult.error.toUiError()) }
+                        // Profile data was already committed. Keep the sheet open so the selected
+                        // image can be retried without implying the name failed too.
+                        updateRestaurantForm {
+                            copy(
+                                isSaving = false,
+                                error = RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED,
+                            )
+                        }
                         publishLoadedContent()
                         return@launch
                     }
@@ -281,7 +288,12 @@ class RestaurantHomeViewModel(
                     if (form.dishId == null) updateDishForm { copy(dishId = savedDishId.value) }
                     val imageResult = form.pendingImageUpload?.let { replaceOwnerDishImage(savedDishId, it) }
                     if (imageResult is RepositoryResult.Failure) {
-                        updateDishForm { copy(isSaving = false, error = imageResult.error.toUiError()) }
+                        updateDishForm {
+                            copy(
+                                isSaving = false,
+                                error = RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED,
+                            )
+                        }
                         publishLoadedContent()
                         return@launch
                     }

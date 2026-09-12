@@ -54,6 +54,7 @@
     <string name="restaurant_home_error_image_format">Selecciona una imagen JPEG, PNG o WebP.</string>
     <string name="restaurant_home_error_image_size">La imagen supera el tamaño máximo de 512 KB.</string>
     <string name="restaurant_home_error_image_read">No hemos podido leer esta imagen. Inténtalo de nuevo.</string>
+    <string name="restaurant_home_error_image_upload_after_details_saved">Los datos se han guardado, pero no hemos podido subir la imagen. Inténtalo de nuevo.</string>
     <string name="restaurant_home_category_starters">Entrantes</string>
     <string name="restaurant_home_category_main">Platos principales</string>
     <string name="restaurant_home_category_desserts">Postres</string>

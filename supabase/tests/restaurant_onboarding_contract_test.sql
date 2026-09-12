@@ -1,5 +1,5 @@
 begin;
-select plan(16);
+select plan(18);
 
 insert into auth.users (id, email, raw_user_meta_data, is_sso_user, is_anonymous) values
     ('61000000-0000-4000-8000-000000000001', 'onboarding-customer@example.test', '{"account_role":"customer","display_name":"Customer"}', false, false),
@@ -101,6 +101,16 @@ select is(
     (select count(*) from public.restaurant_opening_periods where restaurant_id = (select restaurant_id from onboarding_result)),
     2::bigint,
     'opening periods are created atomically'
+);
+select is(
+    (select count(*) from public.menus where restaurant_id = (select restaurant_id from onboarding_result)),
+    1::bigint,
+    'onboarding creates exactly one manageable menu atomically'
+);
+select is(
+    (select publication_state from public.menus where restaurant_id = (select restaurant_id from onboarding_result)),
+    'unpublished',
+    'onboarding menu starts hidden with the draft restaurant'
 );
 select is(
     public.create_restaurant_profile('Ignored retry', null, null, null, 'Other', 'Other', '00000', null, '[]'::jsonb),

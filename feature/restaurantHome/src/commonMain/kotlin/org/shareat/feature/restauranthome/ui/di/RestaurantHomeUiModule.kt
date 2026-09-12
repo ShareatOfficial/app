@@ -34,7 +34,7 @@ val restaurantHomeUiModule: Module = module {
         UpdateOwnerRestaurantInfoUseCaseImpl(get(), get())
     }
     factory<UpdateRestaurantPublicationStateUseCase> {
-        UpdateRestaurantPublicationStateUseCaseImpl(get(), get(), get())
+        UpdateRestaurantPublicationStateUseCaseImpl(get(), get())
     }
     factory<ReplaceOwnerRestaurantImageUseCase> {
         ReplaceOwnerRestaurantImageUseCaseImpl(get(), get(), get())

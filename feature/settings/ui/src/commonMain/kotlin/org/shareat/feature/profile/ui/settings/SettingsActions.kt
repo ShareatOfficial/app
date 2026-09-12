@@ -26,6 +26,9 @@ sealed interface SettingsRestaurantAction {
         val day: OpeningDay,
         val value: String,
     ) : SettingsRestaurantAction
+    data class OpeningHoursChanged(
+        val value: List<OpeningHoursUiState>,
+    ) : SettingsRestaurantAction
 
     data object Subscription : SettingsRestaurantAction
     data object SaveChanges : SettingsRestaurantAction

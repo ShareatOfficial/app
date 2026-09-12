@@ -81,6 +81,21 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun appliesOpeningHoursOnlyWhenTheSheetCommitsItsDraft() = runTest(dispatcher) {
+        val viewModel = viewModelFor(restaurantFixture())
+        advanceUntilIdle()
+        val original = assertIs<SettingsUiState.Restaurant>(viewModel.uiState.value).openingHours
+        val changed = original.map { hours ->
+            if (hours.day == OpeningDay.Monday) hours.copy(isOpen = false) else hours
+        }
+
+        viewModel.onRestaurantAction(SettingsRestaurantAction.OpeningHoursChanged(changed))
+
+        val state = assertIs<SettingsUiState.Restaurant>(viewModel.uiState.value)
+        assertEquals(false, state.openingHours.first { it.day == OpeningDay.Monday }.isOpen)
+    }
+
+    @Test
     fun saveMapsStateAndInvokesUpdateUseCase() = runTest(dispatcher) {
         val restaurant = restaurantFixture()
         var received: UpdateRestaurantInfoParams? = null
