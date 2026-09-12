@@ -3,9 +3,14 @@ package org.shareat.app.navigation.profile
 import org.shareat.app.navigation.Navigator
 import org.shareat.app.auth.RestaurantProfileCoordinator
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingNavigation
-import org.shareat.feature.profile.ui.profile.ProfileKey
-import org.shareat.feature.profile.ui.settings.SettingsKey
 
+/**
+ * Compatibility binding for the legacy form while it remains in the settings module.
+ *
+ * The form is no longer registered as a route and no login flow can reach it; if an old restored
+ * entry invokes this callback, returning home lets the profile coordinator select the current
+ * role-based landing again.
+ */
 class RestaurantOnboardingNavigationImpl(
     private val navigator: Navigator,
     private val restaurantProfiles: RestaurantProfileCoordinator,
@@ -13,8 +18,7 @@ class RestaurantOnboardingNavigationImpl(
     override fun onCompleted() {
         restaurantProfiles.completeOnboarding()
         navigator.goHome()
-        navigator.navigate(ProfileKey)
-        navigator.navigate(SettingsKey)
     }
+
     override fun onLogoutSuccess() = navigator.goHome()
 }

@@ -1,5 +1,5 @@
 begin;
-select plan(26);
+select plan(27);
 
 select throws_ok(
     $$insert into auth.users (id, email, raw_user_meta_data, is_sso_user, is_anonymous) values ('00000000-0000-4000-8000-000000000099', 'invalid@example.test', '{"account_role":"admin"}', false, false)$$,
@@ -90,6 +90,7 @@ select lives_ok(
         'Updated street',
         'Valencia',
         '46001',
+        'Comunitat Valenciana',
         'draft',
         '[{"weekday":1,"position":0,"opens_at":"09:00:00","closes_at":"17:00:00"}]'::jsonb
     )$$,
@@ -105,6 +106,7 @@ select throws_ok(
         'Other street',
         'Madrid',
         '28003',
+        null,
         'draft',
         '[]'::jsonb
     )$$,
@@ -126,6 +128,11 @@ select results_eq(
       group by r.name$$,
     $$values ('Owner updated'::text, 1::bigint)$$,
     'settings function commits restaurant info and opening periods together'
+);
+select is(
+    (select region from public.restaurants where id = '30000000-0000-4000-8000-000000000002'),
+    'Comunitat Valenciana',
+    'settings function persists the region'
 );
 
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);

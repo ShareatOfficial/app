@@ -11,8 +11,11 @@ import org.shareat.app.data.supabase.model.MenuDto
 import org.shareat.app.data.supabase.model.MenuItemDto
 import org.shareat.app.data.supabase.model.RestaurantDto
 import org.shareat.app.domain.model.Currency
+import org.shareat.app.domain.model.DishDraft
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.PostalAddress
+import org.shareat.app.domain.model.RestaurantId
+import org.shareat.app.domain.model.RestaurantMenuDraft
 import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.Weekday
@@ -29,6 +32,7 @@ class SupabaseMapperTest {
             streetLine = "Street 1",
             locality = "Madrid",
             postalCode = "28001",
+            region = "Comunidad de Madrid",
             countryCode = "ES",
             latitude = 40.4,
             longitude = -3.7,
@@ -100,6 +104,7 @@ class SupabaseMapperTest {
             streetLine = "Street 1",
             locality = "Madrid",
             postalCode = "28001",
+            region = "Comunidad de Madrid",
             countryCode = "ES",
             publicationState = "draft",
             openingPeriods = listOf(
@@ -114,6 +119,10 @@ class SupabaseMapperTest {
         assertEquals(2, rpc.openingPeriods.size)
         assertEquals("09:00:00", rpc.openingPeriods.first().opensAt)
         assertEquals("22:30:00", rpc.openingPeriods.last().closesAt)
+        assertEquals("", rpc.description)
+        assertEquals("", rpc.publicEmail)
+        assertEquals("", rpc.publicPhone)
+        assertEquals("Comunidad de Madrid", rpc.region)
     }
 
     @Test
@@ -127,6 +136,28 @@ class SupabaseMapperTest {
         assertEquals("", rpc.publicEmail)
         assertEquals("", rpc.publicPhone)
         assertEquals("", rpc.region)
+    }
+
+    @Test
+    fun saveMenuRpcIncludesAnEmptyDescriptionWhenTheDraftHasNone() {
+        val rpc = RestaurantMenuDraft(
+            restaurantId = RestaurantId("restaurant-id"),
+            name = "Menu",
+            items = emptyList(),
+        ).toSaveRpc()
+
+        assertEquals("", rpc.description)
+    }
+
+    @Test
+    fun saveDishRpcIncludesEmptyOptionalTextWhenTheDraftHasNone() {
+        val rpc = DishDraft(
+            restaurantId = RestaurantId("restaurant-id"),
+            name = "Dish",
+        ).toSaveRpc()
+
+        assertEquals("", rpc.description)
+        assertEquals("", rpc.allergenNote)
     }
 
     private fun dishWithAllergens(allergens: Set<String>) = DishDto(

@@ -31,10 +31,10 @@ internal fun DishDraft.toSaveRpc(): SaveRestaurantDishRpc = SaveRestaurantDishRp
     restaurantId = restaurantId.value,
     dishId = id?.value,
     name = name.trim(),
-    description = description?.trim()?.ifEmpty { null },
+    description = description?.trim().orEmpty(),
     isEnabled = isEnabled,
     allergenIds = allergenDeclaration?.allergens.orEmpty().map(EuAllergen::toDatabaseValue),
-    allergenNote = allergenDeclaration?.note?.trim()?.ifEmpty { null },
+    allergenNote = allergenDeclaration?.note?.trim().orEmpty(),
 )
 
 internal fun EuAllergen.toDatabaseValue(): String = when (this) {

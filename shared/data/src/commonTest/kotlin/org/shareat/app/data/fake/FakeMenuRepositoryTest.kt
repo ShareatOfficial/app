@@ -51,4 +51,5 @@ class FakeMenuRepositoryTest {
         assertEquals(DishCategory.Starters, menuDetails.items.first().category)
         assertEquals(DishCategory.SmallBites, menuDetails.items.last().category)
     }
+
 }

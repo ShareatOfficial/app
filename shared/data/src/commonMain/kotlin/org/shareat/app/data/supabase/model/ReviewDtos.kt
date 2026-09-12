@@ -23,12 +23,12 @@ internal data class ReviewDto(
 @Serializable
 internal data class SaveReviewRpc(
     @SerialName("p_target_type") val targetType: String,
-    @SerialName("p_restaurant_id") val restaurantId: String? = null,
-    @SerialName("p_dish_id") val dishId: String? = null,
+    @SerialName("p_restaurant_id") val restaurantId: String?,
+    @SerialName("p_dish_id") val dishId: String?,
     @SerialName("p_rating") val rating: Int,
-    @SerialName("p_comment") val comment: String? = null,
+    @SerialName("p_comment") val comment: String?,
     @SerialName("p_visibility") val visibility: String,
-    @SerialName("p_visited_at") val visitedAt: String? = null,
+    @SerialName("p_visited_at") val visitedAt: String?,
 )
 
 @Serializable

@@ -1,18 +1,25 @@
-# Description
+# Restaurant Home
 
-This module is the home and start point of the app for the restaurants. Here we should manage and
-show the menu they have published and how they user see the menu.
-It should achieve the next:
+Restaurant Home is the authenticated landing and catalogue-management surface for restaurant
+accounts. A first access creates an idempotent private draft workspace with the “Rincón de Paco”
+profile, a packaged fallback photo, one draft menu, and two example dishes. Returning owners always
+receive their existing workspace unchanged.
 
-* The restaurant should be able to edit the general info
-    * Restaurant image
-    * Restaurant name
-    * Restaurant description
-    * Types of dishes
-* The restaurant should be able to change the status of the dishes
-    * published / not published
-* The restaurant should be able to change the dish information
-    * Name
-    * Description
-    * Image
-    * Allergens
+The screen supports:
+
+- switching between management and customer-preview modes;
+- editing the restaurant photo, name, description, street, locality, postal code, and region;
+- publishing or unpublishing the restaurant together with its single menu;
+- filtering the menu by dish category and excluded allergens;
+- adding dishes and editing their photo, name, description, price, allergens, and publication state;
+- showing ratings without exposing customer review actions to restaurant accounts;
+- adapting content and sheets to compact and wide windows, with 48 dp touch targets, wrapping
+  filters, safe-area/IME padding, field-specific keyboards, and Next/Done focus actions.
+
+Restaurant and dish mutations verify the active authenticated owner. Multi-step catalogue writes
+use compensation so a failed menu update does not leave an orphaned or partially edited dish.
+Image selection uses FileKit and accepts JPEG, PNG, or WebP files up to 512 KB.
+
+Restaurant-level dish-type configuration remains intentionally labelled as forthcoming because the
+product has no restaurant-level type model yet. Per-menu dish categories are persisted and used by
+the current filters.

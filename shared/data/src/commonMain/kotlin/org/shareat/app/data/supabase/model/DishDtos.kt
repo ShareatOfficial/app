@@ -30,10 +30,10 @@ internal data class DishAllergenDto(
 @Serializable
 internal data class SaveRestaurantDishRpc(
     @SerialName("p_restaurant_id") val restaurantId: String,
-    @SerialName("p_dish_id") val dishId: String? = null,
+    @SerialName("p_dish_id") val dishId: String?,
     @SerialName("p_name") val name: String,
-    @SerialName("p_description") val description: String? = null,
+    @SerialName("p_description") val description: String,
     @SerialName("p_is_enabled") val isEnabled: Boolean,
     @SerialName("p_allergen_ids") val allergenIds: List<String>,
-    @SerialName("p_allergen_note") val allergenNote: String? = null,
+    @SerialName("p_allergen_note") val allergenNote: String,
 )

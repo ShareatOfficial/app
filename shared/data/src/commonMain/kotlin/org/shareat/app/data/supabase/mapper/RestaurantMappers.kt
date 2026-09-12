@@ -75,12 +75,15 @@ internal fun Restaurant.toUpdateSettingsRpc(): UpdateRestaurantSettingsRpc =
     UpdateRestaurantSettingsRpc(
         restaurantId = id.value,
         name = name,
-        description = description,
-        publicEmail = publicEmail?.value,
-        publicPhone = publicPhone,
+        // Send every optional text argument. PostgREST resolves RPC overloads from the JSON
+        // keys, while the database converts blank text back to NULL with nullif(btrim(...), '').
+        description = description.orEmpty(),
+        publicEmail = publicEmail?.value.orEmpty(),
+        publicPhone = publicPhone.orEmpty(),
         streetLine = address?.streetLine.orEmpty(),
         locality = address?.locality.orEmpty(),
         postalCode = address?.postalCode.orEmpty(),
+        region = address?.region.orEmpty(),
         publicationState = when (publicationState) {
             RestaurantPublicationState.Draft -> "draft"
             RestaurantPublicationState.Published -> "published"

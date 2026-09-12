@@ -34,11 +34,11 @@ internal data class MenuItemDto(
 @Serializable
 internal data class SaveRestaurantMenuRpc(
     @SerialName("p_restaurant_id") val restaurantId: String,
-    @SerialName("p_menu_id") val menuId: String? = null,
+    @SerialName("p_menu_id") val menuId: String?,
     @SerialName("p_name") val name: String,
-    @SerialName("p_description") val description: String? = null,
+    @SerialName("p_description") val description: String,
     @SerialName("p_publication_state") val publicationState: String,
-    @SerialName("p_price_minor_units") val priceMinorUnits: Long? = null,
+    @SerialName("p_price_minor_units") val priceMinorUnits: Long?,
     @SerialName("p_items") val items: List<MenuItemUpdateDto>,
 )
 

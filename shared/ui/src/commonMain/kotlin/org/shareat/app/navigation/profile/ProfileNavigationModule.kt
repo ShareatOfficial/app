@@ -18,9 +18,7 @@ import org.shareat.feature.profile.ui.settings.SettingsScreen
 import org.shareat.feature.profile.ui.terms.TermsAndConditionsKey
 import org.shareat.feature.profile.ui.terms.TermsAndConditionsNavigation
 import org.shareat.feature.profile.ui.terms.TermsAndConditionsScreen
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingNavigation
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingScreen
 import org.shareat.app.navscenedecorator.HIDE_NAVIGATION_METADATA
 
 @OptIn(KoinExperimentalAPI::class)
@@ -43,6 +41,7 @@ val profileNavigationModule = module {
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
         TermsAndConditionsNavigationImpl(navigator = navigator)
     }
+    // Kept solely to satisfy the compiled legacy screen. It has no registered navigation route.
     factory<RestaurantOnboardingNavigation> { parameters ->
         val navigator = parameters.getOrNull<Navigator>() ?: get<Navigator>()
         RestaurantOnboardingNavigationImpl(navigator, get())
@@ -55,7 +54,4 @@ val profileNavigationModule = module {
         TermsAndConditionsScreen(onBackClick = koinInject<TermsAndConditionsNavigation>()::goBack)
     }
     navigation<EditProfileKey> { EditProfileScreen() }
-    navigation<RestaurantOnboardingKey>(
-        metadata = mapOf(HIDE_NAVIGATION_METADATA to true),
-    ) { RestaurantOnboardingScreen() }
 }

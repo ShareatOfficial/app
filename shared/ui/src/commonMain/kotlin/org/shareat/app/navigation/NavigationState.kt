@@ -27,8 +27,8 @@ import org.shareat.feature.profile.ui.profile.ProfileKey
 import org.shareat.feature.profile.ui.editprofile.EditProfileKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
 import org.shareat.feature.profile.ui.terms.TermsAndConditionsKey
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingKey
 import org.shareat.feature.restaurant.ui.navigation.RestaurantKey
+import org.shareat.feature.restauranthome.ui.navigation.RestaurantHomeKey
 
 private val navigationConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -40,8 +40,8 @@ private val navigationConfiguration = SavedStateConfiguration {
             subclass(TermsAndConditionsKey::class, TermsAndConditionsKey.serializer())
             subclass(EditProfileKey::class, EditProfileKey.serializer())
             subclass(LoginKey::class, LoginKey.serializer())
-            subclass(RestaurantOnboardingKey::class, RestaurantOnboardingKey.serializer())
             subclass(RestaurantKey::class, RestaurantKey.serializer())
+            subclass(RestaurantHomeKey::class, RestaurantHomeKey.serializer())
         }
     }
 }
@@ -71,10 +71,13 @@ fun rememberNavigationState(
 }
 
 class NavigationState(
-    val startRoute: NavKey,
+    startRoute: NavKey,
     topLevelRoute: MutableState<NavKey>,
     val backStacks: Map<NavKey, NavBackStack<NavKey>>,
 ) {
+    var startRoute: NavKey = startRoute
+        private set
+
     var topLevelRoute: NavKey by topLevelRoute
 
     val stacksInUse: List<NavKey>
@@ -91,6 +94,16 @@ class NavigationState(
             }
         }
         topLevelRoute = startRoute
+    }
+
+    /**
+     * Switches the top-level home for a changed authenticated role. All stacks are reset so a
+     * restaurant owner never inherits a customer's history (and vice versa).
+     */
+    fun resetToLandingRoute(route: NavKey) {
+        require(route in backStacks) { "The landing route must be a top-level route" }
+        startRoute = route
+        resetToStartRoute()
     }
 }
 

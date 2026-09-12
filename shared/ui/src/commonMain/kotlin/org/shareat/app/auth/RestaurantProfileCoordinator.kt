@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.AccountStatus
 import org.shareat.app.domain.model.AuthSessionState
+import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.repository.AccountRepository
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
@@ -19,15 +20,24 @@ import org.shareat.app.domain.repository.RestaurantRepository
 
 sealed interface RestaurantProfileGateState {
     data object Checking : RestaurantProfileGateState
-    data object Allowed : RestaurantProfileGateState
+
+    /**
+     * The session may access the main application. A null [role] denotes a guest; a restaurant
+     * role is emitted only after its profile has been found, so the app can select the owner
+     * landing destination without doing a second profile request.
+     */
+    data class Allowed(
+        val role: AccountRole? = null,
+        val restaurant: Restaurant? = null,
+    ) : RestaurantProfileGateState
     data object OnboardingRequired : RestaurantProfileGateState
     data class Failure(val error: RepositoryError) : RestaurantProfileGateState
 }
 
 /**
  * Observes the authenticated account and determines whether it may use the app or must complete
- * restaurant onboarding. The navigation scene decorator renders this state without coupling the
- * root application composable to onboarding UI.
+ * restaurant onboarding. A new owner creates their own draft profile before the app exposes
+ * the management landing.
  */
 class RestaurantProfileCoordinator(
     private val sessions: SessionCoordinator,
@@ -44,7 +54,7 @@ class RestaurantProfileCoordinator(
             sessions.state.collectLatest { sessionState ->
                 when (sessionState) {
                     AuthSessionState.Initializing -> _state.value = RestaurantProfileGateState.Checking
-                    AuthSessionState.Unauthenticated -> _state.value = RestaurantProfileGateState.Allowed
+                    AuthSessionState.Unauthenticated -> _state.value = RestaurantProfileGateState.Allowed()
                     AuthSessionState.RefreshUnavailable -> _state.value =
                         RestaurantProfileGateState.Failure(RepositoryError.Offline)
                     is AuthSessionState.Authenticated -> checkProfile(sessionState)
@@ -58,9 +68,8 @@ class RestaurantProfileCoordinator(
         scope.launch { checkProfile(authenticated) }
     }
 
-    fun completeOnboarding() {
-        _state.value = RestaurantProfileGateState.Allowed
-    }
+    /** Re-check once onboarding has persisted the profile so the owner dashboard can load it. */
+    fun completeOnboarding() = retry()
 
     suspend fun signOut(): RepositoryResult<Unit> = auth.signOut()
 
@@ -71,7 +80,7 @@ class RestaurantProfileCoordinator(
             is RepositoryResult.Failure -> return fail(result.error)
         }
         if (account.role == AccountRole.Customer) {
-            _state.value = RestaurantProfileGateState.Allowed
+            _state.value = RestaurantProfileGateState.Allowed(role = AccountRole.Customer)
             return
         }
         if (account.status != AccountStatus.Active) {
@@ -79,10 +88,13 @@ class RestaurantProfileCoordinator(
             return
         }
         when (val result = restaurants.getRestaurantForOwner(account.id)) {
-            is RepositoryResult.Success -> _state.value = RestaurantProfileGateState.Allowed
-            is RepositoryResult.Failure -> _state.value = when (result.error) {
-                is RepositoryError.NotFound -> RestaurantProfileGateState.OnboardingRequired
-                else -> RestaurantProfileGateState.Failure(result.error)
+            is RepositoryResult.Success -> _state.value = RestaurantProfileGateState.Allowed(
+                role = AccountRole.Restaurant,
+                restaurant = result.value,
+            )
+            is RepositoryResult.Failure -> when (result.error) {
+                is RepositoryError.NotFound -> _state.value = RestaurantProfileGateState.OnboardingRequired
+                else -> _state.value = RestaurantProfileGateState.Failure(result.error)
             }
         }
     }
