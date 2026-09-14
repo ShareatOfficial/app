@@ -27,6 +27,7 @@ class LastActivityViewModel(
     val uiState: StateFlow<LastActivityUiState> = _uiState.asStateFlow()
     private var accountId: org.shareat.app.domain.model.AccountId? = null
     private var retryJob: Job? = null
+    private var hasBeenVisible = false
 
     init {
         viewModelScope.launch {
@@ -56,6 +57,19 @@ class LastActivityViewModel(
         val id = accountId ?: return
         retryJob?.cancel()
         retryJob = viewModelScope.launch { load(id) }
+    }
+
+    fun onScreenVisible() {
+        if (!hasBeenVisible) {
+            hasBeenVisible = true
+            return
+        }
+        if (_uiState.value == LastActivityUiState.Initializing ||
+            _uiState.value == LastActivityUiState.Loading
+        ) {
+            return
+        }
+        retry()
     }
 
     private suspend fun load(id: org.shareat.app.domain.model.AccountId) {

@@ -44,6 +44,29 @@ class DishReviewViewModelTest {
     }
 
     @Test
+    fun startingAReviewPrefillsTheSelectedDishRating() {
+        val viewModel = viewModelFor()
+
+        viewModel.startReview(initialDishRating = 4)
+
+        assertEquals(4, viewModel.uiState.value.dishRating)
+        assertEquals(0, viewModel.uiState.value.restaurantRating)
+        assertFalse(viewModel.uiState.value.canSubmit)
+    }
+
+    @Test
+    fun startingAReviewAgainClearsThePreviousForm() {
+        val viewModel = viewModelFor()
+        viewModel.onDishRatingChange(3)
+        viewModel.onDishCommentChange("Anterior")
+        viewModel.onRestaurantRatingChange(5)
+
+        viewModel.startReview(initialDishRating = 2)
+
+        assertEquals(DishReviewUiState(dishRating = 2), viewModel.uiState.value)
+    }
+
+    @Test
     fun formChangesAreReflectedInState() {
         val viewModel = viewModelFor()
 
