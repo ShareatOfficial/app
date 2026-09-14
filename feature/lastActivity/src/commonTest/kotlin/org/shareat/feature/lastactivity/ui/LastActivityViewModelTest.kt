@@ -16,6 +16,7 @@ import org.shareat.feature.lastactivity.domain.GetLastActivityUseCase
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -37,6 +38,33 @@ class LastActivityViewModelTest {
         sessions.value = AuthSessionState.Authenticated(org.shareat.app.domain.model.AuthSession(AccountId("a"), org.shareat.app.domain.model.EmailAddress("a@b.com")))
         advanceUntilIdle(); assertIs<LastActivityUiState.Empty>(vm.uiState.value)
         sessions.value = AuthSessionState.Unauthenticated; advanceUntilIdle(); assertIs<LastActivityUiState.Guest>(vm.uiState.value)
+    }
+
+
+    @Test fun becomingVisibleAgainReloadsAuthenticatedActivity() = runTest(dispatcher) {
+        val sessions = MutableStateFlow<AuthSessionState>(
+            AuthSessionState.Authenticated(
+                org.shareat.app.domain.model.AuthSession(
+                    AccountId("a"),
+                    org.shareat.app.domain.model.EmailAddress("a@b.com"),
+                ),
+            ),
+        )
+        var loads = 0
+        val vm = LastActivityViewModel(
+            auth(sessions),
+            GetLastActivityUseCase {
+                loads += 1
+                RepositoryResult.Success(emptyList())
+            },
+        )
+        advanceUntilIdle()
+
+        vm.onScreenVisible()
+        vm.onScreenVisible()
+        advanceUntilIdle()
+
+        assertEquals(2, loads)
     }
 }
 

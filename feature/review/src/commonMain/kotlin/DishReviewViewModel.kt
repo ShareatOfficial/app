@@ -4,8 +4,11 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
@@ -23,6 +26,15 @@ public class DishReviewViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DishReviewUiState())
     public val uiState: StateFlow<DishReviewUiState> = _uiState.asStateFlow()
+    private val _reviewSubmitted = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    public val reviewSubmitted: SharedFlow<Unit> = _reviewSubmitted.asSharedFlow()
+
+    public fun startReview(initialDishRating: Int = 0) {
+        if (_uiState.value.isSubmitting) return
+        _uiState.value = DishReviewUiState(
+            dishRating = initialDishRating.takeIf { it in DishReviewRatingRange } ?: 0,
+        )
+    }
 
     public fun onDishRatingChange(rating: Int) {
         updateRating(rating) { copy(dishRating = rating) }
@@ -68,6 +80,9 @@ public class DishReviewViewModel(
                         errorMessage = result.error.toReviewMessage(),
                     )
                 }
+            }
+            if (result is RepositoryResult.Success) {
+                _reviewSubmitted.emit(Unit)
             }
         }
     }

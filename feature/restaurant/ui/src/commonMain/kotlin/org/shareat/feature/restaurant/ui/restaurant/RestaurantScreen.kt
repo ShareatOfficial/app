@@ -28,6 +28,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.shareat.app.domain.model.DishCategory
+import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restaurant.ui.model.RestaurantArgs
 import org.shareat.feature.restaurant.ui.model.RestaurantUiState
@@ -55,6 +56,7 @@ fun RestaurantScreen(
     args: RestaurantArgs,
     modifier: Modifier = Modifier,
     navigation: RestaurantNavigation = koinInject(),
+    onDishReviewRequest: (DishId, Int) -> Unit = { _, _ -> },
     viewModel: RestaurantViewModel = koinViewModel(
         key = args.id,
         parameters = { parametersOf(args) },
@@ -71,7 +73,10 @@ fun RestaurantScreen(
         onErrorShown = viewModel::onErrorShown,
         onCategoryClick = viewModel::onCategoryClick,
         onAllergenClick = viewModel::onAllergenClick,
-        onDishRatingClick = viewModel::onDishRatingClick,
+        onDishRatingClick = { dishId, rating ->
+            viewModel.onDishRatingClick(dishId, rating)
+            onDishReviewRequest(DishId(dishId), rating)
+        },
     )
 }
 

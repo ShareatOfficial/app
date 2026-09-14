@@ -25,6 +25,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,11 +45,21 @@ fun DishReviewScreen(
     dishId: DishId,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    initialDishRating: Int = 0,
+    onReviewSubmitted: () -> Unit = {},
     viewModel: DishReviewViewModel = koinViewModel(
+        key = dishId.value,
         parameters = { parametersOf(dishId) },
     ),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(viewModel, initialDishRating) {
+        viewModel.startReview(initialDishRating)
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.reviewSubmitted.collect { onReviewSubmitted() }
+    }
 
     DishReviewScreenContent(
         uiState = uiState,
