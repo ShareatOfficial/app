@@ -9,6 +9,32 @@ plugins {
     alias(libs.plugins.buildkonfig)
 }
 
+// Android includes its build type in the requested Gradle task; Xcode exports CONFIGURATION.
+val requestedTasks = gradle.startParameter.taskNames.map { it.substringAfterLast(':') }
+val isReleaseBuild = requestedTasks.any { it.contains("release", ignoreCase = true) } ||
+    providers.environmentVariable("CONFIGURATION").orNull.equals("Release", ignoreCase = true)
+val supabaseEnvironment = providers.gradleProperty("shareat.environment")
+    .orElse(if (isReleaseBuild) "production" else "development")
+    .map { it.lowercase() }
+    .get()
+
+require(supabaseEnvironment in setOf("development", "production")) {
+    "shareat.environment must be either 'development' or 'production'"
+}
+
+val (defaultSupabaseUrl, defaultSupabasePublishableKey) = when (supabaseEnvironment) {
+    "production" -> "https://eeolozlmnfzcdognlezy.supabase.co" to
+        "sb_publishable_gDxtUHd6zy7pvrf7s5g_LA_Td-Vp1xJ"
+    else -> "https://zgqurfalmblcjdelmyff.supabase.co" to
+        "sb_publishable_-z55CLLxCmsulMWxnxRM9g_kyqoGcuU"
+}
+
+fun supabaseProperty(name: String, fallback: String): String =
+    providers.gradleProperty("shareat.supabase.$supabaseEnvironment.$name")
+        .orElse(providers.gradleProperty("shareat.supabase.$name"))
+        .orElse(fallback)
+        .get()
+
 kotlin {
     jvm()
     iosArm64()
@@ -83,16 +109,12 @@ buildkonfig {
         buildConfigField(
             STRING,
             "SUPABASE_URL",
-            providers.gradleProperty("shareat.supabase.url")
-                .orElse("https://zgqurfalmblcjdelmyff.supabase.co")
-                .get(),
+            supabaseProperty("url", defaultSupabaseUrl),
         )
         buildConfigField(
             STRING,
             "SUPABASE_PUBLISHABLE_KEY",
-            providers.gradleProperty("shareat.supabase.publishableKey")
-                .orElse("sb_publishable_-z55CLLxCmsulMWxnxRM9g_kyqoGcuU")
-                .get(),
+            supabaseProperty("publishableKey", defaultSupabasePublishableKey),
         )
     }
 }
