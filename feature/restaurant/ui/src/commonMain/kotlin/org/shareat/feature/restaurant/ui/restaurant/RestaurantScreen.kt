@@ -57,12 +57,16 @@ fun RestaurantScreen(
     modifier: Modifier = Modifier,
     navigation: RestaurantNavigation = koinInject(),
     onDishReviewRequest: (DishId, Int) -> Unit = { _, _ -> },
+    reviewSubmissionCount: Int = 0,
     viewModel: RestaurantViewModel = koinViewModel(
         key = args.id,
         parameters = { parametersOf(args) },
     ),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(reviewSubmissionCount) {
+        if (reviewSubmissionCount > 0) viewModel.onRefresh()
+    }
 
     RestaurantScreenStateless(
         uiState = uiState,

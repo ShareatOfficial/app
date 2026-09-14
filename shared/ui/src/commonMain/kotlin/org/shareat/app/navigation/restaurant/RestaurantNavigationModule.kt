@@ -4,9 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
-import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 import org.shareat.app.domain.model.DishId
@@ -16,7 +14,6 @@ import org.shareat.feature.restaurant.ui.di.restaurantUiModule
 import org.shareat.feature.restaurant.ui.navigation.RestaurantKey
 import org.shareat.feature.restaurant.ui.navigation.RestaurantNavigation
 import org.shareat.feature.restaurant.ui.restaurant.RestaurantScreen
-import org.shareat.feature.restaurant.ui.restaurant.RestaurantViewModel
 
 @OptIn(KoinExperimentalAPI::class)
 val restaurantNavigationModule = module {
@@ -28,15 +25,12 @@ val restaurantNavigationModule = module {
     }
 
     navigation<RestaurantKey> { key ->
-        val restaurantViewModel = koinViewModel<RestaurantViewModel>(
-            key = key.restaurant.id,
-            parameters = { parametersOf(key.restaurant) },
-        )
         var reviewRequest by remember { mutableStateOf<DishReviewRequest?>(null) }
+        var reviewSubmissionCount by remember { mutableStateOf(0) }
 
         RestaurantScreen(
             args = key.restaurant,
-            viewModel = restaurantViewModel,
+            reviewSubmissionCount = reviewSubmissionCount,
             onDishReviewRequest = { dishId, rating ->
                 reviewRequest = DishReviewRequest(dishId, rating)
             },
@@ -49,7 +43,7 @@ val restaurantNavigationModule = module {
                 onDismissRequest = { reviewRequest = null },
                 onReviewSubmitted = {
                     reviewRequest = null
-                    restaurantViewModel.onRefresh()
+                    reviewSubmissionCount += 1
                 },
             )
         }
