@@ -4,6 +4,29 @@
 
 El cliente solo recibe la URL y una publishable key generadas por BuildKonfig. Nunca se usa una secret key ni `service_role` en Android, iOS o web. Los permisos del Data API se conceden explícitamente después de crear las políticas RLS.
 
+## Entornos por tipo de build
+
+BuildKonfig selecciona Supabase al configurar Gradle:
+
+- Las tareas `debug` y las ejecuciones Gradle sin variante explícita usan `shareat develop`.
+- Las tareas cuyo nombre contiene `release` usan `shareat production`.
+- Xcode usa develop con la configuración Debug y production con Release.
+- Para web, CI o una ejecución especial se puede forzar el entorno con
+  `-Pshareat.environment=development` o `-Pshareat.environment=production`.
+
+Las URLs y publishable keys incluidas son públicas y específicas del cliente. Se pueden reemplazar
+sin tocar el repositorio mediante propiedades Gradle específicas del entorno:
+
+```properties
+shareat.supabase.development.url=https://example.supabase.co
+shareat.supabase.development.publishableKey=sb_publishable_example
+shareat.supabase.production.url=https://example.supabase.co
+shareat.supabase.production.publishableKey=sb_publishable_example
+```
+
+Las propiedades anteriores tienen prioridad sobre los valores incluidos. Las propiedades heredadas
+`shareat.supabase.url` y `shareat.supabase.publishableKey` siguen funcionando como reemplazo global.
+
 Auth usa email/contraseña, PKCE y el callback `shareat://auth-callback`; web usa su origen. La confirmación de email y OAuth están fuera del MVP. Android declara el intent filter, iOS el URL scheme y web una CSP que limita conexiones e imágenes al origen y al proyecto Supabase.
 
 Storage contiene `avatars` privado y `restaurant-images`/`dish-images` públicos. Todos limitan JPEG, PNG y WebP a 500 KB. El reemplazo sube una ruta aleatoria nueva, actualiza la fila y solo entonces intenta borrar la anterior.
