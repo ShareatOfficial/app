@@ -1,0 +1,126 @@
+name: Android Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: Google Play version code (must increase on every upload)
+        required: true
+        type: string
+      version_name:
+        description: User-visible version (for example, 1.0.1)
+        required: true
+        default: "1.0.0"
+        type: string
+      destination:
+        description: Where to send the signed build
+        required: true
+        default: artifact
+        type: choice
+        options:
+          - artifact
+          - internal-sharing
+          - internal
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  release:
+    name: Build signed Android ${{ inputs.version_name }} (${{ inputs.version_code }})
+    runs-on: ubuntu-latest
+    env:
+      SHAREAT_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+      SHAREAT_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      VERSION_CODE: ${{ inputs.version_code }}
+      VERSION_NAME: ${{ inputs.version_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate release inputs
+        shell: bash
+        run: |
+          if [[ ! "$VERSION_CODE" =~ ^[1-9][0-9]*$ ]] || (( VERSION_CODE > 2100000000 )); then
+            echo "version_code must be an integer between 1 and 2100000000" >&2
+            exit 1
+          fi
+          if [[ ! "$VERSION_NAME" =~ ^[0-9A-Za-z][0-9A-Za-z._+-]*$ ]]; then
+            echo "version_name contains unsupported characters" >&2
+            exit 1
+          fi
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Restore upload keystore
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [[ -z "$ANDROID_KEYSTORE_BASE64" ]]; then
+            echo "ANDROID_KEYSTORE_BASE64 is not configured" >&2
+            exit 1
+          fi
+          mkdir -p keystore
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > keystore/shareat-upload.jks
+
+      - name: Build signed APK and AAB
+        shell: bash
+        env:
+          REVENUECAT_ANDROID_API_KEY: ${{ secrets.REVENUECAT_ANDROID_API_KEY }}
+        run: |
+          ./gradlew \
+            :androidApp:assembleRelease \
+            :androidApp:bundleRelease \
+            -Pshareat.versionCode="$VERSION_CODE" \
+            -Pshareat.versionName="$VERSION_NAME" \
+            -Pshareat.revenuecat.production.androidApiKey="$REVENUECAT_ANDROID_API_KEY"
+
+      - name: Upload signed APK and AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: shareat-android-${{ inputs.version_name }}-${{ inputs.version_code }}
+          path: |
+            androidApp/build/outputs/apk/release/*.apk
+            androidApp/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Restore Google Play credentials
+        if: inputs.destination != 'artifact'
+        shell: bash
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]]; then
+            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is not configured" >&2
+            exit 1
+          fi
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/google-play-service-account.json"
+
+      - name: Upload to Google Play Internal App Sharing
+        if: inputs.destination == 'internal-sharing'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: ${{ runner.temp }}/google-play-service-account.json
+          packageName: org.shareat.app
+          releaseFiles: androidApp/build/outputs/bundle/release/*.aab
+          track: internalsharing
+
+      - name: Upload to Google Play internal testing
+        if: inputs.destination == 'internal'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: ${{ runner.temp }}/google-play-service-account.json
+          packageName: org.shareat.app
+          releaseFiles: androidApp/build/outputs/bundle/release/*.aab
+          track: internal
+          status: completed

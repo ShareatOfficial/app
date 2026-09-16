@@ -8,6 +8,49 @@ plugins {
     alias(libs.plugins.buildkonfig)
 }
 
+// Android includes its build type in the requested Gradle task; Xcode exports CONFIGURATION.
+val requestedTasks = gradle.startParameter.taskNames
+val isIosReleaseBuild =
+    providers.environmentVariable("CONFIGURATION").orNull.equals("Release", ignoreCase = true) ||
+        requestedTasks.any {
+            it.contains("ios", ignoreCase = true) && it.contains("release", ignoreCase = true)
+        }
+val isAndroidReleaseBuild = requestedTasks.any {
+    it.contains("release", ignoreCase = true) && !it.contains("ios", ignoreCase = true)
+}
+val isReleaseBuild = isAndroidReleaseBuild || isIosReleaseBuild
+val revenueCatEnvironment = providers.gradleProperty("shareat.environment")
+    .orElse(if (isReleaseBuild) "production" else "development")
+    .map { it.lowercase() }
+    .get()
+
+require(revenueCatEnvironment in setOf("development", "production")) {
+    "shareat.environment must be either 'development' or 'production'"
+}
+
+val revenueCatTestStoreApiKey = "test_zurEuEMpYKqdazDPfluDhydYgxy"
+
+fun revenueCatApiKey(
+    platform: String,
+    productionPrefix: String,
+    requiredForCurrentBuild: Boolean,
+): String {
+    val environmentProperty = "shareat.revenuecat.$revenueCatEnvironment.${platform}ApiKey"
+    val legacyProperty = "shareat.revenuecat.${platform}ApiKey"
+    val apiKey = providers.gradleProperty(environmentProperty)
+        .orElse(providers.gradleProperty(legacyProperty))
+        .orElse(if (revenueCatEnvironment == "development") revenueCatTestStoreApiKey else "")
+        .get()
+
+    if (revenueCatEnvironment == "production" && (requiredForCurrentBuild || apiKey.isNotEmpty())) {
+        require(apiKey.startsWith(productionPrefix)) {
+            "Production builds require $environmentProperty to use a $productionPrefix RevenueCat public SDK key"
+        }
+    }
+
+    return apiKey
+}
+
 kotlin {
     jvm()
     iosArm64()
@@ -65,16 +108,20 @@ buildkonfig {
         buildConfigField(
             STRING,
             "REVENUECAT_ANDROID_API_KEY",
-            providers.gradleProperty("shareat.revenuecat.androidApiKey")
-                .orElse("test_zurEuEMpYKqdazDPfluDhydYgxy")
-                .get(),
+            revenueCatApiKey(
+                platform = "android",
+                productionPrefix = "goog_",
+                requiredForCurrentBuild = isAndroidReleaseBuild || !isIosReleaseBuild,
+            ),
         )
         buildConfigField(
             STRING,
             "REVENUECAT_IOS_API_KEY",
-            providers.gradleProperty("shareat.revenuecat.iosApiKey")
-                .orElse("test_zurEuEMpYKqdazDPfluDhydYgxy")
-                .get(),
+            revenueCatApiKey(
+                platform = "ios",
+                productionPrefix = "appl_",
+                requiredForCurrentBuild = isIosReleaseBuild || !isAndroidReleaseBuild,
+            ),
         )
     }
 }

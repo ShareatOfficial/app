@@ -28,16 +28,30 @@ android {
         applicationId = "org.shareat.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = providers.gradleProperty("shareat.versionCode")
+            .orElse("1")
+            .get()
+            .toInt()
+        versionName = providers.gradleProperty("shareat.versionName")
+            .orElse("1.0")
+            .get()
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("keystore/shareat-upload.jks")
+            storePassword = providers.environmentVariable("SHAREAT_UPLOAD_STORE_PASSWORD").orNull
+            keyAlias = "shareat-upload"
+            keyPassword = providers.environmentVariable("SHAREAT_UPLOAD_KEY_PASSWORD").orNull
+        }
+    }
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
