@@ -29,19 +29,27 @@ when a banking app temporarily backgrounds Shareat.
 
 ## 2. API keys and environments
 
-The supplied Test Store key is the development fallback for both platforms. Override it without
-editing tracked source code:
+Debug builds use the supplied Test Store key by default. Android tasks whose name contains
+`release` and Xcode builds whose `CONFIGURATION` is `Release` select the production environment.
+You can override the detected environment with `-Pshareat.environment=development` or
+`-Pshareat.environment=production`.
+
+Production builds require platform-specific public SDK keys. Supply them without editing tracked
+source code:
 
 ```properties
 # ~/.gradle/gradle.properties or an untracked local gradle.properties
-shareat.revenuecat.androidApiKey=goog_your_android_public_sdk_key
-shareat.revenuecat.iosApiKey=appl_your_ios_public_sdk_key
+shareat.revenuecat.production.androidApiKey=goog_your_android_public_sdk_key
+shareat.revenuecat.production.iosApiKey=appl_your_ios_public_sdk_key
 ```
 
+The previous `shareat.revenuecat.androidApiKey` and `shareat.revenuecat.iosApiKey` properties remain
+supported as fallback overrides. Environment-specific properties take precedence.
+
 The keys are public SDK keys, not RevenueCat secret REST keys. Never place a secret key in the app.
-Most importantly, never ship the current `test_` key: RevenueCat requires platform-specific keys in
-App Store and Google Play releases. Production CI should inject both properties and fail release
-builds if either still starts with `test_`.
+A production build fails during Gradle configuration when its platform key does not start with
+`goog_` on Android or `appl_` on iOS, so the Test Store key cannot be shipped by accident. Android
+and iOS release builds only require their own platform key.
 
 Initialization happens once through Koin when the native app starts:
 
@@ -152,10 +160,23 @@ the same time. Never use email addresses, advertising identifiers, or a hard-cod
 
 ## 9. Release checklist
 
-- Replace the Test Store key with `goog_…` and `appl_…` keys through CI.
+- Inject `shareat.revenuecat.production.androidApiKey` and
+  `shareat.revenuecat.production.iosApiKey` through CI.
 - Test success, cancellation, failure, restore, refund, expiry, billing issue, and offline launch.
 - Verify `shareat_unlimited` for all three products in sandbox customer records.
 - Configure Apple/Google server notifications so refunds and renewals propagate quickly.
+
+## 10. Manual Android release
+
+The `Android Release` GitHub Action accepts `version_code` (the integer Google Play requires to
+increase for every upload), `version_name` (the user-visible version), and a destination:
+
+- `artifact` builds a signed APK and AAB and keeps them as downloadable GitHub artifacts.
+- `internal-sharing` also creates a temporary Google Play Internal App Sharing link.
+- `internal` also publishes the AAB to the Google Play internal testing track.
+
+The workflow reads the signing material and production integrations from repository secrets; never
+commit the upload keystore, passwords, service-account JSON, or production RevenueCat key.
 - Confirm localized price, renewal terms, privacy policy, and terms links in the paywall.
 - Add App Privacy / Google Data Safety disclosures for RevenueCat.
 - Test Customer Center cancellation and support paths if the RevenueCat plan enables it.
