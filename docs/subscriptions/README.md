@@ -168,8 +168,9 @@ the same time. Never use email addresses, advertising identifiers, or a hard-cod
 
 ## 10. Manual Android release
 
-The `Android Release` GitHub Action accepts `version_code` (the integer Google Play requires to
-increase for every upload), `version_name` (the user-visible version), and a destination:
+The `Android Release` GitHub Action generates `version_code` automatically from the current UTC Unix
+timestamp, so every new run receives a greater Google Play version code. It accepts an optional
+`version_name` (empty uses `1.0.0`) and a destination:
 
 - `artifact` builds a signed APK and AAB and keeps them as downloadable GitHub artifacts.
 - `internal-sharing` also creates a temporary Google Play Internal App Sharing link.
