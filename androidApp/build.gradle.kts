@@ -33,7 +33,7 @@ android {
             .get()
             .toInt()
         versionName = providers.gradleProperty("shareat.versionName")
-            .orElse("1.0")
+            .orElse("1.0.0")
             .get()
     }
     packaging {

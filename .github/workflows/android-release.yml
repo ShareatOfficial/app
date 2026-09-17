@@ -3,14 +3,9 @@ name: Android Release
 on:
   workflow_dispatch:
     inputs:
-      version_code:
-        description: Google Play version code (must increase on every upload)
-        required: true
-        type: string
       version_name:
-        description: User-visible version (for example, 1.0.1)
-        required: true
-        default: "1.0.0"
+        description: User-visible version; leave empty to use 1.0.0
+        required: false
         type: string
       destination:
         description: Where to send the signed build
@@ -34,28 +29,44 @@ env:
 
 jobs:
   release:
-    name: Build signed Android ${{ inputs.version_name }} (${{ inputs.version_code }})
+    name: Build signed Android release
     runs-on: ubuntu-latest
     env:
       SHAREAT_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
       SHAREAT_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      VERSION_CODE: ${{ inputs.version_code }}
-      VERSION_NAME: ${{ inputs.version_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate release inputs
+      - name: Prepare release metadata
+        id: release
         shell: bash
+        env:
+          INPUT_VERSION_NAME: ${{ inputs.version_name }}
         run: |
-          if [[ ! "$VERSION_CODE" =~ ^[1-9][0-9]*$ ]] || (( VERSION_CODE > 2100000000 )); then
-            echo "version_code must be an integer between 1 and 2100000000" >&2
+          version_code="$(date -u +%s)"
+          version_name="${INPUT_VERSION_NAME:-1.0.0}"
+
+          if (( version_code > 2100000000 )); then
+            echo "Generated version code exceeds the Google Play limit" >&2
             exit 1
           fi
-          if [[ ! "$VERSION_NAME" =~ ^[0-9A-Za-z][0-9A-Za-z._+-]*$ ]]; then
+          if [[ ! "$version_name" =~ ^[0-9A-Za-z][0-9A-Za-z._+-]*$ ]]; then
             echo "version_name contains unsupported characters" >&2
             exit 1
           fi
+
+          echo "VERSION_CODE=$version_code" >> "$GITHUB_ENV"
+          echo "VERSION_NAME=$version_name" >> "$GITHUB_ENV"
+          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
+          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Android release metadata"
+            echo "- Version code: \`$version_code\`"
+            echo "- Version name: \`$version_name\`"
+            echo "- Destination: \`${{ inputs.destination }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Gradle setup
         uses: ./.github/actions/gradle-setup
@@ -72,6 +83,18 @@ jobs:
           mkdir -p keystore
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > keystore/shareat-upload.jks
 
+      - name: Validate upload keystore
+        shell: bash
+        run: |
+          if [[ -z "$SHAREAT_UPLOAD_STORE_PASSWORD" || -z "$SHAREAT_UPLOAD_KEY_PASSWORD" ]]; then
+            echo "Android signing password secrets are not configured" >&2
+            exit 1
+          fi
+          keytool -list \
+            -keystore keystore/shareat-upload.jks \
+            -storepass:env SHAREAT_UPLOAD_STORE_PASSWORD \
+            -alias shareat-upload > /dev/null
+
       - name: Build signed APK and AAB
         shell: bash
         env:
@@ -87,7 +110,7 @@ jobs:
       - name: Upload signed APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: shareat-android-${{ inputs.version_name }}-${{ inputs.version_code }}
+          name: shareat-android-${{ steps.release.outputs.version_name }}-${{ steps.release.outputs.version_code }}
           path: |
             androidApp/build/outputs/apk/release/*.apk
             androidApp/build/outputs/bundle/release/*.aab
