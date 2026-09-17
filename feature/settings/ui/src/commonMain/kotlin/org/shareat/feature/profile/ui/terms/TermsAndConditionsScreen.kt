@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 
 const val TERMS_AND_CONDITIONS_URL =
     "https://shareatofficial.github.io/app/terms-and-conditions.html"
@@ -28,7 +29,7 @@ fun TermsAndConditionsScreen(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             IconButton(
                 modifier = Modifier.padding(8.dp),
                 onClick = onBackClick,

@@ -35,6 +35,7 @@ import org.shareat.feature.home.ui.home.model.HomeUiState
 import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
 import org.shareat.feature.home.ui.home.model.toFeedSections
 import org.shareat.feature.home.ui.navigation.HomeNavigation
+import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.home.ui.generated.resources.Res
 import shareat.feature.home.ui.generated.resources.recommended
@@ -71,7 +72,7 @@ private fun HomeScreenStateless(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             HomeSearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = onSearchQueryChanged,
