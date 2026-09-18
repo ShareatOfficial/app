@@ -112,20 +112,20 @@ private fun RestaurantSummary.toCardUiState(): RestaurantCardUiState = Restauran
 )
 
 private fun Int?.toRatingLabel(): String {
-    if (this == null) return "New"
+    if (this == null) return "Nuevo"
     val whole = this / 10
     val decimal = this % 10
     return "$whole.$decimal"
 }
 
 private fun RepositoryError.toUserMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Your session credentials are no longer valid."
-    RepositoryError.Offline -> "You appear to be offline. Try again when connected."
-    RepositoryError.Unauthenticated -> "Your session has expired. Please sign in again."
-    RepositoryError.Forbidden -> "This account is not allowed to perform that action."
-    is RepositoryError.Unavailable -> "The service is temporarily unavailable."
-    is RepositoryError.AlreadyExists -> "The $entity already exists."
+    RepositoryError.InvalidCredentials -> "Tus credenciales ya no son válidas."
+    RepositoryError.Offline -> "Parece que no tienes conexión. Inténtalo de nuevo."
+    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Vuelve a iniciar sesión."
+    RepositoryError.Forbidden -> "Esta cuenta no puede realizar esa acción."
+    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
+    is RepositoryError.AlreadyExists -> "$entity ya existe."
     is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "The requested $entity could not be found."
+    is RepositoryError.NotFound -> "No hemos encontrado $entity."
     is RepositoryError.Validation -> reason
 }

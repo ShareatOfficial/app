@@ -116,11 +116,11 @@ private fun SettingsScreenStateless(
         Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             SettingsTopBar(
                 title = when (uiState) {
-                    is SettingsUiState.User -> "Settings"
-                    is SettingsUiState.Restaurant -> "Restaurant settings"
+                    is SettingsUiState.User -> "Ajustes"
+                    is SettingsUiState.Restaurant -> "Ajustes del restaurante"
                 },
                 onBackClick = callbacks.onBackClick,
-                actionText = if (uiState is SettingsUiState.Restaurant) "Save" else null,
+                actionText = if (uiState is SettingsUiState.Restaurant) "Guardar" else null,
                 actionEnabled = uiState is SettingsUiState.Restaurant &&
                     !uiState.isLoading && !uiState.isSaving,
                 onActionClick = {
@@ -160,7 +160,7 @@ private fun SettingsTopBar(
         IconButton(onClick = onBackClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                contentDescription = "Go back",
+                contentDescription = "Volver",
             )
         }
         Text(
@@ -212,13 +212,13 @@ private fun UserSettings(
         ) {
             SettingsItem(
                 leadingIcon = Icons.Outlined.ManageAccounts,
-                text = "Edit profile",
+                text = "Editar perfil",
                 onClick = { callbacks.onUserAction(SettingsUserAction.EditProfile) },
             )
             SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.Description,
-                text = "Terms and Conditions",
+                text = "Términos y condiciones",
                 onClick = callbacks.onTermsAndConditionsClick,
             )
         }
@@ -234,7 +234,7 @@ private fun UserSettings(
                 contentDescription = null,
             )
             Spacer(modifier = Modifier.size(8.dp))
-            Text("Log out")
+            Text("Cerrar sesión")
         }
     }
 
@@ -279,7 +279,7 @@ private fun RestaurantSettings(
 ) {
     val listState = rememberLazyListState()
     var showOpeningHoursSheet by remember { mutableStateOf(false) }
-    // The status text is the first item, while "Save changes" sits at the very bottom: a rejected
+    // The status text is the first item, while "Guardar cambios" sits at the very bottom: a rejected
     // save would otherwise report itself off-screen.
     LaunchedEffect(uiState.errorMessage, uiState.saveSucceeded) {
         if (uiState.errorMessage != null || uiState.saveSucceeded) listState.animateScrollToItem(0)
@@ -310,23 +310,23 @@ private fun RestaurantSettings(
             item { SettingsStatusText(message = message, isError = true) }
         }
         if (uiState.saveSucceeded) {
-            item { SettingsStatusText(message = "Changes saved.", isError = false) }
+            item { SettingsStatusText(message = "Cambios guardados.", isError = false) }
         }
         item {
             RestaurantSectionCard(
-                title = "Basic info",
+                title = "Información básica",
                 icon = Icons.Outlined.Storefront,
             ) {
                 RestaurantTextField(
                     value = uiState.name,
-                    label = "Restaurant name",
+                    label = "Nombre del restaurante",
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.NameChanged(it))
                     },
                 )
                 RestaurantTextField(
                     value = uiState.description,
-                    label = "Short description",
+                    label = "Descripción breve",
                     onValueChange = {
                         callbacks.onRestaurantAction(
                             SettingsRestaurantAction.DescriptionChanged(it),
@@ -336,14 +336,14 @@ private fun RestaurantSettings(
                 )
                 RestaurantTextField(
                     value = uiState.phone,
-                    label = "Contact phone",
+                    label = "Teléfono de contacto",
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.PhoneChanged(it))
                     },
                 )
                 RestaurantTextField(
                     value = uiState.email,
-                    label = "Contact email",
+                    label = "Correo de contacto",
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.EmailChanged(it))
                     },
@@ -352,12 +352,12 @@ private fun RestaurantSettings(
         }
         item {
             RestaurantSectionCard(
-                title = "Location",
+                title = "Dirección",
                 icon = Icons.Outlined.LocationOn,
             ) {
                 RestaurantTextField(
                     value = uiState.streetAddress,
-                    label = "Street address",
+                    label = "Calle y número",
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.StreetChanged(it))
                     },
@@ -372,7 +372,7 @@ private fun RestaurantSettings(
                             callbacks.onRestaurantAction(SettingsRestaurantAction.CityChanged(it))
                         },
                         modifier = Modifier.weight(1f),
-                        label = { Text("City") },
+                        label = { Text("Localidad") },
                         singleLine = true,
                     )
                     OutlinedTextField(
@@ -381,7 +381,7 @@ private fun RestaurantSettings(
                             callbacks.onRestaurantAction(SettingsRestaurantAction.PostcodeChanged(it))
                         },
                         modifier = Modifier.weight(1f),
-                        label = { Text("Postcode") },
+                        label = { Text("Código postal") },
                         singleLine = true,
                     )
                 }
@@ -389,19 +389,19 @@ private fun RestaurantSettings(
         }
         item {
             RestaurantSectionCard(
-                title = "Opening hours",
+                title = "Horario",
                 icon = Icons.Outlined.Schedule,
             ) {
                 SettingsItem(
                     leadingIcon = Icons.Outlined.Schedule,
-                    text = "Change opening hours",
+                    text = "Cambiar horario",
                     onClick = { showOpeningHoursSheet = true },
                 )
             }
         }
         item {
             RestaurantSectionCard(
-                title = "Management",
+                title = "Gestión",
                 icon = Icons.Outlined.AllInclusive,
             ) {
                 SettingsItem(
@@ -413,7 +413,7 @@ private fun RestaurantSettings(
         }
         item {
             RestaurantSectionCard(
-                title = "Account",
+                title = "Cuenta",
                 icon = Icons.Outlined.ManageAccounts,
             ) {
                 Row(
@@ -424,11 +424,11 @@ private fun RestaurantSettings(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Visibility status",
+                            text = "Estado de visibilidad",
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
-                            text = if (uiState.isPublished) "Published" else "Hidden",
+                            text = if (uiState.isPublished) "Publicado" else "Oculto",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -445,13 +445,13 @@ private fun RestaurantSettings(
                 SettingsDivider()
                 SettingsItem(
                     Icons.Outlined.Description,
-                    "Terms and Conditions",
+                    "Términos y condiciones",
                     callbacks.onTermsAndConditionsClick,
                 )
                 SettingsDivider()
                 SettingsItem(
                     leadingIcon = Icons.AutoMirrored.Filled.ExitToApp,
-                    text = "Log out",
+                    text = "Cerrar sesión",
                     onClick = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.LogOut)
                     },
@@ -471,7 +471,7 @@ private fun RestaurantSettings(
                 if (uiState.isSaving) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp))
                 } else {
-                    Text("Save changes")
+                    Text("Guardar cambios")
                 }
             }
         }
@@ -520,7 +520,7 @@ private fun RestaurantIdentityHeader(uiState: SettingsUiState.Restaurant) {
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = if (uiState.isPublished) "Published" else "Hidden",
+                    text = if (uiState.isPublished) "Publicado" else "Oculto",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -602,7 +602,7 @@ private fun OpeningHoursRow(
                 style = MaterialTheme.typography.titleSmall,
             )
             Text(
-                text = if (hours.isOpen) "Open" else "Closed",
+                text = if (hours.isOpen) "Abierto" else "Cerrado",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -619,7 +619,7 @@ private fun OpeningHoursRow(
                     value = hours.openingTime,
                     onValueChange = onOpeningTimeChange,
                     modifier = Modifier.weight(1f),
-                    label = { Text("Opens") },
+                    label = { Text("Abre") },
                     singleLine = true,
                 )
                 Text("–")
@@ -627,7 +627,7 @@ private fun OpeningHoursRow(
                     value = hours.closingTime,
                     onValueChange = onClosingTimeChange,
                     modifier = Modifier.weight(1f),
-                    label = { Text("Closes") },
+                    label = { Text("Cierra") },
                     singleLine = true,
                 )
             }
@@ -663,7 +663,7 @@ private fun OpeningHoursBottomSheet(
                     .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("Opening hours", style = MaterialTheme.typography.headlineSmall)
+                Text("Horario", style = MaterialTheme.typography.headlineSmall)
                 draft.forEach { hours ->
                     OpeningHoursRow(
                         hours = hours,
@@ -692,13 +692,13 @@ private fun OpeningHoursBottomSheet(
                     onClick = onDismiss,
                     modifier = Modifier.sizeIn(minHeight = 48.dp),
                 ) {
-                    Text("Cancel")
+                    Text("Cancelar")
                 }
                 Button(
                     onClick = { onApply(draft) },
                     modifier = Modifier.sizeIn(minHeight = 48.dp),
                 ) {
-                    Text("Apply")
+                    Text("Aplicar")
                 }
             }
         }
@@ -803,7 +803,7 @@ private fun SettingsItemPreview() {
     ShareatTheme {
         SettingsItem(
             leadingIcon = Icons.Outlined.ManageAccounts,
-            text = "Edit profile",
+            text = "Editar perfil",
             onClick = {},
         )
     }

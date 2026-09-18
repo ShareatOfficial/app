@@ -133,7 +133,7 @@ class SettingsViewModel(
     private fun saveRestaurantChanges() {
         val state = _uiState.value as? SettingsUiState.Restaurant ?: return
         val original = loadedRestaurant ?: return updateRestaurant {
-            copy(errorMessage = "Restaurant data is not available.")
+            copy(errorMessage = "Los datos del restaurante no están disponibles.")
         }
         when (val mapping = state.toUpdateParams(original)) {
             is RestaurantSettingsMappingResult.Failure -> updateRestaurant {
@@ -205,7 +205,7 @@ class SettingsViewModel(
     }
 
     private fun emitEvent(event: SettingsEvent) {
-        check(eventChannel.trySend(event).isSuccess) { "Unable to emit settings event." }
+        check(eventChannel.trySend(event).isSuccess) { "No se ha podido emitir el evento de ajustes." }
     }
 
     private fun updateOpeningHours(
@@ -239,13 +239,13 @@ class SettingsViewModel(
 }
 
 private fun RepositoryError.toUserMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Your session credentials are no longer valid."
-    RepositoryError.Offline -> "You appear to be offline. Try again when connected."
-    RepositoryError.Unauthenticated -> "Your session has expired. Please sign in again."
-    RepositoryError.Forbidden -> "This account is not allowed to perform that action."
-    is RepositoryError.Unavailable -> "The service is temporarily unavailable."
-    is RepositoryError.AlreadyExists -> "The ${entity} already exists."
+    RepositoryError.InvalidCredentials -> "Tus credenciales ya no son válidas."
+    RepositoryError.Offline -> "Parece que no tienes conexión. Inténtalo de nuevo."
+    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Vuelve a iniciar sesión."
+    RepositoryError.Forbidden -> "Esta cuenta no puede realizar esa acción."
+    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
+    is RepositoryError.AlreadyExists -> "${entity} ya existe."
     is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "The requested ${entity} could not be found."
+    is RepositoryError.NotFound -> "No hemos encontrado ${entity}."
     is RepositoryError.Validation -> reason
 }

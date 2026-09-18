@@ -106,7 +106,7 @@ private fun EditProfileScreenStateless(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "Personal details",
+                    text = "Datos personales",
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.headlineSmall,
                 )
@@ -130,7 +130,7 @@ private fun EditProfileScreenStateless(
                     value = uiState.fullName,
                     onValueChange = { onAction(EditProfileAction.FullNameChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Full name") },
+                    label = { Text("Nombre completo") },
                     singleLine = true,
                     enabled = !uiState.isLoading && !uiState.isSaving,
                 )
@@ -140,8 +140,8 @@ private fun EditProfileScreenStateless(
                     value = uiState.displayName,
                     onValueChange = { onAction(EditProfileAction.DisplayNameChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Display name") },
-                    supportingText = { Text("This is how other diners will see you.") },
+                    label = { Text("Nombre público") },
+                    supportingText = { Text("Así te verán el resto de comensales.") },
                     trailingIcon = {
                         if (uiState.displayName.isNotEmpty()) {
                             IconButton(
@@ -149,7 +149,7 @@ private fun EditProfileScreenStateless(
                                     onAction(EditProfileAction.DisplayNameChanged(""))
                                 },
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = "Clear display name")
+                                Icon(Icons.Default.Close, contentDescription = "Borrar el nombre público")
                             }
                         }
                     },
@@ -162,7 +162,7 @@ private fun EditProfileScreenStateless(
                     value = uiState.email,
                     onValueChange = {},
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Email address") },
+                    label = { Text("Correo electrónico") },
                     leadingIcon = { Icon(Icons.Outlined.Mail, contentDescription = null) },
                     trailingIcon = {
                         if (uiState.isEmailVerified) {
@@ -178,7 +178,7 @@ private fun EditProfileScreenStateless(
                                     tint = MaterialTheme.colorScheme.primary,
                                 )
                                 Text(
-                                    text = "Verified",
+                                    text = "Verificado",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
@@ -195,7 +195,7 @@ private fun EditProfileScreenStateless(
                     value = uiState.phoneNumber,
                     onValueChange = { onAction(EditProfileAction.PhoneNumberChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Phone number") },
+                    label = { Text("Teléfono") },
                     leadingIcon = { Icon(Icons.Outlined.Phone, contentDescription = null) },
                     singleLine = true,
                     enabled = !uiState.isLoading && !uiState.isSaving,
@@ -226,10 +226,10 @@ private fun EditProfileTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBackClick, enabled = !isSaving) {
-            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Go back")
+            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
         }
         Text(
-            text = "Edit profile",
+            text = "Editar perfil",
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.headlineSmall,
         )
@@ -237,7 +237,7 @@ private fun EditProfileTopBar(
             if (isSaving) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             } else {
-                Text("Save")
+                Text("Guardar")
             }
         }
     }
@@ -279,7 +279,7 @@ private fun ProfileAvatar(
             onClick = onChangePhoto,
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
         ) {
-            Text("Change photo")
+            Text("Cambiar foto")
         }
     }
 }
@@ -298,7 +298,7 @@ private fun LanguageField(
             enabled = enabled,
         ) {
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-                Text("Preferred language", style = MaterialTheme.typography.labelSmall)
+                Text("Idioma preferido", style = MaterialTheme.typography.labelSmall)
                 Text(selected.label, style = MaterialTheme.typography.bodyLarge)
             }
             Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)

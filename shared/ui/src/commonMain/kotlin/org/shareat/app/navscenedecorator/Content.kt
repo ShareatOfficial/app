@@ -36,14 +36,14 @@ val TOP_LEVEL_NAV_ITEMS = topLevelNavigationItems(HomeKey)
 fun topLevelNavigationItems(homeRoute: NavKey): List<TopLevelNavigationItem> =
     if (homeRoute == RestaurantHomeKey) {
         listOf(
-            TopLevelNavigationItem(RestaurantHomeKey, "Edit menu", Icons.Default.Home),
-            TopLevelNavigationItem(SettingsKey, "Profile", Icons.Default.Settings),
+            TopLevelNavigationItem(RestaurantHomeKey, "Editar carta", Icons.Default.Home),
+            TopLevelNavigationItem(SettingsKey, "Perfil", Icons.Default.Settings),
         )
     } else {
         listOf(
-            TopLevelNavigationItem(homeRoute, "Home", Icons.Default.Home),
+            TopLevelNavigationItem(homeRoute, "Inicio", Icons.Default.Home),
             TopLevelNavigationItem(LastActivityKey, "Actividad", Icons.Default.History),
-            TopLevelNavigationItem(SettingsKey, "Settings", Icons.Default.Settings),
+            TopLevelNavigationItem(SettingsKey, "Ajustes", Icons.Default.Settings),
         )
     }
 

@@ -31,9 +31,9 @@ fun Profile(
                 Alignment.CenterVertically,
             ),
         ) {
-            Text("Profile", style = MaterialTheme.typography.headlineMedium)
+            Text("Perfil", style = MaterialTheme.typography.headlineMedium)
             Button(onClick = navigator::openSettings) {
-                Text("Settings")
+                Text("Ajustes")
             }
         }
     }

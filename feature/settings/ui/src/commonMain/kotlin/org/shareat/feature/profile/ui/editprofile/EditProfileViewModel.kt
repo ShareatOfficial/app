@@ -38,7 +38,7 @@ class EditProfileViewModel(
                 copy(preferredLanguage = action.value)
             }
             EditProfileAction.ChangePhoto -> _uiState.update {
-                it.copy(errorMessage = "Profile photo editing is not available yet.")
+                it.copy(errorMessage = "Todavía no se puede cambiar la foto de perfil.")
             }
             EditProfileAction.Save -> save()
         }
@@ -61,7 +61,7 @@ class EditProfileViewModel(
                     )
                     is ProfileSettings.RestaurantOwner -> _uiState.value = EditProfileUiState(
                         isLoading = false,
-                        errorMessage = "Personal profile editing is only available for customer accounts.",
+                        errorMessage = "Solo las cuentas de cliente pueden editar el perfil personal.",
                     )
                 }
                 is RepositoryResult.Failure -> _uiState.update {
@@ -116,13 +116,13 @@ class EditProfileViewModel(
 }
 
 private fun RepositoryError.toEditProfileMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Your session credentials are no longer valid."
-    RepositoryError.Offline -> "You appear to be offline. Try again when connected."
-    RepositoryError.Unauthenticated -> "Your session has expired. Please sign in again."
-    RepositoryError.Forbidden -> "This account is not allowed to update the profile."
-    is RepositoryError.Unavailable -> "The service is temporarily unavailable."
-    is RepositoryError.AlreadyExists -> "The ${entity} already exists."
+    RepositoryError.InvalidCredentials -> "Tus credenciales ya no son válidas."
+    RepositoryError.Offline -> "Parece que no tienes conexión. Inténtalo de nuevo."
+    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Vuelve a iniciar sesión."
+    RepositoryError.Forbidden -> "Esta cuenta no puede actualizar el perfil."
+    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
+    is RepositoryError.AlreadyExists -> "${entity} ya existe."
     is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "The requested ${entity} could not be found."
+    is RepositoryError.NotFound -> "No hemos encontrado ${entity}."
     is RepositoryError.Validation -> reason
 }

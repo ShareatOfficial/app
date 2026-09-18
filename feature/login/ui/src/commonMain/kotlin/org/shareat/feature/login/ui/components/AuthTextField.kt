@@ -59,7 +59,7 @@ internal fun AuthTextField(
         trailingIcon = if (!isPassword) null else {
             {
                 TextButton(onClick = { revealed = !revealed }, enabled = enabled) {
-                    Text(if (revealed) "Hide" else "Show") // extract string resource
+                    Text(if (revealed) "Ocultar" else "Mostrar") // extract string resource
                 }
             }
         },

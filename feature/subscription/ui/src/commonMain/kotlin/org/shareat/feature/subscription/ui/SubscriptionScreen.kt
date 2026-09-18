@@ -89,7 +89,7 @@ private fun SubscriptionContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Go back")
+                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
                 }
                 Text(
                     "Shareat Unlimited",
@@ -121,7 +121,7 @@ private fun SubscriptionContent(
                     ) {
                         Column(Modifier.fillMaxWidth().padding(16.dp)) {
                             Text(message, color = MaterialTheme.colorScheme.onErrorContainer)
-                            TextButton(onClick = onRetry) { Text("Try again") }
+                            TextButton(onClick = onRetry) { Text("Reintentar") }
                         }
                     }
                 }
@@ -134,7 +134,7 @@ private fun SubscriptionContent(
                     ) {
                         Icon(Icons.Outlined.AllInclusive, contentDescription = null)
                         Spacer(Modifier.size(8.dp))
-                        Text("View subscription options")
+                        Text("Ver opciones de suscripción")
                     }
                 }
 
@@ -154,7 +154,7 @@ private fun SubscriptionContent(
                     ) {
                         CircularProgressIndicator(Modifier.size(20.dp))
                         Spacer(Modifier.size(8.dp))
-                        Text("Updating subscription…")
+                        Text("Actualizando la suscripción…")
                     }
                 }
 
@@ -166,7 +166,7 @@ private fun SubscriptionContent(
                     ) {
                         Icon(Icons.Outlined.ManageAccounts, contentDescription = null)
                         Spacer(Modifier.size(8.dp))
-                        Text("Manage subscription")
+                        Text("Gestionar suscripción")
                     }
                 }
 
@@ -175,7 +175,7 @@ private fun SubscriptionContent(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.isProcessing,
                 ) {
-                    Text("Restore purchases")
+                    Text("Restaurar compras")
                 }
             }
         }
@@ -254,7 +254,7 @@ private fun ProductCard(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            Button(onClick = onPurchase, enabled = enabled) { Text("Choose") }
+            Button(onClick = onPurchase, enabled = enabled) { Text("Elegir") }
         }
     }
 }

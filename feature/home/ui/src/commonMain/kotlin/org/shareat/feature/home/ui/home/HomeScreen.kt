@@ -175,7 +175,7 @@ private fun HomeLoading(modifier: Modifier = Modifier) {
 @Composable
 private fun HomeEmpty(modifier: Modifier = Modifier) {
     Text(
-        text = "No restaurants found.",
+        text = "No hemos encontrado restaurantes.",
         modifier = modifier.padding(24.dp),
         style = MaterialTheme.typography.bodyLarge,
     )
@@ -198,7 +198,7 @@ private fun HomeError(
             color = MaterialTheme.colorScheme.error,
         )
         Button(onClick = onRetryClick) {
-            Text("Retry")
+            Text("Reintentar")
         }
     }
 }

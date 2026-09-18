@@ -19,10 +19,10 @@ actual fun TermsAndConditionsContent(modifier: Modifier) {
         modifier = modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Open the terms in your browser:", style = MaterialTheme.typography.bodyLarge)
+        Text("Abre los términos en tu navegador:", style = MaterialTheme.typography.bodyLarge)
         Text(TERMS_AND_CONDITIONS_URL, style = MaterialTheme.typography.bodyMedium)
         Button(onClick = { uriHandler.openUri(TERMS_AND_CONDITIONS_URL) }) {
-            Text("Open terms")
+            Text("Abrir términos")
         }
     }
 }

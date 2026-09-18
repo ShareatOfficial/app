@@ -33,12 +33,12 @@ internal fun LoginWelcome(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = "Good food starts with a good choice.", // extract string resource
+            text = "Comer bien empieza por elegir bien.", // extract string resource
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            text = "Discover trusted restaurants and the dishes people come back for.", // extract string resource
+            text = "Descubre restaurantes de confianza y los platos por los que se vuelve.", // extract string resource
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -51,7 +51,7 @@ internal fun LoginWelcome(
                 pressedShape = MaterialTheme.shapes.large,
             ),
         ) {
-            Text(text = "Create account") // extract string resource
+            Text(text = "Crear cuenta") // extract string resource
         }
         OutlinedButton(
             onClick = onSignInClick,
@@ -61,13 +61,13 @@ internal fun LoginWelcome(
                 pressedShape = MaterialTheme.shapes.large,
             )
         ) {
-            Text(text = "Sign in") // extract string resource
+            Text(text = "Iniciar sesión") // extract string resource
         }
         TextButton(
             onClick = onBrowseAsGuestClick,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "Browse without an account") // extract string resource
+            Text(text = "Explorar sin cuenta") // extract string resource
         }
     }
 }

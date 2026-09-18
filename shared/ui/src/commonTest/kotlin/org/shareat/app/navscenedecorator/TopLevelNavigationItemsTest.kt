@@ -13,7 +13,7 @@ class TopLevelNavigationItemsTest {
         val items = topLevelNavigationItems(RestaurantHomeKey)
 
         assertEquals(listOf(RestaurantHomeKey, SettingsKey), items.map(TopLevelNavigationItem::route))
-        assertEquals(listOf("Edit menu", "Profile"), items.map(TopLevelNavigationItem::label))
+        assertEquals(listOf("Editar carta", "Perfil"), items.map(TopLevelNavigationItem::label))
     }
 
     @Test

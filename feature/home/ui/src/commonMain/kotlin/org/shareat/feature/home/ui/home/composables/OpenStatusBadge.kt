@@ -52,7 +52,7 @@ internal fun OpenStatusBadge(
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = if (isOpen) "Open" else "Closed",
+            text = if (isOpen) "Abierto" else "Cerrado",
             color = contentColor,
             style = MaterialTheme.typography.labelLarge,
         )

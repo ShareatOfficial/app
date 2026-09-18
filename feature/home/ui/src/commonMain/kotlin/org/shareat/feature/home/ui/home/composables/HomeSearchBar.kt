@@ -23,7 +23,7 @@ internal fun HomeSearchBar(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier.fillMaxWidth(),
-        placeholder = { Text("Search restaurants") },
+        placeholder = { Text("Buscar restaurantes") },
         leadingIcon = {
             Icon(imageVector = Icons.Filled.Search, contentDescription = null)
         },

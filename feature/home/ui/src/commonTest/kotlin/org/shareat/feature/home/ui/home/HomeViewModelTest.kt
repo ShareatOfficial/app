@@ -119,7 +119,7 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         val content = assertIs<HomeContentUiState.Error>(viewModel.uiState.value.content)
-        assertEquals("You appear to be offline. Try again when connected.", content.message)
+        assertEquals("Parece que no tienes conexión. Inténtalo de nuevo.", content.message)
     }
 
     @Test
