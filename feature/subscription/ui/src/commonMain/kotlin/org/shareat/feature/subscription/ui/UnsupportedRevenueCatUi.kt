@@ -21,9 +21,9 @@ internal fun UnsupportedRevenueCatUi(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("RevenueCat Paywalls and Customer Center are available in the Android and iOS apps.")
+        Text("Los paywalls y el Customer Center de RevenueCat solo están disponibles en las apps de Android e iOS.")
         Button(onClick = onDismiss, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Close")
+            Text("Cerrar")
         }
     }
 }

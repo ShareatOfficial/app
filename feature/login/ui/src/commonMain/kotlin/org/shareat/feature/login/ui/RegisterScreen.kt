@@ -65,36 +65,36 @@ internal fun RegisterScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TextButton(onClick = onBackClick, enabled = !isLoading) {
-            Text(text = "Back") // extract string resource
+            Text(text = "Volver") // extract string resource
         }
         Text(
-            text = "Create your account", // extract string resource
+            text = "Crea tu cuenta", // extract string resource
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
         AuthTextField(
             value = email,
             onValueChange = onEmailFieldChange,
-            label = "Email", // extract string resource
+            label = "Correo electrónico", // extract string resource
             enabled = !isLoading,
             keyboardType = KeyboardType.Email,
         )
         AuthTextField(
             value = password,
             onValueChange = onPasswordFieldChange,
-            label = "Password", // extract string resource
+            label = "Contraseña", // extract string resource
             enabled = !isLoading,
             isPassword = true,
-            supportingText = "At least $MIN_PASSWORD_LENGTH characters", // extract string resource
+            supportingText = "Mínimo $MIN_PASSWORD_LENGTH caracteres", // extract string resource
         )
         AuthTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = "Confirm password", // extract string resource
+            label = "Repite la contraseña", // extract string resource
             enabled = !isLoading,
             isPassword = true,
             isError = passwordsMismatch,
-            supportingText = "Passwords don't match".takeIf { passwordsMismatch }, // extract string resource
+            supportingText = "Las contraseñas no coinciden".takeIf { passwordsMismatch }, // extract string resource
         )
         RoleField(
             selectedRole = selectedRole,
@@ -110,7 +110,7 @@ internal fun RegisterScreen(
             AuthTextField(
                 value = displayName,
                 onValueChange = onDisplayNameFieldChange,
-                label = "Display name", // extract string resource
+                label = "Nombre público", // extract string resource
                 enabled = !isLoading,
                 imeAction = ImeAction.Done,
             )
@@ -138,7 +138,7 @@ internal fun RegisterScreen(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
-                Text(text = "Create account") // extract string resource
+                Text(text = "Crear cuenta") // extract string resource
             }
         }
         TextButton(
@@ -146,7 +146,7 @@ internal fun RegisterScreen(
             enabled = !isLoading,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "Already have an account? Sign in") // extract string resource
+            Text(text = "¿Ya tienes cuenta? Inicia sesión") // extract string resource
         }
     }
 }
@@ -164,7 +164,7 @@ private fun RoleField(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
-            text = "I'm signing up as", // extract string resource
+            text = "Me registro como", // extract string resource
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -190,14 +190,14 @@ private fun RoleField(
 // extract string resources
 private val AccountRole.label: String
     get() = when (this) {
-        AccountRole.Customer -> "Customer"
-        AccountRole.Restaurant -> "Restaurant"
+        AccountRole.Customer -> "Cliente"
+        AccountRole.Restaurant -> "Restaurante"
     }
 
 private val AccountRole.roleHint: String
     get() = when (this) {
-        AccountRole.Customer -> "Discover restaurants and review the dishes you try."
-        AccountRole.Restaurant -> "Publish your restaurant profile."
+        AccountRole.Customer -> "Descubre restaurantes y valora los platos que pruebas."
+        AccountRole.Restaurant -> "Publica el perfil de tu restaurante."
     }
 
 @Preview

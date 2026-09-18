@@ -36,11 +36,11 @@ fun TermsAndConditionsScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = "Go back",
+                    contentDescription = "Volver",
                 )
             }
             Text(
-                text = "Terms and Conditions",
+                text = "Términos y condiciones",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 4.dp),

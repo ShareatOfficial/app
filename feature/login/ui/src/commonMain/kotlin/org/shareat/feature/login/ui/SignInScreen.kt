@@ -45,24 +45,24 @@ internal fun SignInScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TextButton(onClick = onBackClick, enabled = !isLoading) {
-            Text(text = "Back") // extract string resource
+            Text(text = "Volver") // extract string resource
         }
         Text(
-            text = "Welcome back", // extract string resource
+            text = "Bienvenido de nuevo", // extract string resource
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
         AuthTextField(
             value = email,
             onValueChange = onEmailFieldChange,
-            label = "Email", // extract string resource
+            label = "Correo electrónico", // extract string resource
             enabled = !isLoading,
             keyboardType = KeyboardType.Email,
         )
         AuthTextField(
             value = password,
             onValueChange = onPasswordFieldChange,
-            label = "Password", // extract string resource
+            label = "Contraseña", // extract string resource
             enabled = !isLoading,
             isPassword = true,
             imeAction = ImeAction.Done,
@@ -76,7 +76,7 @@ internal fun SignInScreen(
         }
         if (recoverySent) {
             Text(
-                text = "Check your email for the password recovery link.", // extract string resource
+                text = "Revisa tu correo: te hemos enviado el enlace para recuperar la contraseña.", // extract string resource
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -97,7 +97,7 @@ internal fun SignInScreen(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
-                Text(text = "Sign in") // extract string resource
+                Text(text = "Iniciar sesión") // extract string resource
             }
         }
         TextButton(
@@ -105,14 +105,14 @@ internal fun SignInScreen(
             enabled = !isLoading,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "Forgot password?") // extract string resource
+            Text(text = "¿Has olvidado la contraseña?") // extract string resource
         }
         TextButton(
             onClick = onCreateAccountClick,
             enabled = !isLoading,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "New to Shareat? Create account") // extract string resource
+            Text(text = "¿Nuevo en Shareat? Crea tu cuenta") // extract string resource
         }
         // TODO: provider sign-in (Google, Apple, or both depending on the platform).
     }
