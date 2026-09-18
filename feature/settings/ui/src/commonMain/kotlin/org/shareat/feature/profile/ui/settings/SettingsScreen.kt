@@ -64,6 +64,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @Composable
@@ -112,7 +113,7 @@ private fun SettingsScreenStateless(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             SettingsTopBar(
                 title = when (uiState) {
                     is SettingsUiState.User -> "Settings"

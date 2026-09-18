@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 import org.shareat.shared.designsystem.shimmerEffect
 
 @Composable
@@ -62,7 +63,7 @@ internal fun LastActivityScreenStateless(
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             Text(
                 text = "Actividad",
                 style = MaterialTheme.typography.headlineMedium,

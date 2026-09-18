@@ -18,6 +18,7 @@ A Compose-enabled leaf module with no dependency on `domain`, `data`, Koin, or a
 
 - **Visual effects**: `Modifier.shimmerEffect(color: Color, shape: Shape = RectangleShape)`, which pulses `color`'s alpha in a loop and paints it as this shape's background.
 - **Shared components**, in `org.shareat.shared.designsystem.components`: `ReviewCard(comment, rating, title = null)` and `RatingBadge(ratingLabel)`.
+- **Layout helpers**, in `org.shareat.shared.designsystem.layout`: `@Composable fun Modifier.safeDrawingTopPadding()`, which pads by `WindowInsets.safeDrawing`'s top side (status bar + display cutout) and consumes it for everything below.
 - **The form factor preview annotation**, `org.shareat.shared.designsystem.preview.FormFactorPreviews`: Mobile 411x891, Foldable 673x841, Tablet 1280x800, Desktop 1920x1080.
 
 When two features need the same component, promote it here rather than duplicating it or importing another feature's internals — a feature must never depend on another feature's `ui`. `ReviewCard` started as `internal DishReviewCard` in `:feature:home:ui` and was promoted once `:feature:restaurant:ui`'s dish review panel needed it too. A shared component takes primitives (`String`, `Int`), never domain models or a feature's ui state.
@@ -44,12 +45,23 @@ internal fun RestaurantCardSkeleton(modifier: Modifier = Modifier) {
 }
 ```
 
+## Top padding (window insets)
+
+The app draws edge to edge (`enableEdgeToEdge()` in `MainActivity`), so nothing pads the status bar for a screen automatically. Exactly one thing per screen applies the top inset:
+
+- **Scaffold screens**: a root `Scaffold` with a `topBar` needs no inset code — `TopAppBar` already draws into the status bar and `Scaffold` hands the rest down through its `contentPadding` (`RestaurantScreen`, `RestaurantHomeScreen`, `RestaurantOnboardingScreen`).
+- **Surface + Column screens**: apply `safeDrawingTopPadding()` on the root `Column`, once, as high in the tree as possible (`HomeScreen`, `LastActivityScreen`, `SettingsScreen`, `EditProfileScreen`, `TermsAndConditionsScreen`, `SubscriptionScreen`).
+- **Screens that draw under the status bar on purpose** (full-bleed photography, gradients) own their insets by hand and skip the modifier — `LoginBackground` keeps the image full-screen and applies insets only to the bottom panel.
+
+Because `safeDrawingTopPadding()` is built on `windowInsetsPadding`, it consumes the inset: a `Scaffold` or `TopAppBar` nested under it adds zero extra top padding. That also means applying it twice on the same path is harmless but pointless — keep it at the root.
+
 ## Review rules
 
 - A new `Loading` ui state is never just a `CircularProgressIndicator` centered on the screen — it composes skeleton versions of the real sections.
 - Any placeholder animation uses `Modifier.shimmerEffect(...)` from `:shared:designsystem` — no per-component `rememberInfiniteTransition` reimplementing the same alpha pulse.
 - `:shared:designsystem` stays framework-thin: Compose only, no `domain`/`data`/Koin/feature imports. If a shared visual needs domain types, that mapping happens in the feature's `ui`, not in `:shared:designsystem`.
 - No feature imports another feature's `internal` composable. A composable two features both need gets promoted to `:shared:designsystem/components` and made public.
+- A screen applies the top window inset exactly once — via `safeDrawingTopPadding()` or via the `Scaffold`/`TopAppBar` that already does it, never both, and never a hardcoded `padding(top = 24.dp)` standing in for the status bar.
 - A multi-device preview annotates with `@FormFactorPreviews` from `:shared:designsystem` — a module never redeclares its own list of `@Preview` widths and heights. A preview that varies *state* rather than size stays a plain `@Preview`.
 
 ## Related

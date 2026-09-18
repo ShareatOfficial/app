@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.feature.subscription.domain.SubscriptionPackage
+import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 
 @Composable
 fun SubscriptionScreen(
@@ -82,7 +83,7 @@ private fun SubscriptionContent(
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
