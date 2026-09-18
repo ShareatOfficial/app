@@ -29,7 +29,7 @@ Las propiedades anteriores tienen prioridad sobre los valores incluidos. Las pro
 
 Auth usa email/contraseña, PKCE y el callback `shareat://auth-callback`; web usa su origen. La confirmación de email y OAuth están fuera del MVP. Android declara el intent filter, iOS el URL scheme y web una CSP que limita conexiones e imágenes al origen y al proyecto Supabase.
 
-Storage contiene `avatars` privado y `restaurant-images`/`dish-images` públicos. Todos limitan JPEG, PNG y WebP a 500 KB. El reemplazo sube una ruta aleatoria nueva, actualiza la fila y solo entonces intenta borrar la anterior.
+Storage contiene `avatars` privado y `restaurant-images`/`dish-images` públicos. Todos limitan JPEG, PNG y WebP a 500 KB. El reemplazo sube una ruta aleatoria nueva, actualiza la fila y solo entonces intenta borrar la anterior. Antes de subir, el cliente redimensiona y recodifica la imagen a JPEG (lado mayor de 1600 px y calidad 80, bajando a 1280/70 y 1024/60 si aún supera el límite), así que las fotos de cámara y los formatos como HEIC caben sin pedir al usuario que las reduzca. Todas las políticas de Storage obtienen la carpeta con `private.storage_folder_uuid(name)`, nunca con un cast directo a `uuid`.
 
 ## Flujo local
 
