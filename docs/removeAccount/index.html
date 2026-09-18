@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Solicita la eliminación de tu cuenta de Shareat y de los datos asociados.">
+  <meta name="theme-color" content="#fff8f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#19100e" media="(prefers-color-scheme: dark)">
+  <title>Eliminar tu cuenta · Shareat</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --ink: #231917;
+      --muted: #6f5b55;
+      --paper: #fff8f6;
+      --surface: #ffffff;
+      --soft: #fff0eb;
+      --accent: #c43c00;
+      --accent-hover: #9d3000;
+      --on-accent: #ffffff;
+      --line: #dcc5be;
+      --focus: #006874;
+      --shadow: 0 18px 45px rgba(73, 43, 34, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 400 1rem/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    ::selection { background: #ffd2c3; color: #3d1104; }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: .1em;
+      text-underline-offset: .18em;
+    }
+
+    a:hover { text-decoration-thickness: .16em; }
+
+    a:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -5rem;
+      left: 1rem;
+      z-index: 2;
+      padding: .7rem 1rem;
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .skip-link:focus { top: 1rem; }
+
+    .page {
+      width: min(100% - 2rem, 70rem);
+      margin-inline: auto;
+    }
+
+    header {
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      color: var(--ink);
+      font-weight: 800;
+      letter-spacing: -.025em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 2rem;
+      height: 2rem;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--on-accent);
+      font: 700 1.25rem/1 Georgia, "Times New Roman", serif;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(18rem, .85fr);
+      gap: clamp(2rem, 7vw, 6rem);
+      align-items: start;
+      padding-block: clamp(3rem, 8vw, 7rem);
+    }
+
+    h1,
+    h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      text-wrap: balance;
+    }
+
+    h1 {
+      max-width: 12ch;
+      margin: 0;
+      font-size: clamp(2.65rem, 7vw, 5.7rem);
+      line-height: .98;
+      letter-spacing: -.04em;
+    }
+
+    .intro {
+      max-width: 39rem;
+      margin: 1.5rem 0 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+    }
+
+    .steps {
+      margin: 3rem 0 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: deletion-step;
+    }
+
+    .steps li {
+      position: relative;
+      padding: 1.15rem 0 1.15rem 3.4rem;
+      border-top: 1px solid var(--line);
+      counter-increment: deletion-step;
+    }
+
+    .steps li::before {
+      position: absolute;
+      top: 1.15rem;
+      left: 0;
+      display: grid;
+      width: 2.15rem;
+      height: 2.15rem;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--accent);
+      content: counter(deletion-step);
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .steps strong { display: block; }
+
+    .steps span { color: var(--muted); }
+
+    .request-panel {
+      position: sticky;
+      top: 1.5rem;
+      padding: clamp(1.5rem, 4vw, 2.25rem);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .request-panel h2 {
+      margin: 0;
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      line-height: 1.1;
+      letter-spacing: -.025em;
+    }
+
+    .request-panel p { color: var(--muted); }
+
+    .button {
+      display: inline-flex;
+      width: 100%;
+      min-height: 3.35rem;
+      align-items: center;
+      justify-content: center;
+      margin-top: .5rem;
+      padding: .8rem 1.15rem;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-weight: 750;
+      text-align: center;
+      text-decoration: none;
+      transition: background-color 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
+    }
+
+    .button:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 10px 25px rgba(157, 48, 0, .2);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .email {
+      margin-bottom: 0;
+      overflow-wrap: anywhere;
+      font-size: .94rem;
+      text-align: center;
+    }
+
+    .details {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(2rem, 6vw, 5rem);
+      margin-top: clamp(1rem, 4vw, 3rem);
+      padding-top: clamp(2rem, 5vw, 4rem);
+      border-top: 1px solid var(--line);
+    }
+
+    .details h2 {
+      margin: 0 0 .8rem;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      letter-spacing: -.02em;
+    }
+
+    .details p,
+    .details li {
+      max-width: 68ch;
+      color: var(--muted);
+    }
+
+    .details ul {
+      margin: .75rem 0 0;
+      padding-left: 1.2rem;
+    }
+
+    .details li + li { margin-top: .45rem; }
+
+    .notice {
+      margin-top: 1.5rem;
+      padding: 1rem 1.1rem;
+      border: 1px solid #e7bd83;
+      border-radius: 12px;
+      background: #fff5df;
+      color: #553608;
+    }
+
+    .notice strong { color: inherit; }
+
+    footer {
+      padding: 2rem 0 3rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .94rem;
+    }
+
+    @media (max-width: 760px) {
+      main { grid-template-columns: 1fr; }
+      .request-panel { position: static; }
+      .details { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .button { transition: none; }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #fff0eb;
+        --muted: #d6beb7;
+        --paper: #19100e;
+        --surface: #271916;
+        --soft: #38201a;
+        --accent: #ff7a45;
+        --accent-hover: #ff966e;
+        --on-accent: #361000;
+        --line: #5a3d35;
+        --focus: #65dbe8;
+        --shadow: 0 18px 45px rgba(0, 0, 0, .28);
+      }
+
+      ::selection { background: #74331e; color: #fff4ef; }
+      .notice { border-color: #8e6834; background: #332713; color: #ffe2b3; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header>
+    <div class="page">
+      <div class="brand" aria-label="Shareat">
+        <span class="brand-mark" aria-hidden="true">s</span>
+        <span>shareat</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenido" class="page">
+    <section aria-labelledby="titulo">
+      <h1 id="titulo">Elimina tu cuenta y tus datos</h1>
+      <p class="intro">
+        Puedes solicitar en cualquier momento la eliminación permanente de tu cuenta de Shareat
+        y de los datos personales asociados a ella.
+      </p>
+
+      <ol class="steps" aria-label="Pasos para solicitar la eliminación">
+        <li>
+          <strong>Escríbenos desde tu correo registrado</strong>
+          <span>Así podremos localizar tu cuenta y verificar que la solicitud es tuya.</span>
+        </li>
+        <li>
+          <strong>Indica el tipo de cuenta</strong>
+          <span>Dinos si tu cuenta es de cliente o de restaurante. No envíes tu contraseña.</span>
+        </li>
+        <li>
+          <strong>Confirma la solicitud</strong>
+          <span>Si necesitamos verificar algún dato, responderemos al mismo correo antes de completar el borrado.</span>
+        </li>
+      </ol>
+    </section>
+
+    <aside class="request-panel" aria-labelledby="solicitud">
+      <h2 id="solicitud">Envía tu solicitud</h2>
+      <p>El correo ya incluye un asunto y un texto de ayuda. Revísalo y envíalo desde la dirección asociada a tu cuenta.</p>
+      <a
+        class="button"
+        href="mailto:shareat.app.official@gmail.com?subject=Solicitud%20de%20eliminaci%C3%B3n%20de%20cuenta%20de%20Shareat&amp;body=Hola%20equipo%20de%20Shareat%3A%0A%0ASolicito%20la%20eliminaci%C3%B3n%20permanente%20de%20mi%20cuenta%20y%20de%20los%20datos%20asociados.%0A%0ATipo%20de%20cuenta%20%28cliente%20o%20restaurante%29%3A%20%0ACorreo%20registrado%20en%20Shareat%3A%20%0A%0AGracias."
+      >Solicitar eliminación por correo</a>
+      <p class="email">
+        O escribe a
+        <a href="mailto:shareat.app.official@gmail.com">shareat.app.official@gmail.com</a>
+      </p>
+    </aside>
+
+    <section class="details" aria-label="Información sobre el borrado">
+      <div>
+        <h2>Qué incluye el borrado</h2>
+        <p>La solicitud comprende tu cuenta de Shareat y los datos asociados a ella, entre ellos:</p>
+        <ul>
+          <li>datos de acceso y perfil;</li>
+          <li>valoraciones, reseñas, comentarios e imágenes que hayas aportado;</li>
+          <li>si representas a un restaurante, su perfil, carta, platos y contenido gestionado desde la cuenta.</li>
+        </ul>
+        <p>La eliminación es permanente y no podrá deshacerse.</p>
+      </div>
+
+      <div>
+        <h2>Datos que pueden conservarse</h2>
+        <p>
+          Cuando confirmemos la solicitud, desactivaremos el acceso a la cuenta y las reseñas públicas
+          dejarán de mostrarse. Los datos personales activos se eliminarán o anonimizarán de forma
+          irreversible en un plazo máximo de 30 días. Las copias de seguridad cifradas caducarán en un
+          plazo máximo de 90 días.
+        </p>
+        <p>
+          Podremos conservar una copia restringida de moderación durante un máximo de 30 días para
+          gestionar reclamaciones o investigar abusos. Si una obligación legal exige conservar algún dato
+          durante más tiempo, mantendremos solo lo estrictamente necesario durante ese plazo y después lo
+          eliminaremos o anonimizaremos.
+        </p>
+        <p class="notice">
+          <strong>Si tienes una suscripción:</strong> eliminar tu cuenta no cancela automáticamente una
+          suscripción contratada en Google Play o App Store. Cancélala primero desde la tienda correspondiente.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="page">© Shareat · Solicitud de eliminación de cuenta y datos</div>
+  </footer>
+</body>
+</html>
