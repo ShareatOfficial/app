@@ -59,6 +59,7 @@
     <string name="restaurant_home_category_main">Platos principales</string>
     <string name="restaurant_home_category_desserts">Postres</string>
     <string name="restaurant_home_category_small_bites">Para picar</string>
+    <string name="restaurant_home_category_other">Otros</string>
     <string name="restaurant_home_allergen_celery">Apio</string>
     <string name="restaurant_home_allergen_gluten">Gluten</string>
     <string name="restaurant_home_allergen_crustaceans">Crustáceos</string>

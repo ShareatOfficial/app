@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,18 +16,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +45,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import org.shareat.feature.restauranthome.ui.restauranthome.composables.label
 import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
@@ -43,6 +55,7 @@ import org.shareat.shared.designsystem.preview.FormFactorPreviews
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_placeholder_hero
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_category_other
 
 @Composable
 internal fun RestaurantHomeStatelessV2ByTone() {
@@ -58,7 +71,7 @@ internal fun RestaurantHomeStatelessV2ByTone() {
     val uiState = RestaurantHomePreviewData.loaded
     val restaurant = (uiState.content as RestaurantHomeContent.Loaded).restaurant
     Column(
-        modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+        modifier = Modifier.fillMaxSize(),
     ) {
         // Infomarción de restaurante, se compacta hasta dejar solo la imagen.
         RestaurantInfo(
@@ -67,7 +80,10 @@ internal fun RestaurantHomeStatelessV2ByTone() {
             onRateClick = {}
         )
         // Sección de filtros y platos.
-        RestaurantDishes(restaurant.dishes)
+        RestaurantDishes(
+            dishes = restaurant.dishes,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
@@ -75,42 +91,52 @@ internal fun RestaurantHomeStatelessV2ByTone() {
 private fun HomeRestaurantTopBar(modifier: Modifier = Modifier) {
     // TODO Queda pasar el scrollState para que cuando se deslize hacia abajo se oculte.
     Row(
-        modifier = modifier.fillMaxWidth().padding(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .safeDrawingPadding()
+            .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "Mi Restaurante",
-            style = MaterialTheme.typography.titleLargeEmphasized,
-            color = MaterialTheme.colorScheme.onBackground,
+        Box(
             modifier = Modifier
+                .height(48.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.background,
-                    shape = RoundedCornerShape(16.dp)
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = RoundedCornerShape(8.dp)
                 )
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        )
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Mi Restaurante",
+                style = MaterialTheme.typography.titleLargeEmphasized,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
 
         // Customer view or edit view
         val isCustomerView =
             remember { mutableStateOf(false) } // this state should be hoisted by the viewModel
         Row(
-            modifier = Modifier.padding(end = 8.dp).background(
-                color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(16.dp)
-            ).padding(4.dp),
+            modifier = Modifier
+                .height(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = if (isCustomerView.value) "Editar" else "Cliente",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.width(8.dp))
             Switch(
                 checked = isCustomerView.value,
                 onCheckedChange = { isCustomerView.value = it },
-                //colors = SwitchDefaults.colors().copy(colo)
             )
         }
     }
@@ -140,13 +166,13 @@ private fun RestaurantInfo(
                 modifier = Modifier.fillMaxWidth().matchParentSize(),
                 contentScale = ContentScale.Crop,
             )
-            HomeRestaurantTopBar(modifier = Modifier.align(Alignment.TopCenter))
 
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .background(Color.Black.copy(alpha = 0.7f))
             )
+            HomeRestaurantTopBar(modifier = Modifier.align(Alignment.TopCenter))
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -201,34 +227,114 @@ private fun HomeRestaurantActionRow(
 ) {
     Row(modifier = Modifier.padding(16.dp).clickable(onClick = onClick)) {
         Icon(imageVector = icon, contentDescription = null)
-        Text(text = text)
+        Text(text = text, style = MaterialTheme.typography.bodyMedium)
         trailingContent()
     }
 }
 
 
 @Composable
-private fun RestaurantDishes(dishes: List<RestaurantDish>) {
-    val dishesByCategory = remember(dishes) {
-        dishes.groupBy { it.category }
+private fun RestaurantDishes(
+    dishes: List<RestaurantDish>,
+    modifier: Modifier = Modifier,
+) {
+    val categorySections = remember(dishes) {
+        dishes.groupBy { it.category }.entries.toList()
+    }
+    val categoryItemIndices = remember(categorySections) {
+        var nextItemIndex = 0
+        categorySections.map { section ->
+            nextItemIndex.also {
+                nextItemIndex += section.value.size + 1
+            }
+        }
+    }
+    val categoryListState = rememberLazyListState()
+    val dishListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val selectedCategoryIndex = rememberSaveable(dishListState, categoryItemIndices) {
+        derivedStateOf {
+            /* Basically this calculates the value of the current selected category. If the current is
+             empty or totalCount, that means user has not scrolled yet, then 0. If the user cannot scroll more down
+             then the index is the last one. Then the selectedCategory is the one corresponding to the first visible item.
+             */
+            when {
+                categoryItemIndices.isEmpty() -> 0
+                dishListState.layoutInfo.totalItemsCount == 0 -> 0
+                !dishListState.canScrollForward -> categoryItemIndices.lastIndex
+                else -> categoryItemIndices
+                    .indexOfLast { it <= dishListState.firstVisibleItemIndex }
+                    .coerceAtLeast(0)
+            }
+        }
+    }.value
+
+    LaunchedEffect(selectedCategoryIndex) {
+        if (categorySections.isNotEmpty()) {
+            categoryListState.animateScrollToItem(selectedCategoryIndex)
+        }
     }
 
-    LazyColumn(modifier = Modifier.fillMaxWidth().padding()) {
-        dishesByCategory.forEach { (category, dishesList) ->
-            item {
-                Text(
-                    text = category?.name ?: "Otros",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+    Column(modifier = modifier.fillMaxWidth()) {
+        LazyRow(
+            state = categoryListState,
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(
+                count = categorySections.size,
+                key = { index -> categorySections[index].key?.name ?: "other" },
+            ) { index ->
+                val category = categorySections[index].key
+                FilterChip(
+                    selected = index == selectedCategoryIndex,
+                    onClick = {
+                        coroutineScope.launch {
+                            dishListState.animateScrollToItem(categoryItemIndices[index])
+                        }
+                    },
+                    label = {
+                        Text(
+                            text = category?.label()
+                                ?: stringResource(Res.string.restaurant_home_category_other),
+                        )
+                    },
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 )
             }
-            items(dishesList.size) { index ->
-                DishItem(
-                    dishesList[index],
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-                        .clickable { /* TODO */ }
-                )
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            state = dishListState,
+            contentPadding = PaddingValues(bottom = 16.dp),
+        ) {
+            categorySections.forEach { (category, dishesList) ->
+                item(key = "header-${category?.name ?: "other"}") {
+                    Text(
+                        text = category?.label()
+                            ?: stringResource(Res.string.restaurant_home_category_other),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+                items(
+                    count = dishesList.size,
+                    key = { index -> dishesList[index].id },
+                ) { index ->
+                    DishItem(
+                        dish = dishesList[index],
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .clickable { /* TODO */ },
+                    )
+                }
             }
         }
     }
