@@ -4,7 +4,7 @@ import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.feature.restauranthome.ui.model.RestaurantAddressUiState
-import org.shareat.feature.restauranthome.ui.model.RestaurantDishUiState
+import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeMode
@@ -28,14 +28,14 @@ internal object RestaurantHomePreviewData {
         categories = DishCategory.entries.toList(),
         allergens = listOf(EuAllergen.CerealsContainingGluten, EuAllergen.Milk, EuAllergen.Nuts),
         dishes = listOf(
-            RestaurantDishUiState(
+            RestaurantDish(
                 id = "pizza-naranja", name = "Pizza Naranja", description = "Mozzarella, calabaza asada y romero.",
                 imageUrl = null, imageDescription = null, priceMinorUnits = 1450,
                 ratingLabel = "4,7", reviewCount = 32,
                 allergens = setOf(EuAllergen.CerealsContainingGluten, EuAllergen.Milk),
                 category = DishCategory.MainCourses, isEnabled = true, isMenuItemEnabled = true,
             ),
-            RestaurantDishUiState(
+            RestaurantDish(
                 id = "tarta", name = "Tarta de almendra", description = "Con naranja amarga y crema ligera.",
                 imageUrl = null, imageDescription = null, priceMinorUnits = 750,
                 ratingLabel = null, reviewCount = 0,

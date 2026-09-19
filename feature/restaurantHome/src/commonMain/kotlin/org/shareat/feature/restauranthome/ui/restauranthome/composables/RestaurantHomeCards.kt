@@ -33,7 +33,7 @@ import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.shareat.feature.restauranthome.ui.model.RestaurantDishUiState
+import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_dish_disabled
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_dish_edit
@@ -146,7 +146,7 @@ private fun RatingSummary(ratingLabel: String?, reviewCount: Int, modifier: Modi
 
 @Composable
 internal fun ManagementDishCard(
-    dish: RestaurantDishUiState,
+    dish: RestaurantDish,
     showEdit: Boolean,
     onEditClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -233,7 +233,7 @@ private fun DishImagePlaceholder(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun RestaurantDishUiState.priceLabel(): String = stringResource(
+private fun RestaurantDish.priceLabel(): String = stringResource(
     Res.string.restaurant_home_price,
     priceMinorUnits / 100,
     (priceMinorUnits % 100).toString().padStart(2, '0'),

@@ -48,7 +48,7 @@ data class RestaurantHomeData(
     val publicationState: RestaurantPublicationState,
     val categories: List<DishCategory>, // hamburger, salads, sandwiches, etc.
     val allergens: List<EuAllergen>,
-    val dishes: List<RestaurantDishUiState>,
+    val dishes: List<RestaurantDish>,
 ) {
     val isPublished: Boolean get() = publicationState == RestaurantPublicationState.Published // this can be move to domain and here just call the state to isPublished.
 }
@@ -68,7 +68,7 @@ internal fun RestaurantAddressUiState.toDisplayAddress(): String = listOfNotNull
     region?.trim()?.takeIf(String::isNotEmpty),
 ).joinToString(", ")
 
-data class RestaurantDishUiState(
+data class RestaurantDish(
     val id: String,
     val name: String,
     val description: String?,

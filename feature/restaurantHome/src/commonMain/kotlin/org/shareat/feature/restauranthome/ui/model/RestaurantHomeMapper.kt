@@ -32,7 +32,7 @@ internal fun RestaurantHome.toRestaurantHomeData(): RestaurantHomeData = Restaur
     dishes = menu?.dishes.orEmpty().map(OwnerRatedMenuDish::toDishUiState),
 )
 
-internal fun OwnerRatedMenuDish.toDishUiState(): RestaurantDishUiState = RestaurantDishUiState(
+internal fun OwnerRatedMenuDish.toDishUiState(): RestaurantDish = RestaurantDish(
     id = menuDish.dish.id.value,
     name = menuDish.dish.name,
     description = menuDish.dish.description,
