@@ -47,6 +47,6 @@ val restaurantHomeUiModule: Module = module {
     }
 
     viewModel {
-        RestaurantHomeViewModel(get(), get(), get(), get())
+        RestaurantHomeViewModel(get(), get(), get(), get(), get(), get())
     }
 }

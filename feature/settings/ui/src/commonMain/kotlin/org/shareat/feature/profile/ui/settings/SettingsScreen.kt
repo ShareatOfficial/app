@@ -48,6 +48,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,10 +64,48 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import org.shareat.app.domain.model.AppLanguage
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import shareat.feature.settings.ui.generated.resources.Res
+import shareat.feature.settings.ui.generated.resources.settings_language_title
+import shareat.feature.settings.ui.generated.resources.settings_language
+import shareat.feature.settings.ui.generated.resources.settings_apply
+import shareat.feature.settings.ui.generated.resources.settings_back
+import shareat.feature.settings.ui.generated.resources.settings_cancel
+import shareat.feature.settings.ui.generated.resources.settings_change_hours
+import shareat.feature.settings.ui.generated.resources.settings_city
+import shareat.feature.settings.ui.generated.resources.settings_closes
+import shareat.feature.settings.ui.generated.resources.settings_contact_email
+import shareat.feature.settings.ui.generated.resources.settings_contact_phone
+import shareat.feature.settings.ui.generated.resources.settings_day_closed
+import shareat.feature.settings.ui.generated.resources.settings_day_open
+import shareat.feature.settings.ui.generated.resources.settings_edit_profile
+import shareat.feature.settings.ui.generated.resources.settings_hidden
+import shareat.feature.settings.ui.generated.resources.settings_hours_dialog_title
+import shareat.feature.settings.ui.generated.resources.settings_log_out
+import shareat.feature.settings.ui.generated.resources.settings_opens
+import shareat.feature.settings.ui.generated.resources.settings_postcode
+import shareat.feature.settings.ui.generated.resources.settings_published
+import shareat.feature.settings.ui.generated.resources.settings_restaurant_name
+import shareat.feature.settings.ui.generated.resources.settings_restaurant_title
+import shareat.feature.settings.ui.generated.resources.settings_save
+import shareat.feature.settings.ui.generated.resources.settings_save_changes
+import shareat.feature.settings.ui.generated.resources.settings_saved
+import shareat.feature.settings.ui.generated.resources.settings_section_account
+import shareat.feature.settings.ui.generated.resources.settings_section_address
+import shareat.feature.settings.ui.generated.resources.settings_section_basic
+import shareat.feature.settings.ui.generated.resources.settings_section_hours
+import shareat.feature.settings.ui.generated.resources.settings_section_management
+import shareat.feature.settings.ui.generated.resources.settings_short_description
+import shareat.feature.settings.ui.generated.resources.settings_street
+import shareat.feature.settings.ui.generated.resources.settings_subscription_plan
+import shareat.feature.settings.ui.generated.resources.settings_terms
+import shareat.feature.settings.ui.generated.resources.settings_title
+import shareat.feature.settings.ui.generated.resources.settings_visibility_status
 
 @Composable
 fun SettingsScreen(
@@ -90,6 +130,7 @@ fun SettingsScreen(
         callbacks = SettingsCallbacks(
             onBackClick = navigator::goBack,
             onTermsAndConditionsClick = navigator::openTermsAndConditions,
+            onLanguageSelected = { viewModel.onLanguageAction(SettingsLanguageAction(it)) },
             onUserAction = viewModel::onUserAction,
             onRestaurantAction = viewModel::onRestaurantAction,
         ),
@@ -99,6 +140,7 @@ fun SettingsScreen(
 private data class SettingsCallbacks(
     val onBackClick: () -> Unit = {},
     val onTermsAndConditionsClick: () -> Unit = {},
+    val onLanguageSelected: (AppLanguage) -> Unit = {},
     val onUserAction: (SettingsUserAction) -> Unit = {},
     val onRestaurantAction: (SettingsRestaurantAction) -> Unit = {},
 )
@@ -109,6 +151,8 @@ private fun SettingsScreenStateless(
     modifier: Modifier = Modifier,
     callbacks: SettingsCallbacks = SettingsCallbacks(),
 ) {
+    var showLanguageSheet by remember { mutableStateOf(false) }
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -116,11 +160,15 @@ private fun SettingsScreenStateless(
         Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             SettingsTopBar(
                 title = when (uiState) {
-                    is SettingsUiState.User -> "Settings"
-                    is SettingsUiState.Restaurant -> "Restaurant settings"
+                    is SettingsUiState.User -> stringResource(Res.string.settings_title)
+                    is SettingsUiState.Restaurant -> stringResource(Res.string.settings_restaurant_title)
                 },
                 onBackClick = callbacks.onBackClick,
-                actionText = if (uiState is SettingsUiState.Restaurant) "Save" else null,
+                actionText = if (uiState is SettingsUiState.Restaurant) {
+                    stringResource(Res.string.settings_save)
+                } else {
+                    null
+                },
                 actionEnabled = uiState is SettingsUiState.Restaurant &&
                     !uiState.isLoading && !uiState.isSaving,
                 onActionClick = {
@@ -132,14 +180,27 @@ private fun SettingsScreenStateless(
                 is SettingsUiState.User -> UserSettings(
                     uiState = uiState,
                     callbacks = callbacks,
+                    onLanguageClick = { showLanguageSheet = true },
                 )
 
                 is SettingsUiState.Restaurant -> RestaurantSettings(
                     uiState = uiState,
                     callbacks = callbacks,
+                    onLanguageClick = { showLanguageSheet = true },
                 )
             }
         }
+    }
+
+    if (showLanguageSheet) {
+        AppLanguageSheet(
+            language = uiState.language,
+            onSelect = {
+                callbacks.onLanguageSelected(it)
+                showLanguageSheet = false
+            },
+            onDismiss = { showLanguageSheet = false },
+        )
     }
 }
 
@@ -160,7 +221,7 @@ private fun SettingsTopBar(
         IconButton(onClick = onBackClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                contentDescription = "Go back",
+                contentDescription = stringResource(Res.string.settings_back),
             )
         }
         Text(
@@ -180,6 +241,7 @@ private fun SettingsTopBar(
 private fun UserSettings(
     uiState: SettingsUiState.User,
     callbacks: SettingsCallbacks,
+    onLanguageClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -199,8 +261,8 @@ private fun UserSettings(
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
-        uiState.errorMessage?.let { message ->
-            SettingsStatusText(message = message, isError = true)
+        uiState.error?.let { error ->
+            SettingsStatusText(message = error.label(), isError = true)
         }
 
         Card(
@@ -212,13 +274,15 @@ private fun UserSettings(
         ) {
             SettingsItem(
                 leadingIcon = Icons.Outlined.ManageAccounts,
-                text = "Edit profile",
+                text = stringResource(Res.string.settings_edit_profile),
                 onClick = { callbacks.onUserAction(SettingsUserAction.EditProfile) },
             )
             SettingsDivider()
+            AppLanguageSettingsItem(uiState.language, onLanguageClick)
+            SettingsDivider()
             SettingsItem(
                 leadingIcon = Icons.Outlined.Description,
-                text = "Terms and Conditions",
+                text = stringResource(Res.string.settings_terms),
                 onClick = callbacks.onTermsAndConditionsClick,
             )
         }
@@ -234,7 +298,7 @@ private fun UserSettings(
                 contentDescription = null,
             )
             Spacer(modifier = Modifier.size(8.dp))
-            Text("Log out")
+            Text(stringResource(Res.string.settings_log_out))
         }
     }
 
@@ -276,13 +340,14 @@ private fun UserIdentityHeader(uiState: SettingsUiState.User) {
 private fun RestaurantSettings(
     uiState: SettingsUiState.Restaurant,
     callbacks: SettingsCallbacks,
+    onLanguageClick: () -> Unit,
 ) {
     val listState = rememberLazyListState()
     var showOpeningHoursSheet by remember { mutableStateOf(false) }
-    // The status text is the first item, while "Save changes" sits at the very bottom: a rejected
+    // The status text is the first item, while "Guardar cambios" sits at the very bottom: a rejected
     // save would otherwise report itself off-screen.
-    LaunchedEffect(uiState.errorMessage, uiState.saveSucceeded) {
-        if (uiState.errorMessage != null || uiState.saveSucceeded) listState.animateScrollToItem(0)
+    LaunchedEffect(uiState.error, uiState.saveSucceeded) {
+        if (uiState.error != null || uiState.saveSucceeded) listState.animateScrollToItem(0)
     }
 
     LazyColumn(
@@ -306,27 +371,27 @@ private fun RestaurantSettings(
                 }
             }
         }
-        uiState.errorMessage?.let { message ->
-            item { SettingsStatusText(message = message, isError = true) }
+        uiState.error?.let { error ->
+            item { SettingsStatusText(message = error.label(), isError = true) }
         }
         if (uiState.saveSucceeded) {
-            item { SettingsStatusText(message = "Changes saved.", isError = false) }
+            item { SettingsStatusText(message = stringResource(Res.string.settings_saved), isError = false) }
         }
         item {
             RestaurantSectionCard(
-                title = "Basic info",
+                title = stringResource(Res.string.settings_section_basic),
                 icon = Icons.Outlined.Storefront,
             ) {
                 RestaurantTextField(
                     value = uiState.name,
-                    label = "Restaurant name",
+                    label = stringResource(Res.string.settings_restaurant_name),
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.NameChanged(it))
                     },
                 )
                 RestaurantTextField(
                     value = uiState.description,
-                    label = "Short description",
+                    label = stringResource(Res.string.settings_short_description),
                     onValueChange = {
                         callbacks.onRestaurantAction(
                             SettingsRestaurantAction.DescriptionChanged(it),
@@ -336,14 +401,14 @@ private fun RestaurantSettings(
                 )
                 RestaurantTextField(
                     value = uiState.phone,
-                    label = "Contact phone",
+                    label = stringResource(Res.string.settings_contact_phone),
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.PhoneChanged(it))
                     },
                 )
                 RestaurantTextField(
                     value = uiState.email,
-                    label = "Contact email",
+                    label = stringResource(Res.string.settings_contact_email),
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.EmailChanged(it))
                     },
@@ -352,12 +417,12 @@ private fun RestaurantSettings(
         }
         item {
             RestaurantSectionCard(
-                title = "Location",
+                title = stringResource(Res.string.settings_section_address),
                 icon = Icons.Outlined.LocationOn,
             ) {
                 RestaurantTextField(
                     value = uiState.streetAddress,
-                    label = "Street address",
+                    label = stringResource(Res.string.settings_street),
                     onValueChange = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.StreetChanged(it))
                     },
@@ -372,7 +437,7 @@ private fun RestaurantSettings(
                             callbacks.onRestaurantAction(SettingsRestaurantAction.CityChanged(it))
                         },
                         modifier = Modifier.weight(1f),
-                        label = { Text("City") },
+                        label = { Text(stringResource(Res.string.settings_city)) },
                         singleLine = true,
                     )
                     OutlinedTextField(
@@ -381,7 +446,7 @@ private fun RestaurantSettings(
                             callbacks.onRestaurantAction(SettingsRestaurantAction.PostcodeChanged(it))
                         },
                         modifier = Modifier.weight(1f),
-                        label = { Text("Postcode") },
+                        label = { Text(stringResource(Res.string.settings_postcode)) },
                         singleLine = true,
                     )
                 }
@@ -389,31 +454,31 @@ private fun RestaurantSettings(
         }
         item {
             RestaurantSectionCard(
-                title = "Opening hours",
+                title = stringResource(Res.string.settings_section_hours),
                 icon = Icons.Outlined.Schedule,
             ) {
                 SettingsItem(
                     leadingIcon = Icons.Outlined.Schedule,
-                    text = "Change opening hours",
+                    text = stringResource(Res.string.settings_change_hours),
                     onClick = { showOpeningHoursSheet = true },
                 )
             }
         }
         item {
             RestaurantSectionCard(
-                title = "Management",
+                title = stringResource(Res.string.settings_section_management),
                 icon = Icons.Outlined.AllInclusive,
             ) {
                 SettingsItem(
                     Icons.Outlined.AllInclusive,
-                    "Shareat Unlimited",
+                    stringResource(Res.string.settings_subscription_plan),
                     { callbacks.onRestaurantAction(SettingsRestaurantAction.Subscription) },
                 )
             }
         }
         item {
             RestaurantSectionCard(
-                title = "Account",
+                title = stringResource(Res.string.settings_section_account),
                 icon = Icons.Outlined.ManageAccounts,
             ) {
                 Row(
@@ -424,11 +489,13 @@ private fun RestaurantSettings(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Visibility status",
+                            text = stringResource(Res.string.settings_visibility_status),
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Text(
-                            text = if (uiState.isPublished) "Published" else "Hidden",
+                            text = stringResource(
+                                if (uiState.isPublished) Res.string.settings_published else Res.string.settings_hidden,
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -443,15 +510,17 @@ private fun RestaurantSettings(
                     )
                 }
                 SettingsDivider()
+                AppLanguageSettingsItem(uiState.language, onLanguageClick)
+                SettingsDivider()
                 SettingsItem(
                     Icons.Outlined.Description,
-                    "Terms and Conditions",
+                    stringResource(Res.string.settings_terms),
                     callbacks.onTermsAndConditionsClick,
                 )
                 SettingsDivider()
                 SettingsItem(
                     leadingIcon = Icons.AutoMirrored.Filled.ExitToApp,
-                    text = "Log out",
+                    text = stringResource(Res.string.settings_log_out),
                     onClick = {
                         callbacks.onRestaurantAction(SettingsRestaurantAction.LogOut)
                     },
@@ -471,7 +540,7 @@ private fun RestaurantSettings(
                 if (uiState.isSaving) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp))
                 } else {
-                    Text("Save changes")
+                    Text(stringResource(Res.string.settings_save_changes))
                 }
             }
         }
@@ -520,7 +589,9 @@ private fun RestaurantIdentityHeader(uiState: SettingsUiState.Restaurant) {
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = if (uiState.isPublished) "Published" else "Hidden",
+                    text = stringResource(
+                        if (uiState.isPublished) Res.string.settings_published else Res.string.settings_hidden,
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -597,12 +668,14 @@ private fun OpeningHoursRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = hours.day.label,
+                text = hours.day.label(),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.titleSmall,
             )
             Text(
-                text = if (hours.isOpen) "Open" else "Closed",
+                text = stringResource(
+                    if (hours.isOpen) Res.string.settings_day_open else Res.string.settings_day_closed,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -619,7 +692,7 @@ private fun OpeningHoursRow(
                     value = hours.openingTime,
                     onValueChange = onOpeningTimeChange,
                     modifier = Modifier.weight(1f),
-                    label = { Text("Opens") },
+                    label = { Text(stringResource(Res.string.settings_opens)) },
                     singleLine = true,
                 )
                 Text("–")
@@ -627,7 +700,7 @@ private fun OpeningHoursRow(
                     value = hours.closingTime,
                     onValueChange = onClosingTimeChange,
                     modifier = Modifier.weight(1f),
-                    label = { Text("Closes") },
+                    label = { Text(stringResource(Res.string.settings_closes)) },
                     singleLine = true,
                 )
             }
@@ -663,7 +736,10 @@ private fun OpeningHoursBottomSheet(
                     .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("Opening hours", style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    stringResource(Res.string.settings_hours_dialog_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
                 draft.forEach { hours ->
                     OpeningHoursRow(
                         hours = hours,
@@ -692,13 +768,13 @@ private fun OpeningHoursBottomSheet(
                     onClick = onDismiss,
                     modifier = Modifier.sizeIn(minHeight = 48.dp),
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(Res.string.settings_cancel))
                 }
                 Button(
                     onClick = { onApply(draft) },
                     modifier = Modifier.sizeIn(minHeight = 48.dp),
                 ) {
-                    Text("Apply")
+                    Text(stringResource(Res.string.settings_apply))
                 }
             }
         }
@@ -736,6 +812,8 @@ private fun SettingsItem(
     onClick: () -> Unit,
     isDestructive: Boolean = false,
     showChevron: Boolean = true,
+    enabled: Boolean = true,
+    trailingText: String? = null,
 ) {
     val contentColor = if (isDestructive) {
         MaterialTheme.colorScheme.error
@@ -747,7 +825,7 @@ private fun SettingsItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -763,12 +841,80 @@ private fun SettingsItem(
             style = MaterialTheme.typography.bodyLarge,
             color = contentColor,
         )
+        if (trailingText != null) {
+            Text(
+                text = trailingText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+        }
         if (showChevron) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+@Composable
+private fun AppLanguageSettingsItem(
+    language: AppLanguageUiState,
+    onClick: () -> Unit,
+) {
+    SettingsItem(
+        leadingIcon = Icons.Outlined.Language,
+        text = stringResource(Res.string.settings_language),
+        onClick = onClick,
+        showChevron = language.canSelect,
+        enabled = language.canSelect,
+        trailingText = language.selected.label(),
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppLanguageSheet(
+    language: AppLanguageUiState,
+    onSelect: (AppLanguage) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                stringResource(Res.string.settings_language_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            AppLanguage.entries.forEach { option ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = language.canSelect) { onSelect(option) }
+                        .padding(vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = option == language.selected,
+                        onClick = { onSelect(option) },
+                        enabled = language.canSelect,
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(option.label(), style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+            language.appliesLaterNoticeOrNull()?.let { notice ->
+                Text(
+                    text = notice,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+            }
         }
     }
 }
@@ -803,7 +949,7 @@ private fun SettingsItemPreview() {
     ShareatTheme {
         SettingsItem(
             leadingIcon = Icons.Outlined.ManageAccounts,
-            text = "Edit profile",
+            text = stringResource(Res.string.settings_edit_profile),
             onClick = {},
         )
     }

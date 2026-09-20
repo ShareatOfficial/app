@@ -31,9 +31,25 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.feature.login.ui.components.AuthTextField
+import org.shareat.feature.login.ui.components.hint
+import org.shareat.feature.login.ui.components.label
+import org.shareat.feature.login.ui.model.LoginError
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import shareat.feature.login.ui.generated.resources.Res
+import shareat.feature.login.ui.generated.resources.login_back
+import shareat.feature.login.ui.generated.resources.login_confirm_password
+import shareat.feature.login.ui.generated.resources.login_create_account
+import shareat.feature.login.ui.generated.resources.login_display_name
+import shareat.feature.login.ui.generated.resources.login_email
+import shareat.feature.login.ui.generated.resources.login_password
+import shareat.feature.login.ui.generated.resources.login_password_hint
+import shareat.feature.login.ui.generated.resources.login_passwords_mismatch
+import shareat.feature.login.ui.generated.resources.login_register_title
+import shareat.feature.login.ui.generated.resources.login_role_prompt
+import shareat.feature.login.ui.generated.resources.login_sign_in_instead
 
 private const val MIN_PASSWORD_LENGTH = 8
 
@@ -45,7 +61,7 @@ internal fun RegisterScreen(
     displayName: String,
     selectedRole: AccountRole,
     isLoading: Boolean,
-    errorMessage: String?,
+    error: LoginError?,
     onEmailFieldChange: (String) -> Unit,
     onPasswordFieldChange: (String) -> Unit,
     onDisplayNameFieldChange: (String) -> Unit,
@@ -65,36 +81,36 @@ internal fun RegisterScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TextButton(onClick = onBackClick, enabled = !isLoading) {
-            Text(text = "Back") // extract string resource
+            Text(text = stringResource(Res.string.login_back))
         }
         Text(
-            text = "Create your account", // extract string resource
+            text = stringResource(Res.string.login_register_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
         AuthTextField(
             value = email,
             onValueChange = onEmailFieldChange,
-            label = "Email", // extract string resource
+            label = stringResource(Res.string.login_email),
             enabled = !isLoading,
             keyboardType = KeyboardType.Email,
         )
         AuthTextField(
             value = password,
             onValueChange = onPasswordFieldChange,
-            label = "Password", // extract string resource
+            label = stringResource(Res.string.login_password),
             enabled = !isLoading,
             isPassword = true,
-            supportingText = "At least $MIN_PASSWORD_LENGTH characters", // extract string resource
+            supportingText = stringResource(Res.string.login_password_hint, MIN_PASSWORD_LENGTH),
         )
         AuthTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = "Confirm password", // extract string resource
+            label = stringResource(Res.string.login_confirm_password),
             enabled = !isLoading,
             isPassword = true,
             isError = passwordsMismatch,
-            supportingText = "Passwords don't match".takeIf { passwordsMismatch }, // extract string resource
+            supportingText = stringResource(Res.string.login_passwords_mismatch).takeIf { passwordsMismatch },
         )
         RoleField(
             selectedRole = selectedRole,
@@ -110,14 +126,14 @@ internal fun RegisterScreen(
             AuthTextField(
                 value = displayName,
                 onValueChange = onDisplayNameFieldChange,
-                label = "Display name", // extract string resource
+                label = stringResource(Res.string.login_display_name),
                 enabled = !isLoading,
                 imeAction = ImeAction.Done,
             )
         }
-        errorMessage?.let {
+        error?.let {
             Text(
-                text = it,
+                text = it.label(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -138,7 +154,7 @@ internal fun RegisterScreen(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
-                Text(text = "Create account") // extract string resource
+                Text(text = stringResource(Res.string.login_create_account))
             }
         }
         TextButton(
@@ -146,7 +162,7 @@ internal fun RegisterScreen(
             enabled = !isLoading,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "Already have an account? Sign in") // extract string resource
+            Text(text = stringResource(Res.string.login_sign_in_instead))
         }
     }
 }
@@ -164,7 +180,7 @@ private fun RoleField(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
-            text = "I'm signing up as", // extract string resource
+            text = stringResource(Res.string.login_role_prompt),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -175,30 +191,17 @@ private fun RoleField(
                     onClick = { onRoleChange(role) },
                     shape = SegmentedButtonDefaults.itemShape(index, AccountRole.entries.size),
                     enabled = enabled,
-                    label = { Text(role.label) },
+                    label = { Text(role.label()) },
                 )
             }
         }
         Text(
-            text = selectedRole.roleHint,
+            text = selectedRole.hint(),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
-
-// extract string resources
-private val AccountRole.label: String
-    get() = when (this) {
-        AccountRole.Customer -> "Customer"
-        AccountRole.Restaurant -> "Restaurant"
-    }
-
-private val AccountRole.roleHint: String
-    get() = when (this) {
-        AccountRole.Customer -> "Discover restaurants and review the dishes you try."
-        AccountRole.Restaurant -> "Publish your restaurant profile."
-    }
 
 @Preview
 @Composable
@@ -210,7 +213,7 @@ private fun RegisterScreenCustomerPreview() {
             displayName = "Ada",
             selectedRole = AccountRole.Customer,
             isLoading = false,
-            errorMessage = null,
+            error = null,
             onEmailFieldChange = {},
             onPasswordFieldChange = {},
             onDisplayNameFieldChange = {},
@@ -232,7 +235,7 @@ private fun RegisterScreenRestaurantPreview() {
             displayName = "",
             selectedRole = AccountRole.Restaurant,
             isLoading = false,
-            errorMessage = null,
+            error = null,
             onEmailFieldChange = {},
             onPasswordFieldChange = {},
             onDisplayNameFieldChange = {},

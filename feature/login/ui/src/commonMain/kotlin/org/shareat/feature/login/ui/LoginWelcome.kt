@@ -18,7 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import shareat.feature.login.ui.generated.resources.Res
+import shareat.feature.login.ui.generated.resources.login_browse_as_guest
+import shareat.feature.login.ui.generated.resources.login_create_account
+import shareat.feature.login.ui.generated.resources.login_sign_in
+import shareat.feature.login.ui.generated.resources.login_welcome_subtitle
+import shareat.feature.login.ui.generated.resources.login_welcome_title
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -33,12 +40,12 @@ internal fun LoginWelcome(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = "Good food starts with a good choice.", // extract string resource
+            text = stringResource(Res.string.login_welcome_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            text = "Discover trusted restaurants and the dishes people come back for.", // extract string resource
+            text = stringResource(Res.string.login_welcome_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -51,7 +58,7 @@ internal fun LoginWelcome(
                 pressedShape = MaterialTheme.shapes.large,
             ),
         ) {
-            Text(text = "Create account") // extract string resource
+            Text(text = stringResource(Res.string.login_create_account))
         }
         OutlinedButton(
             onClick = onSignInClick,
@@ -61,13 +68,13 @@ internal fun LoginWelcome(
                 pressedShape = MaterialTheme.shapes.large,
             )
         ) {
-            Text(text = "Sign in") // extract string resource
+            Text(text = stringResource(Res.string.login_sign_in))
         }
         TextButton(
             onClick = onBrowseAsGuestClick,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "Browse without an account") // extract string resource
+            Text(text = stringResource(Res.string.login_browse_as_guest))
         }
     }
 }

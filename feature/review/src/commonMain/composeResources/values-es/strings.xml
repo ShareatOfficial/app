@@ -1,0 +1,20 @@
+<resources>
+    <string name="dish_review_title">Cuéntanos qué te ha parecido</string>
+    <string name="dish_review_rate_dish">Valora el plato</string>
+    <string name="dish_review_rate_restaurant">Valora el restaurante</string>
+    <string name="dish_review_submit">Enviar valoraciones</string>
+    <string name="dish_review_submitted">Tus valoraciones se han guardado.</string>
+    <string name="dish_review_comment">Comentario (opcional)</string>
+    <string name="dish_review_error_credentials">Las credenciales de tu sesión ya no son válidas.</string>
+    <string name="dish_review_error_offline">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>
+    <string name="dish_review_error_session">Tu sesión ha caducado. Inicia sesión de nuevo.</string>
+    <string name="dish_review_error_forbidden">Solo los clientes activos pueden publicar valoraciones.</string>
+    <string name="dish_review_error_unavailable">El servicio no está disponible temporalmente.</string>
+    <string name="dish_review_error_already_exists">La valoración ya existe.</string>
+    <string name="dish_review_error_not_found">No se ha encontrado el plato que quieres valorar.</string>
+    <string name="dish_review_error_generic">Algo ha ido mal. Inténtalo de nuevo.</string>
+    <plurals name="dish_review_star_rating">
+        <item quantity="one">%1$d estrella</item>
+        <item quantity="other">%1$d estrellas</item>
+    </plurals>
+</resources>

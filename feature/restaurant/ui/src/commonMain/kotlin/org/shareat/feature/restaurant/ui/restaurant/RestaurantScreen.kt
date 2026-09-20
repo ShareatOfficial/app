@@ -46,6 +46,7 @@ import shareat.feature.restaurant.ui.generated.resources.Res
 import shareat.feature.restaurant.ui.generated.resources.restaurant_no_dishes_for_filters
 import shareat.feature.restaurant.ui.generated.resources.restaurant_no_menus
 import org.shareat.shared.designsystem.preview.FormFactorPreviews
+import org.shareat.feature.restaurant.ui.restaurant.composables.label
 
 private val ScreenPadding = 16.dp
 private val FilterSpacing = 4.dp
@@ -98,8 +99,9 @@ internal fun RestaurantScreenStateless(
     onDishRatingClick: (String, Int) -> Unit = { _, _ -> },
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let { message ->
+    val errorMessage = uiState.error?.label()
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
             onErrorShown()
         }

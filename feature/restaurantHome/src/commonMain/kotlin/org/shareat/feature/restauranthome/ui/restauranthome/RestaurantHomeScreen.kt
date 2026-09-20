@@ -26,15 +26,21 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
+import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
 import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
+import org.shareat.feature.restauranthome.ui.model.preparedImageUpload
 import org.shareat.feature.restauranthome.ui.model.toEditablePrice
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.ErrorContent
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.RestaurantHomeEmptyContent
@@ -61,12 +67,31 @@ What things I want to make the restaurant do?
 @Composable
 fun RestaurantHomeScreen(
     modifier: Modifier = Modifier,
-    onRestaurantImageChange: () -> Unit = {},
-    onDishImageChange: () -> Unit = {},
     onDishReviewClick: ((String) -> Unit)? = null,
     viewModel: RestaurantHomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val pickerScope = rememberCoroutineScope()
+    var imageTarget by remember { mutableStateOf<ImagePickerTarget?>(null) }
+    val imagePicker = rememberFilePickerLauncher(type = FileKitType.Image) { file ->
+        val target = imageTarget
+        imageTarget = null
+        if (file == null || target == null) return@rememberFilePickerLauncher
+
+        pickerScope.launch {
+            when (val result = file.toImageUploadValidationResult()) {
+                is ImageUploadValidationResult.Success -> when (target) {
+                    ImagePickerTarget.Restaurant -> viewModel.onRestaurantImageSelected(result.upload)
+                    ImagePickerTarget.Dish -> viewModel.onDishImageSelected(result.upload)
+                }
+
+                else -> when (target) {
+                    ImagePickerTarget.Restaurant -> viewModel.onRestaurantImagePickerFailure(result)
+                    ImagePickerTarget.Dish -> viewModel.onDishImagePickerFailure(result)
+                }
+            }
+        }
+    }
 
     RestaurantHomeStatelessV2ByTone(
         uiState = uiState,
@@ -82,9 +107,15 @@ fun RestaurantHomeScreen(
         onDismissBottomSheet = viewModel::onDismissBottomSheet,
         onRestaurantNameChange = viewModel::onRestaurantNameChange,
         onRestaurantDescriptionChange = viewModel::onRestaurantDescriptionChange,
-        onRestaurantImageChange = onRestaurantImageChange,
+        onRestaurantImageChange = {
+            imageTarget = ImagePickerTarget.Restaurant
+            imagePicker.launch()
+        },
         onSaveMainInfo = viewModel::onSaveMainInfo,
-        onDishImageChange = onDishImageChange,
+        onDishImageChange = {
+            imageTarget = ImagePickerTarget.Dish
+            imagePicker.launch()
+        },
         onDishNameChange = viewModel::onDishNameChange,
         onDishDescriptionChange = viewModel::onDishDescriptionChange,
         onDishPriceChange = viewModel::onDishPriceChange,
@@ -98,6 +129,11 @@ fun RestaurantHomeScreen(
         onDishReviewClick = onDishReviewClick,
     )
 }
+
+private enum class ImagePickerTarget { Restaurant, Dish }
+
+private suspend fun PlatformFile.toImageUploadValidationResult(): ImageUploadValidationResult =
+    preparedImageUpload(fileName = name) { compression -> compressedAsJpeg(compression) }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

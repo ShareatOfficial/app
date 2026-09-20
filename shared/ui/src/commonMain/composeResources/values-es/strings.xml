@@ -1,0 +1,7 @@
+<resources>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_activity">Actividad</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="nav_edit_menu">Editar carta</string>
+    <string name="nav_profile">Perfil</string>
+</resources>

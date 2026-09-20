@@ -1,0 +1,37 @@
+<resources>
+    <string name="login_welcome_title">Eating well starts with choosing well.</string>
+    <string name="login_welcome_subtitle">Discover restaurants you can trust and the dishes people come back for.</string>
+    <string name="login_create_account">Create account</string>
+    <string name="login_sign_in">Sign in</string>
+    <string name="login_browse_as_guest">Browse without an account</string>
+    <string name="login_back">Back</string>
+    <string name="login_register_title">Create your account</string>
+    <string name="login_sign_in_title">Welcome back</string>
+    <string name="login_email">Email address</string>
+    <string name="login_password">Password</string>
+    <string name="login_password_hint">At least %1$d characters</string>
+    <string name="login_confirm_password">Repeat the password</string>
+    <string name="login_passwords_mismatch">The passwords do not match</string>
+    <string name="login_display_name">Public name</string>
+    <string name="login_sign_in_instead">Already have an account? Sign in</string>
+    <string name="login_create_account_instead">New to Shareat? Create your account</string>
+    <string name="login_forgot_password">Forgot your password?</string>
+    <string name="login_recovery_sent">Check your inbox: we have sent you the password recovery link.</string>
+    <string name="login_role_prompt">I am signing up as</string>
+    <string name="login_role_customer">Customer</string>
+    <string name="login_role_restaurant">Restaurant</string>
+    <string name="login_role_customer_hint">Discover restaurants and rate the dishes you try.</string>
+    <string name="login_role_restaurant_hint">Publish your restaurant profile.</string>
+    <string name="login_password_show">Show</string>
+    <string name="login_password_hide">Hide</string>
+    <string name="login_error_invalid_input">Enter a valid email and a password of at least 8 characters.</string>
+    <string name="login_error_email_required">Enter your email first.</string>
+    <string name="login_error_invalid_credentials">The email or password is incorrect.</string>
+    <string name="login_error_offline">You appear to be offline. Try again when connected.</string>
+    <string name="login_error_session">Your session has expired. Please sign in again.</string>
+    <string name="login_error_forbidden">This account is not allowed to perform that action.</string>
+    <string name="login_error_unavailable">The service is temporarily unavailable.</string>
+    <string name="login_error_already_exists">An account with that email already exists.</string>
+    <string name="login_error_not_found">We could not find what you were looking for.</string>
+    <string name="login_error_generic">Something went wrong. Please try again.</string>
+</resources>

@@ -11,7 +11,7 @@ data class RestaurantUiState(
     val hasPublishedMenu: Boolean = false,
     val isLoadingDishes: Boolean = false,
     val isRefreshing: Boolean = false,
-    val errorMessage: String? = null,
+    val error: RestaurantError? = null,
 ) {
     val hasVisibleDishes: Boolean get() = dishes.isNotEmpty()
 }

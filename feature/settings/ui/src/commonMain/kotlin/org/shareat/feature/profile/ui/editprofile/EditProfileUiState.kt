@@ -13,7 +13,7 @@ data class EditProfileUiState(
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val saveSucceeded: Boolean = false,
-    val errorMessage: String? = null,
+    val error: EditProfileError? = null,
 ) {
     val initials: String
         get() = fullName.toInitials()

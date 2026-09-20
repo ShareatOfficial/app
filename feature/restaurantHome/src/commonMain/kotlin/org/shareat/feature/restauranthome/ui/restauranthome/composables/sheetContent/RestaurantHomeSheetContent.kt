@@ -83,6 +83,7 @@ internal fun RestaurantHomeSheetContent(
                     onRestaurantNameChange = onRestaurantNameChange,
                     onDescriptionChange = onRestaurantDescriptionChange,
                     onSaveClick = onSaveMainInfo,
+                    hasPendingImage = draft.pendingImageUpload != null,
                     isSaving = draft.isSaving,
                     nameInvalid = draft.nameInvalid,
                     error = draft.error,

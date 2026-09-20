@@ -15,6 +15,7 @@ import org.shareat.app.domain.model.RegistrationCredentials
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
+import org.shareat.feature.login.ui.model.LoginError
 
 data class LoginUiState(
     val email: String = "",
@@ -23,7 +24,7 @@ data class LoginUiState(
     val registrationRole: AccountRole = AccountRole.Customer,
     val isRegistration: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
+    val error: LoginError? = null,
     val recoverySent: Boolean = false,
     val authenticated: Boolean = false,
     val step: LoginStep = LoginStep.Welcome
@@ -41,17 +42,17 @@ class LoginViewModel(
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     fun onEmailFieldChange(value: String) =
-        _uiState.update { it.copy(email = value, errorMessage = null) }
+        _uiState.update { it.copy(email = value, error = null) }
 
     fun onPasswordFieldChange(value: String) =
-        _uiState.update { it.copy(password = value, errorMessage = null) }
+        _uiState.update { it.copy(password = value, error = null) }
 
     fun onDisplayNameFieldChange(value: String) =
-        _uiState.update { it.copy(displayName = value, errorMessage = null) }
+        _uiState.update { it.copy(displayName = value, error = null) }
 
     fun onSelectRole(value: AccountRole) = _uiState.update { it.copy(registrationRole = value) }
     fun setRegistration(value: Boolean) = _uiState.update {
-        it.copy(isRegistration = value, errorMessage = null, recoverySent = false)
+        it.copy(isRegistration = value, error = null, recoverySent = false)
     }
 
     fun goTo(target: LoginStep) {
@@ -64,7 +65,7 @@ class LoginViewModel(
         val email = runCatching { EmailAddress(snapshot.email.trim()) }.getOrNull()
         if (email == null || snapshot.password.length < 8) {
             _uiState.update {
-                it.copy(errorMessage = "Enter a valid email and a password of at least 8 characters.")
+                it.copy(error = LoginError.INVALID_INPUT)
             }
             return
         }
@@ -72,7 +73,7 @@ class LoginViewModel(
             _uiState.update {
                 it.copy(
                     isLoading = true,
-                    errorMessage = null,
+                    error = null,
                     recoverySent = false
                 )
             }
@@ -96,7 +97,7 @@ class LoginViewModel(
                     )
                     is RepositoryResult.Failure -> it.copy(
                         isLoading = false,
-                        errorMessage = result.error.toUserMessage(),
+                        error = result.error.toLoginError(),
                     )
                 }
             }
@@ -106,14 +107,14 @@ class LoginViewModel(
     fun onRequestPasswordRecovery() {
         val email = runCatching { EmailAddress(uiState.value.email.trim()) }.getOrNull()
         if (email == null) {
-            _uiState.update { it.copy(errorMessage = "Enter your email first.") }
+            _uiState.update { it.copy(error = LoginError.EMAIL_REQUIRED) }
             return
         }
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
                     isLoading = true,
-                    errorMessage = null,
+                    error = null,
                     recoverySent = false
                 )
             }
@@ -123,21 +124,20 @@ class LoginViewModel(
                 }
 
                 is RepositoryResult.Failure -> _uiState.update {
-                    it.copy(isLoading = false, errorMessage = result.error.toUserMessage())
+                    it.copy(isLoading = false, error = result.error.toLoginError())
                 }
             }
         }
     }
 }
 
-private fun RepositoryError.toUserMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "The email or password is incorrect."
-    RepositoryError.Offline -> "You appear to be offline. Try again when connected."
-    RepositoryError.Unauthenticated -> "Your session has expired. Please sign in again."
-    RepositoryError.Forbidden -> "This account is not allowed to perform that action."
-    is RepositoryError.Unavailable -> "The service is temporarily unavailable."
-    is RepositoryError.AlreadyExists -> "An account with that email already exists."
-    is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "The requested ${entity} could not be found."
-    is RepositoryError.Validation -> reason
+private fun RepositoryError.toLoginError(): LoginError = when (this) {
+    RepositoryError.InvalidCredentials -> LoginError.INVALID_CREDENTIALS
+    RepositoryError.Offline -> LoginError.OFFLINE
+    RepositoryError.Unauthenticated -> LoginError.UNAUTHENTICATED
+    RepositoryError.Forbidden -> LoginError.FORBIDDEN
+    is RepositoryError.Unavailable -> LoginError.TEMPORARILY_UNAVAILABLE
+    is RepositoryError.AlreadyExists -> LoginError.ALREADY_EXISTS
+    is RepositoryError.NotFound -> LoginError.NOT_FOUND
+    is RepositoryError.Conflict, is RepositoryError.Validation -> LoginError.UNKNOWN
 }

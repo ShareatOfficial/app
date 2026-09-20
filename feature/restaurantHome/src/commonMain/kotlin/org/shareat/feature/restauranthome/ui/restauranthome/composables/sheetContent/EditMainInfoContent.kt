@@ -45,6 +45,7 @@ import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_change_image
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_description
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_image_selected
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_name
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_restaurant_name_invalid
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_save
@@ -60,6 +61,7 @@ internal fun EditMainInfoContent(
     onRestaurantNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onSaveClick: () -> Unit,
+    hasPendingImage: Boolean = false,
     isSaving: Boolean = false,
     nameInvalid: Boolean = false,
     error: RestaurantHomeError? = null,
@@ -102,6 +104,14 @@ internal fun EditMainInfoContent(
                     contentDescription = changeImageLabel,
                 )
             }
+        }
+
+        if (hasPendingImage) {
+            Text(
+                text = stringResource(Res.string.restaurant_home_image_selected),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
 
         OutlinedTextField(

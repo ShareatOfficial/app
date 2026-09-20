@@ -59,6 +59,7 @@ import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_dis
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_dish_name_invalid
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_dish_name_placeholder
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_edit_dish
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_image_selected
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_price_invalid
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_price_label
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_price_placeholder
@@ -126,6 +127,14 @@ internal fun EditDishContent(
                     contentDescription = changeImageLabel,
                 )
             }
+        }
+
+        if (form.pendingImageUpload != null) {
+            Text(
+                text = stringResource(Res.string.restaurant_home_image_selected),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
 
         OutlinedTextField(

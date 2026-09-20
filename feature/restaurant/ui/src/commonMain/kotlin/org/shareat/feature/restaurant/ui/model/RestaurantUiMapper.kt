@@ -72,7 +72,7 @@ fun RestaurantArgs.toUiState(
     selection: RestaurantSelection = RestaurantSelection(),
     isLoadingDishes: Boolean = false,
     isRefreshing: Boolean = false,
-    errorMessage: String? = null,
+    error: RestaurantError? = null,
     dishMatchesFilters: (DishArgs) -> Boolean = { true },
 ): RestaurantUiState = RestaurantUiState(
     header = toHeaderUiState(),
@@ -88,7 +88,7 @@ fun RestaurantArgs.toUiState(
     hasPublishedMenu = dishes.isNotEmpty(),
     isLoadingDishes = isLoadingDishes,
     isRefreshing = isRefreshing,
-    errorMessage = errorMessage,
+    error = error,
 )
 
 fun RestaurantArgs.declaredAllergens(): List<EuAllergen> = dishes

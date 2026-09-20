@@ -1,0 +1,14 @@
+<resources>
+    <string name="last_activity_title">Activity</string>
+    <string name="last_activity_type_dish">Dish</string>
+    <string name="last_activity_type_restaurant">Restaurant</string>
+    <string name="last_activity_image_unavailable">No image available for %1$s</string>
+    <string name="last_activity_rating">%1$d out of 5 stars</string>
+    <string name="last_activity_guest">Log in to see your latest reviews.</string>
+    <string name="last_activity_empty">You have not written any reviews yet.</string>
+    <string name="last_activity_retry">Try again</string>
+    <string name="last_activity_error_offline">You appear to be offline. Please try again.</string>
+    <string name="last_activity_error_session">Your session has expired. Please sign in again.</string>
+    <string name="last_activity_error_unavailable">The service is unavailable right now.</string>
+    <string name="last_activity_error_generic">We could not load your activity. Please try again.</string>
+</resources>

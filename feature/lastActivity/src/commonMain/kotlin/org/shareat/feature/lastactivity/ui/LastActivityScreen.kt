@@ -43,6 +43,14 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 import org.shareat.shared.designsystem.shimmerEffect
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.lastactivity.generated.resources.Res
+import shareat.feature.lastactivity.generated.resources.last_activity_empty
+import shareat.feature.lastactivity.generated.resources.last_activity_guest
+import shareat.feature.lastactivity.generated.resources.last_activity_image_unavailable
+import shareat.feature.lastactivity.generated.resources.last_activity_rating
+import shareat.feature.lastactivity.generated.resources.last_activity_retry
+import shareat.feature.lastactivity.generated.resources.last_activity_title
 
 @Composable
 fun LastActivityScreen(
@@ -65,7 +73,7 @@ internal fun LastActivityScreenStateless(
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             Text(
-                text = "Actividad",
+                text = stringResource(Res.string.last_activity_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
@@ -76,7 +84,7 @@ internal fun LastActivityScreenStateless(
                     LastActivityUiState.Guest -> GuestActivity(onLoginClick, Modifier.align(Alignment.Center))
                     LastActivityUiState.Empty -> ActivityEmpty(Modifier.align(Alignment.Center))
                     is LastActivityUiState.Error -> ActivityError(
-                        state.message, onRetryClick, Modifier.align(Alignment.Center),
+                        state.error.label(), onRetryClick, Modifier.align(Alignment.Center),
                     )
                     is LastActivityUiState.Content -> ActivityList(state.items)
                 }
@@ -116,7 +124,7 @@ private fun ActivityReviewCard(item: LastActivityReviewUiState) {
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(item.type, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(item.type.label(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                 Text(item.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 item.description?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -132,20 +140,22 @@ private fun ActivityReviewCard(item: LastActivityReviewUiState) {
 
 @Composable
 private fun ActivityImagePlaceholder(name: String) {
+    val description = stringResource(Res.string.last_activity_image_unavailable, name)
     Box(
         modifier = Modifier
             .size(88.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .semantics { contentDescription = "Imagen no disponible de $name" },
+            .semantics { contentDescription = description },
     )
 }
 
 @Composable
 private fun RatingStars(rating: Int) {
+    val description = stringResource(Res.string.last_activity_rating, rating)
     Row(
         modifier = Modifier.padding(top = 6.dp).semantics {
-            contentDescription = "$rating de 5 estrellas"
+            contentDescription = description
         },
     ) {
         repeat(5) { index ->
@@ -163,20 +173,24 @@ private fun RatingStars(rating: Int) {
 @Composable
 private fun GuestActivity(onLoginClick: () -> Unit, modifier: Modifier = Modifier) {
     Button(onClick = onLoginClick, modifier = modifier.padding(24.dp)) {
-        Text("Si quieres ver tus últimas reviews, loguéate.")
+        Text(stringResource(Res.string.last_activity_guest))
     }
 }
 
 @Composable
 private fun ActivityEmpty(modifier: Modifier = Modifier) {
-    Text("Aún no has escrito ninguna review.", modifier = modifier.padding(24.dp), style = MaterialTheme.typography.bodyLarge)
+    Text(
+        stringResource(Res.string.last_activity_empty),
+        modifier = modifier.padding(24.dp),
+        style = MaterialTheme.typography.bodyLarge,
+    )
 }
 
 @Composable
 private fun ActivityError(message: String, onRetryClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
-        Button(onClick = onRetryClick) { Text("Reintentar") }
+        Button(onClick = onRetryClick) { Text(stringResource(Res.string.last_activity_retry)) }
     }
 }
 

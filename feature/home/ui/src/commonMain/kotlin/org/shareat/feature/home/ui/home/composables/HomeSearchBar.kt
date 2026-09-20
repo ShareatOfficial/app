@@ -12,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.home.ui.generated.resources.Res
+import shareat.feature.home.ui.generated.resources.home_search_placeholder
 
 @Composable
 internal fun HomeSearchBar(
@@ -23,7 +26,7 @@ internal fun HomeSearchBar(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier.fillMaxWidth(),
-        placeholder = { Text("Search restaurants") },
+        placeholder = { Text(stringResource(Res.string.home_search_placeholder)) },
         leadingIcon = {
             Icon(imageVector = Icons.Filled.Search, contentDescription = null)
         },

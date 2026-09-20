@@ -20,6 +20,7 @@ import org.shareat.feature.restaurant.domain.DishMatchesFiltersUseCase
 import org.shareat.feature.restaurant.ui.model.DishArgs
 import org.shareat.feature.restaurant.ui.model.RestaurantArgs
 import org.shareat.feature.restaurant.ui.model.RestaurantSelection
+import org.shareat.feature.restaurant.ui.model.RestaurantError
 import org.shareat.feature.restaurant.ui.model.RestaurantUiState
 import org.shareat.feature.restaurant.ui.model.declaredAllergens
 import org.shareat.feature.restaurant.ui.model.toArgs
@@ -71,7 +72,7 @@ class RestaurantViewModel(
                 }
 
                 is RepositoryResult.Failure -> {
-                    _uiState.value = currentUiState(errorMessage = result.error.toUserMessage())
+                    _uiState.value = currentUiState(error = result.error.toRestaurantError())
                 }
             }
         }
@@ -88,7 +89,7 @@ class RestaurantViewModel(
                 }
 
                 is RepositoryResult.Failure -> {
-                    _uiState.value = currentUiState(errorMessage = result.error.toUserMessage())
+                    _uiState.value = currentUiState(error = result.error.toRestaurantError())
                 }
             }
         }
@@ -106,12 +107,12 @@ class RestaurantViewModel(
     private fun currentUiState(
         isLoadingDishes: Boolean = false,
         isRefreshing: Boolean = false,
-        errorMessage: String? = null,
+        error: RestaurantError? = null,
     ): RestaurantUiState = restaurant.toUiState(
         selection = selection,
         isLoadingDishes = isLoadingDishes,
         isRefreshing = isRefreshing,
-        errorMessage = errorMessage,
+        error = error,
         dishMatchesFilters = ::matchesFilters,
     )
 
@@ -139,14 +140,13 @@ private fun RestaurantSelection.retainedFor(restaurant: RestaurantArgs): Restaur
     )
 }
 
-private fun RepositoryError.toUserMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Tus credenciales ya no son válidas."
-    RepositoryError.Offline -> "Parece que no tienes conexión. Inténtalo de nuevo más tarde."
-    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Vuelve a iniciar sesión."
-    RepositoryError.Forbidden -> "Esta cuenta no puede realizar esa acción."
-    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
-    is RepositoryError.AlreadyExists -> "$entity ya existe."
-    is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "No hemos encontrado $entity."
-    is RepositoryError.Validation -> reason
+private fun RepositoryError.toRestaurantError(): RestaurantError = when (this) {
+    RepositoryError.InvalidCredentials -> RestaurantError.INVALID_CREDENTIALS
+    RepositoryError.Offline -> RestaurantError.OFFLINE
+    RepositoryError.Unauthenticated -> RestaurantError.UNAUTHENTICATED
+    RepositoryError.Forbidden -> RestaurantError.FORBIDDEN
+    is RepositoryError.Unavailable -> RestaurantError.TEMPORARILY_UNAVAILABLE
+    is RepositoryError.AlreadyExists -> RestaurantError.ALREADY_EXISTS
+    is RepositoryError.NotFound -> RestaurantError.NOT_FOUND
+    is RepositoryError.Conflict, is RepositoryError.Validation -> RestaurantError.UNKNOWN
 }

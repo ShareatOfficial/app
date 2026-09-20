@@ -38,7 +38,16 @@ kotlin {
         }
     }
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
+        val nonWebMain by creating {
+            dependsOn(commonMain.get())
+        }
+        androidMain.get().dependsOn(nonWebMain)
+        iosMain.get().dependsOn(nonWebMain)
+        jvmMain.get().dependsOn(nonWebMain)
+
         commonMain.dependencies {
             implementation(project(":shared:domain"))
             implementation(project(":shared:navigation"))

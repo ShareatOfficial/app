@@ -13,6 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.settings.ui.generated.resources.Res
+import shareat.feature.settings.ui.generated.resources.profile_settings
+import shareat.feature.settings.ui.generated.resources.profile_title
 
 @Composable
 fun Profile(
@@ -31,9 +35,12 @@ fun Profile(
                 Alignment.CenterVertically,
             ),
         ) {
-            Text("Profile", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                stringResource(Res.string.profile_title),
+                style = MaterialTheme.typography.headlineMedium,
+            )
             Button(onClick = navigator::openSettings) {
-                Text("Settings")
+                Text(stringResource(Res.string.profile_settings))
             }
         }
     }

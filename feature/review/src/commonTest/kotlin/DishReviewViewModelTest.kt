@@ -143,7 +143,7 @@ class DishReviewViewModelTest {
         assertFalse(viewModel.uiState.value.isSubmitting)
         assertFalse(viewModel.uiState.value.submitSucceeded)
         assertTrue(viewModel.uiState.value.canSubmit)
-        assertIs<String>(viewModel.uiState.value.errorMessage)
+        assertIs<DishReviewError>(viewModel.uiState.value.error)
     }
 
     @Test
@@ -158,7 +158,7 @@ class DishReviewViewModelTest {
         viewModel.onDishCommentChange("Actualizado")
 
         assertFalse(viewModel.uiState.value.submitSucceeded)
-        assertNull(viewModel.uiState.value.errorMessage)
+        assertNull(viewModel.uiState.value.error)
         assertTrue(viewModel.uiState.value.canSubmit)
     }
 }

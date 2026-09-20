@@ -10,10 +10,14 @@ import kotlinx.coroutines.launch
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.EuAllergen
+import org.shareat.app.domain.model.ImageRef
+import org.shareat.app.domain.model.ImageUpload
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
+import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
+import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCase
 import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
@@ -24,6 +28,7 @@ import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantInfoDraft
 import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
 import org.shareat.feature.restauranthome.ui.model.DishFormValidation
+import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
 import org.shareat.feature.restauranthome.ui.model.RestaurantAddressUiState
 import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
@@ -47,6 +52,7 @@ data class RestaurantMainInfoDraft(
     val name: String,
     val description: String,
     val imageUrl: String,
+    val pendingImageUpload: ImageUpload? = null,
     val isSaving: Boolean = false,
     val nameInvalid: Boolean = false,
     val error: RestaurantHomeError? = null,
@@ -83,6 +89,8 @@ class RestaurantHomeViewModel(
     private val createOwnerDish: CreateOwnerDishUseCase,
     private val updateOwnerDish: UpdateOwnerDishUseCase,
     private val updateOwnerRestaurantInfo: UpdateOwnerRestaurantInfoUseCase,
+    private val replaceOwnerRestaurantImage: ReplaceOwnerRestaurantImageUseCase,
+    private val replaceOwnerDishImage: ReplaceOwnerDishImageUseCase,
 ) : ViewModel() {
     private var ownerHome: RestaurantHome? = null
 
@@ -204,6 +212,13 @@ class RestaurantHomeViewModel(
         copy(description = value, error = null)
     }
 
+    fun onRestaurantImageSelected(upload: ImageUpload) = updateMainInfoDraft {
+        copy(pendingImageUpload = upload, error = null)
+    }
+
+    internal fun onRestaurantImagePickerFailure(result: ImageUploadValidationResult) =
+        updateMainInfoDraft { copy(error = result.toImageError()) }
+
     fun onSaveMainInfo() {
         val form = _uiState.value.mainInfoDraft ?: return
         if (form.isSaving) return
@@ -229,6 +244,24 @@ class RestaurantHomeViewModel(
             ) {
                 is RepositoryResult.Success -> {
                     ownerHome = home.copy(restaurant = result.value)
+                    val imageResult = form.pendingImageUpload?.let { replaceOwnerRestaurantImage(it) }
+                    if (imageResult is RepositoryResult.Failure) {
+                        updateMainInfoDraft {
+                            copy(
+                                isSaving = false,
+                                error = RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED,
+                            )
+                        }
+                        publishLoadedContent()
+                        return@launch
+                    }
+                    if (imageResult is RepositoryResult.Success) {
+                        ownerHome = ownerHome?.let { currentHome ->
+                            currentHome.copy(
+                                restaurant = currentHome.restaurant.copy(heroImage = imageResult.value),
+                            )
+                        }
+                    }
                     _uiState.value = _uiState.value.copy(
                         activeBottomSheet = null,
                         mainInfoDraft = null,
@@ -270,6 +303,13 @@ class RestaurantHomeViewModel(
         )
     }
 
+    fun onDishImageSelected(upload: ImageUpload) = updateDishEditForm {
+        copy(pendingImageUpload = upload, error = null)
+    }
+
+    internal fun onDishImagePickerFailure(result: ImageUploadValidationResult) =
+        updateDishEditForm { copy(error = result.toImageError()) }
+
     fun onSaveDish() {
         val form = _uiState.value.dishEditForm ?: return
         if (form.isSaving) return
@@ -310,6 +350,26 @@ class RestaurantHomeViewModel(
             when (result) {
                 is RepositoryResult.Success -> {
                     applyDishUpdate(result.value)
+                    val savedDishId = result.value.dish.id
+                    if (form.dishId == null) {
+                        updateDishEditForm { copy(dishId = savedDishId.value) }
+                    }
+                    val imageResult = form.pendingImageUpload?.let {
+                        replaceOwnerDishImage(savedDishId, it)
+                    }
+                    if (imageResult is RepositoryResult.Failure) {
+                        updateDishEditForm {
+                            copy(
+                                isSaving = false,
+                                error = RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED,
+                            )
+                        }
+                        publishLoadedContent()
+                        return@launch
+                    }
+                    if (imageResult is RepositoryResult.Success) {
+                        applyDishImage(savedDishId.value, imageResult.value)
+                    }
                     _uiState.value = _uiState.value.copy(
                         activeBottomSheet = null,
                         selectedDishId = null,
@@ -442,6 +502,26 @@ class RestaurantHomeViewModel(
             ),
         )
     }
+
+    private fun applyDishImage(dishId: String, image: ImageRef) {
+        val home = ownerHome ?: return
+        val menu = home.menu ?: return
+        ownerHome = home.copy(
+            menu = menu.copy(
+                dishes = menu.dishes.map { ratedDish ->
+                    if (ratedDish.menuDish.dish.id.value == dishId) {
+                        ratedDish.copy(
+                            menuDish = ratedDish.menuDish.copy(
+                                dish = ratedDish.menuDish.dish.copy(image = image),
+                            ),
+                        )
+                    } else {
+                        ratedDish
+                    }
+                },
+            ),
+        )
+    }
 }
 
 private fun RestaurantAddressUiState.toDraft() = RestaurantAddressDraft(
@@ -470,4 +550,11 @@ private fun RepositoryError.toUiError(): RestaurantHomeError = when (this) {
     is RepositoryError.Unavailable -> RestaurantHomeError.TEMPORARILY_UNAVAILABLE
     is RepositoryError.Validation -> RestaurantHomeError.VALIDATION
     else -> RestaurantHomeError.UNKNOWN
+}
+
+private fun ImageUploadValidationResult.toImageError(): RestaurantHomeError = when (this) {
+    ImageUploadValidationResult.UnsupportedFormat -> RestaurantHomeError.IMAGE_FORMAT_UNSUPPORTED
+    ImageUploadValidationResult.TooLarge -> RestaurantHomeError.IMAGE_TOO_LARGE
+    ImageUploadValidationResult.InvalidFile -> RestaurantHomeError.IMAGE_READ_FAILED
+    is ImageUploadValidationResult.Success -> RestaurantHomeError.IMAGE_READ_FAILED
 }

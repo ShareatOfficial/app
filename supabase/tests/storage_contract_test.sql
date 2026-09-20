@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(16);
 
 select is((select file_size_limit from storage.buckets where id = 'avatars'), 512000::bigint, 'avatar limit is 500 KB');
 select is((select public from storage.buckets where id = 'avatars'), false, 'avatars are private');
@@ -9,6 +9,18 @@ select is(
     (select allowed_mime_types from storage.buckets where id = 'avatars'),
     array['image/jpeg', 'image/png', 'image/webp']::text[],
     'image MIME allowlist is configured'
+);
+select is((select file_size_limit from storage.buckets where id = 'restaurant-images'), 512000::bigint, 'restaurant image limit is 500 KB');
+select is((select file_size_limit from storage.buckets where id = 'dish-images'), 512000::bigint, 'dish image limit is 500 KB');
+select is(
+    (select allowed_mime_types from storage.buckets where id = 'restaurant-images'),
+    array['image/jpeg', 'image/png', 'image/webp']::text[],
+    'restaurant image MIME allowlist is configured'
+);
+select is(
+    (select allowed_mime_types from storage.buckets where id = 'dish-images'),
+    array['image/jpeg', 'image/png', 'image/webp']::text[],
+    'dish image MIME allowlist is configured'
 );
 
 insert into auth.users (id, email, raw_user_meta_data, is_sso_user, is_anonymous) values
@@ -50,6 +62,21 @@ select throws_ok(
     '42501'
 );
 reset role;
+
+insert into storage.objects (bucket_id, name, owner_id) values
+    ('dish-images', 'not-a-uuid/dish.jpg', '70000000-0000-4000-8000-000000000001');
+select set_config('storage.allow_delete_query', 'true', true);
+select set_config('request.jwt.claim.sub', '70000000-0000-4000-8000-000000000001', true);
+set local role authenticated;
+select lives_ok(
+    $$delete from storage.objects where bucket_id = 'dish-images' and name = 'not-a-uuid/dish.jpg'$$,
+    'a dish image outside a restaurant folder is filtered out of deletes instead of failing the cast'
+);
+reset role;
+select ok(
+    exists(select 1 from storage.objects where bucket_id = 'dish-images' and name = 'not-a-uuid/dish.jpg'),
+    'a dish image outside a restaurant folder cannot be deleted'
+);
 
 select * from finish();
 rollback;

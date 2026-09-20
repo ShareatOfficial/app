@@ -19,31 +19,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.navigation.Navigator
-import org.shareat.feature.home.ui.navigation.HomeKey
 import org.shareat.feature.lastactivity.navigation.LastActivityKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
 import org.shareat.feature.restauranthome.ui.navigation.RestaurantHomeKey
+import shareat.shared.ui.generated.resources.Res
+import shareat.shared.ui.generated.resources.nav_activity
+import shareat.shared.ui.generated.resources.nav_edit_menu
+import shareat.shared.ui.generated.resources.nav_home
+import shareat.shared.ui.generated.resources.nav_profile
+import shareat.shared.ui.generated.resources.nav_settings
 
 data class TopLevelNavigationItem(
     val route: NavKey,
-    val label: String,
+    val label: StringResource,
     val icon: ImageVector,
 )
-
-val TOP_LEVEL_NAV_ITEMS = topLevelNavigationItems(HomeKey)
 
 fun topLevelNavigationItems(homeRoute: NavKey): List<TopLevelNavigationItem> =
     if (homeRoute == RestaurantHomeKey) {
         listOf(
-            TopLevelNavigationItem(RestaurantHomeKey, "Edit menu", Icons.Default.Home),
-            TopLevelNavigationItem(SettingsKey, "Profile", Icons.Default.Settings),
+            TopLevelNavigationItem(RestaurantHomeKey, Res.string.nav_edit_menu, Icons.Default.Home),
+            TopLevelNavigationItem(SettingsKey, Res.string.nav_profile, Icons.Default.Settings),
         )
     } else {
         listOf(
-            TopLevelNavigationItem(homeRoute, "Home", Icons.Default.Home),
-            TopLevelNavigationItem(LastActivityKey, "Actividad", Icons.Default.History),
-            TopLevelNavigationItem(SettingsKey, "Settings", Icons.Default.Settings),
+            TopLevelNavigationItem(homeRoute, Res.string.nav_home, Icons.Default.Home),
+            TopLevelNavigationItem(LastActivityKey, Res.string.nav_activity, Icons.Default.History),
+            TopLevelNavigationItem(SettingsKey, Res.string.nav_settings, Icons.Default.Settings),
         )
     }
 
@@ -57,11 +62,12 @@ fun TopLevelNavigationBar(items: List<TopLevelNavigationItem>, navigator: Naviga
         ),
     ) {
         items.forEach { item ->
+            val label = stringResource(item.label)
             NavigationBarItem(
                 selected = item.route == navigator.state.topLevelRoute,
                 onClick = { navigator.navigate(item.route) },
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) },
+                icon = { Icon(item.icon, contentDescription = label) },
+                label = { Text(label) },
             )
         }
     }
@@ -71,11 +77,12 @@ fun TopLevelNavigationBar(items: List<TopLevelNavigationItem>, navigator: Naviga
 fun TopLevelNavigationRail(items: List<TopLevelNavigationItem>, navigator: Navigator) {
     NavigationRail {
         items.forEach { item ->
+            val label = stringResource(item.label)
             NavigationRailItem(
                 selected = item.route == navigator.state.topLevelRoute,
                 onClick = { navigator.navigate(item.route) },
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) },
+                icon = { Icon(item.icon, contentDescription = label) },
+                label = { Text(label) },
             )
         }
     }

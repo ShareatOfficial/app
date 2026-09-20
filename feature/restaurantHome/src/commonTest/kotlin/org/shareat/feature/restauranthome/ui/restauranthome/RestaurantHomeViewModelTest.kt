@@ -11,6 +11,8 @@ import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.DishId
+import org.shareat.app.domain.model.ImageRef
+import org.shareat.app.domain.model.ImageUpload
 import org.shareat.app.domain.model.Menu
 import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.MenuDish
@@ -27,6 +29,8 @@ import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
+import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
+import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCase
 import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
@@ -38,6 +42,7 @@ import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantMenu
 import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
+import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -292,6 +297,106 @@ class RestaurantHomeViewModelTest {
     }
 
     @Test
+    fun selectedRestaurantImageIsUploadedAndPublishedAfterSavingDetails() = runTest(dispatcher) {
+        val home = ownerHome()
+        val upload = ImageUpload(byteArrayOf(1, 2, 3), "image/jpeg", "Baratie")
+        val uploadedImage = ImageRef("https://images.test/restaurants/baratie.jpg", "Baratie")
+        var submittedUpload: ImageUpload? = null
+        val viewModel = viewModelFor(
+            home = home,
+            onUpdateRestaurant = { RepositoryResult.Success(home.restaurant) },
+            onReplaceRestaurantImage = {
+                submittedUpload = it
+                RepositoryResult.Success(uploadedImage)
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onMainInfoClick()
+        viewModel.onRestaurantImageSelected(upload)
+        assertEquals(upload, viewModel.uiState.value.mainInfoDraft?.pendingImageUpload)
+
+        viewModel.onSaveMainInfo()
+        advanceUntilIdle()
+
+        assertEquals(upload, submittedUpload)
+        assertNull(viewModel.uiState.value.activeBottomSheet)
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertEquals(uploadedImage.url, content.restaurant.imageUrl)
+    }
+
+    @Test
+    fun selectedDishImageIsUploadedForThePersistedDish() = runTest(dispatcher) {
+        val home = ownerHome()
+        val upload = ImageUpload(byteArrayOf(4, 5, 6), "image/jpeg", "Paella")
+        val uploadedImage = ImageRef("https://images.test/dishes/paella.jpg", "Paella")
+        var uploadedDishId: DishId? = null
+        val viewModel = viewModelFor(
+            home = home,
+            onCreateDish = { RepositoryResult.Success(newDishUpdate(home)) },
+            onReplaceDishImage = { dishId, selectedUpload ->
+                uploadedDishId = dishId
+                assertEquals(upload, selectedUpload)
+                RepositoryResult.Success(uploadedImage)
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onAddDishClick()
+        viewModel.onDishNameChange("Paella del Baratie")
+        viewModel.onDishPriceChange("9,50")
+        viewModel.onDishImageSelected(upload)
+        viewModel.onSaveDish()
+        advanceUntilIdle()
+
+        assertEquals(DishId("dish-new"), uploadedDishId)
+        assertNull(viewModel.uiState.value.activeBottomSheet)
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertEquals(
+            uploadedImage.url,
+            content.restaurant.dishes.single { it.id == "dish-new" }.imageUrl,
+        )
+    }
+
+    @Test
+    fun failedDishImageUploadKeepsThePersistedDishOpenForRetry() = runTest(dispatcher) {
+        val home = ownerHome()
+        val viewModel = viewModelFor(
+            home = home,
+            onCreateDish = { RepositoryResult.Success(newDishUpdate(home)) },
+            onReplaceDishImage = { _, _ -> RepositoryResult.Failure(RepositoryError.Offline) },
+        )
+        advanceUntilIdle()
+
+        viewModel.onAddDishClick()
+        viewModel.onDishNameChange("Paella del Baratie")
+        viewModel.onDishPriceChange("9,50")
+        viewModel.onDishImageSelected(ImageUpload(byteArrayOf(1), "image/jpeg", "Paella"))
+        viewModel.onSaveDish()
+        advanceUntilIdle()
+
+        val form = requireNotNull(viewModel.uiState.value.dishEditForm)
+        assertEquals("dish-new", form.dishId)
+        assertFalse(form.isSaving)
+        assertEquals(RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED, form.error)
+        assertEquals(RestaurantHomeBottomSheet.EDIT_DISH, viewModel.uiState.value.activeBottomSheet)
+    }
+
+    @Test
+    fun imagePickerValidationFailureIsShownInTheActiveEditor() = runTest(dispatcher) {
+        val viewModel = viewModelFor()
+        advanceUntilIdle()
+        viewModel.onMainInfoClick()
+
+        viewModel.onRestaurantImagePickerFailure(ImageUploadValidationResult.TooLarge)
+
+        assertEquals(
+            RestaurantHomeError.IMAGE_TOO_LARGE,
+            viewModel.uiState.value.mainInfoDraft?.error,
+        )
+    }
+
+    @Test
     fun addressAndCategoryDraftsAreUpdatedInEditMode() = runTest(dispatcher) {
         val viewModel = viewModelFor()
         advanceUntilIdle()
@@ -323,11 +428,19 @@ class RestaurantHomeViewModelTest {
         onUpdateRestaurant: suspend (OwnerRestaurantInfoDraft) -> RepositoryResult<Restaurant> = {
             error("Update restaurant was not expected")
         },
+        onReplaceRestaurantImage: suspend (ImageUpload) -> RepositoryResult<ImageRef> = {
+            error("Replace restaurant image was not expected")
+        },
+        onReplaceDishImage: suspend (DishId, ImageUpload) -> RepositoryResult<ImageRef> = { _, _ ->
+            error("Replace dish image was not expected")
+        },
     ) = RestaurantHomeViewModel(
         loadRestaurantHome = GetRestaurantHomeUseCase(onLoad),
         createOwnerDish = CreateOwnerDishUseCase(onCreateDish),
         updateOwnerDish = UpdateOwnerDishUseCase(onUpdateDish),
         updateOwnerRestaurantInfo = UpdateOwnerRestaurantInfoUseCase(onUpdateRestaurant),
+        replaceOwnerRestaurantImage = ReplaceOwnerRestaurantImageUseCase(onReplaceRestaurantImage),
+        replaceOwnerDishImage = ReplaceOwnerDishImageUseCase(onReplaceDishImage),
     )
 }
 

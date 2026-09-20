@@ -1,0 +1,20 @@
+<resources>
+    <string name="dish_review_title">Tell us what you thought</string>
+    <string name="dish_review_rate_dish">Rate the dish</string>
+    <string name="dish_review_rate_restaurant">Rate the restaurant</string>
+    <string name="dish_review_submit">Send reviews</string>
+    <string name="dish_review_submitted">Your reviews have been saved.</string>
+    <string name="dish_review_comment">Comment (optional)</string>
+    <string name="dish_review_error_credentials">Your session credentials are no longer valid.</string>
+    <string name="dish_review_error_offline">You are offline. Check your connection and try again.</string>
+    <string name="dish_review_error_session">Your session has expired. Please sign in again.</string>
+    <string name="dish_review_error_forbidden">Only active customers can publish reviews.</string>
+    <string name="dish_review_error_unavailable">The service is temporarily unavailable.</string>
+    <string name="dish_review_error_already_exists">The review already exists.</string>
+    <string name="dish_review_error_not_found">We could not find the dish you want to review.</string>
+    <string name="dish_review_error_generic">Something went wrong. Please try again.</string>
+    <plurals name="dish_review_star_rating">
+        <item quantity="one">%1$d star</item>
+        <item quantity="other">%1$d stars</item>
+    </plurals>
+</resources>

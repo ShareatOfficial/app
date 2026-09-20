@@ -6,9 +6,9 @@ object SubscriptionConfiguration {
 }
 
 enum class SubscriptionProduct(val productId: String) {
-    Lifetime("lifetime"),
-    Yearly("yearly"),
     Monthly("monthly"),
+    Quarterly("quarterly"),
+    Lifetime("lifetime"),
 }
 
 data class SubscriptionPackage(
