@@ -20,6 +20,7 @@
     <string name="restaurant_home_price_label">Precio</string>
     <string name="restaurant_home_price_invalid">Indica un precio válido, por ejemplo 12,50.</string>
     <string name="restaurant_home_restaurant_name_invalid">El nombre es obligatorio.</string>
+    <string name="restaurant_home_dish_name_invalid">El nombre del plato es obligatorio.</string>
     <string name="restaurant_home_street_invalid">La calle es obligatoria.</string>
     <string name="restaurant_home_locality_invalid">La localidad es obligatoria.</string>
     <string name="restaurant_home_postal_code_invalid">El código postal es obligatorio.</string>
@@ -38,6 +39,13 @@
     <string name="restaurant_home_dish_disabled">No publicado</string>
     <string name="restaurant_home_all_categories">Todos</string>
     <string name="restaurant_home_unrated">Sin valoraciones</string>
+    <string name="restaurant_home_write_review">Escribir una reseña</string>
+    <string name="restaurant_home_no_allergen_information">Sin información de alérgenos</string>
+    <string name="restaurant_home_edit_address">Editar dirección</string>
+    <string name="restaurant_home_view_address">Dirección</string>
+    <string name="restaurant_home_edit_categories">Editar categorías</string>
+    <string name="restaurant_home_view_ratings">Valoraciones</string>
+    <string name="restaurant_home_feature_coming_soon">Este contenido estará disponible próximamente.</string>
     <string name="restaurant_home_cancel">Cancelar</string>
     <string name="restaurant_home_save">Guardar</string>
     <string name="restaurant_home_saving">Guardando…</string>
