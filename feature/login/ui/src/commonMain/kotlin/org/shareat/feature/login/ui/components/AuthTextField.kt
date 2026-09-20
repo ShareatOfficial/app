@@ -16,6 +16,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.text.KeyboardOptions
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.login.ui.generated.resources.Res
+import shareat.feature.login.ui.generated.resources.login_password_hide
+import shareat.feature.login.ui.generated.resources.login_password_show
 
 /**
  * Single-line credential field shared by the sign-in and register panels.
@@ -59,7 +63,11 @@ internal fun AuthTextField(
         trailingIcon = if (!isPassword) null else {
             {
                 TextButton(onClick = { revealed = !revealed }, enabled = enabled) {
-                    Text(if (revealed) "Hide" else "Show") // extract string resource
+                    Text(
+                        stringResource(
+                            if (revealed) Res.string.login_password_hide else Res.string.login_password_show,
+                        ),
+                    )
                 }
             }
         },

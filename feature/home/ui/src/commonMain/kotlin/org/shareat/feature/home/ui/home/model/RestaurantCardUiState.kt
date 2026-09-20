@@ -7,7 +7,7 @@ data class RestaurantCardUiState(
     val name: String,
     val heroImageUrl: String?,
     val heroImageDescription: String?,
-    val ratingLabel: String,
+    val ratingLabel: String?,
     val isOpen: Boolean,
     val address: String,
     val dishReviews: List<DishReviewUiState>,

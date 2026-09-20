@@ -40,7 +40,7 @@ internal fun RestaurantHighlightsSection(
                         name = restaurant.name,
                         heroImageUrl = restaurant.heroImageUrl,
                         heroImageDescription = restaurant.heroImageDescription,
-                        ratingLabel = restaurant.ratingLabel,
+                        ratingLabel = ratingLabelOrUnrated(restaurant.ratingLabel),
                         isOpen = restaurant.isOpen,
                         address = restaurant.address,
                         dishReviews = restaurant.dishReviews,

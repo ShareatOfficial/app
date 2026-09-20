@@ -14,7 +14,7 @@ data class RestaurantOnboardingUiState(
     val hours: List<OnboardingOpeningHours> = Weekday.entries.map(::OnboardingOpeningHours),
     val errors: OnboardingFieldErrors = OnboardingFieldErrors(),
     val isSubmitting: Boolean = false,
-    val errorMessage: String? = null,
+    val submitError: OnboardingSubmitError? = null,
 )
 
 data class OnboardingOpeningHours(
@@ -22,15 +22,15 @@ data class OnboardingOpeningHours(
     val enabled: Boolean = true,
     val opensAt: String = "11:00",
     val closesAt: String = "22:00",
-    val error: String? = null,
+    val error: OnboardingHoursError? = null,
 )
 
 data class OnboardingFieldErrors(
-    val name: String? = null,
-    val email: String? = null,
-    val street: String? = null,
-    val city: String? = null,
-    val postcode: String? = null,
+    val name: OnboardingFieldError? = null,
+    val email: OnboardingFieldError? = null,
+    val street: OnboardingFieldError? = null,
+    val city: OnboardingFieldError? = null,
+    val postcode: OnboardingFieldError? = null,
 ) {
     val hasErrors: Boolean
         get() = listOf(name, email, street, city, postcode).any { it != null }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -21,6 +22,7 @@ import org.shareat.app.navigation.Navigator
 import org.shareat.feature.home.ui.navigation.HomeKey
 import org.shareat.feature.lastactivity.navigation.LastActivityKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
+import org.shareat.app.navigation.NavigationState
 import org.shareat.app.navigation.rememberNavigationState
 import org.shareat.app.navigation.toEntries
 import org.shareat.app.navscenedecorator.TopLevelNavigationBar
@@ -31,41 +33,62 @@ import org.shareat.app.navscenedecorator.topLevelNavigationItems
 import org.shareat.app.auth.RestaurantProfileCoordinator
 import org.shareat.app.auth.RestaurantProfileGateState
 import org.shareat.app.domain.model.AccountRole
+import org.shareat.app.language.AppLanguageCoordinator
 import org.shareat.feature.restauranthome.ui.navigation.RestaurantHomeKey
 import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun App() {
+    val appLanguage by koinInject<AppLanguageCoordinator>().selected.collectAsState()
+    val restaurantProfiles = koinInject<RestaurantProfileCoordinator>()
+    val profileGateState by restaurantProfiles.state.collectAsState()
+    val topLevelRoutes = remember {
+        setOf<NavKey>(HomeKey, RestaurantHomeKey, LastActivityKey, SettingsKey)
+    }
+    val navigationState = rememberNavigationState(
+        startRoute = HomeKey,
+        topLevelRoutes = topLevelRoutes,
+    )
+    val landingRoute = (profileGateState as? RestaurantProfileGateState.Allowed)
+        ?.let { allowed ->
+            if (allowed.role == AccountRole.Restaurant) RestaurantHomeKey else HomeKey
+        }
+    var appliedLandingRoute by remember(navigationState) { mutableStateOf<NavKey?>(null) }
+    val displayedGateState = if (landingRoute != null && landingRoute != appliedLandingRoute) {
+        RestaurantProfileGateState.Checking
+    } else {
+        profileGateState
+    }
+    LaunchedEffect(landingRoute) {
+        landingRoute?.let { route ->
+            if (route != appliedLandingRoute) {
+                navigationState.resetToLandingRoute(route)
+                appliedLandingRoute = route
+            }
+        }
+    }
+
+    key(appLanguage) {
+        AppContent(
+            navigationState = navigationState,
+            restaurantProfiles = restaurantProfiles,
+            displayedGateState = displayedGateState,
+            landingRoute = landingRoute,
+        )
+    }
+}
+
+@OptIn(KoinExperimentalAPI::class)
+@Composable
+private fun AppContent(
+    navigationState: NavigationState,
+    restaurantProfiles: RestaurantProfileCoordinator,
+    displayedGateState: RestaurantProfileGateState,
+    landingRoute: NavKey?,
+) {
     ShareatTheme {
         SharedTransitionLayout {
-            val restaurantProfiles = koinInject<RestaurantProfileCoordinator>()
-            val profileGateState by restaurantProfiles.state.collectAsState()
-            val topLevelRoutes = remember {
-                setOf<NavKey>(HomeKey, RestaurantHomeKey, LastActivityKey, SettingsKey)
-            }
-            val navigationState = rememberNavigationState(
-                startRoute = HomeKey,
-                topLevelRoutes = topLevelRoutes,
-            )
-            val landingRoute = (profileGateState as? RestaurantProfileGateState.Allowed)
-                ?.let { allowed ->
-                    if (allowed.role == AccountRole.Restaurant) RestaurantHomeKey else HomeKey
-                }
-            var appliedLandingRoute by remember(navigationState) { mutableStateOf<NavKey?>(null) }
-            val displayedGateState = if (landingRoute != null && landingRoute != appliedLandingRoute) {
-                RestaurantProfileGateState.Checking
-            } else {
-                profileGateState
-            }
-            LaunchedEffect(landingRoute) {
-                landingRoute?.let { route ->
-                    if (route != appliedLandingRoute) {
-                        navigationState.resetToLandingRoute(route)
-                        appliedLandingRoute = route
-                    }
-                }
-            }
             val navigator = koinInject<Navigator> {
                 parametersOf(navigationState)
             }

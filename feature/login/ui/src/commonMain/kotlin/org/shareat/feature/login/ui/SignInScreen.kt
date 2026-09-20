@@ -21,8 +21,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.shareat.feature.login.ui.components.AuthTextField
+import org.shareat.feature.login.ui.components.label
+import org.shareat.feature.login.ui.model.LoginError
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import shareat.feature.login.ui.generated.resources.Res
+import shareat.feature.login.ui.generated.resources.login_back
+import shareat.feature.login.ui.generated.resources.login_create_account_instead
+import shareat.feature.login.ui.generated.resources.login_email
+import shareat.feature.login.ui.generated.resources.login_forgot_password
+import shareat.feature.login.ui.generated.resources.login_password
+import shareat.feature.login.ui.generated.resources.login_recovery_sent
+import shareat.feature.login.ui.generated.resources.login_sign_in
+import shareat.feature.login.ui.generated.resources.login_sign_in_title
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -30,7 +42,7 @@ internal fun SignInScreen(
     email: String,
     password: String,
     isLoading: Boolean,
-    errorMessage: String?,
+    error: LoginError?,
     recoverySent: Boolean,
     onEmailFieldChange: (String) -> Unit,
     onPasswordFieldChange: (String) -> Unit,
@@ -45,38 +57,38 @@ internal fun SignInScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TextButton(onClick = onBackClick, enabled = !isLoading) {
-            Text(text = "Back") // extract string resource
+            Text(text = stringResource(Res.string.login_back))
         }
         Text(
-            text = "Welcome back", // extract string resource
+            text = stringResource(Res.string.login_sign_in_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
         AuthTextField(
             value = email,
             onValueChange = onEmailFieldChange,
-            label = "Email", // extract string resource
+            label = stringResource(Res.string.login_email),
             enabled = !isLoading,
             keyboardType = KeyboardType.Email,
         )
         AuthTextField(
             value = password,
             onValueChange = onPasswordFieldChange,
-            label = "Password", // extract string resource
+            label = stringResource(Res.string.login_password),
             enabled = !isLoading,
             isPassword = true,
             imeAction = ImeAction.Done,
         )
-        errorMessage?.let {
+        error?.let {
             Text(
-                text = it,
+                text = it.label(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
         }
         if (recoverySent) {
             Text(
-                text = "Check your email for the password recovery link.", // extract string resource
+                text = stringResource(Res.string.login_recovery_sent),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -97,7 +109,7 @@ internal fun SignInScreen(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             } else {
-                Text(text = "Sign in") // extract string resource
+                Text(text = stringResource(Res.string.login_sign_in))
             }
         }
         TextButton(
@@ -105,14 +117,14 @@ internal fun SignInScreen(
             enabled = !isLoading,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "Forgot password?") // extract string resource
+            Text(text = stringResource(Res.string.login_forgot_password))
         }
         TextButton(
             onClick = onCreateAccountClick,
             enabled = !isLoading,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Text(text = "New to Shareat? Create account") // extract string resource
+            Text(text = stringResource(Res.string.login_create_account_instead))
         }
         // TODO: provider sign-in (Google, Apple, or both depending on the platform).
     }
@@ -126,7 +138,7 @@ private fun SignInScreenPreview() {
             email = "ada@shareat.org",
             password = "hunter2000",
             isLoading = false,
-            errorMessage = null,
+            error = null,
             recoverySent = false,
             onEmailFieldChange = {},
             onPasswordFieldChange = {},
@@ -146,7 +158,7 @@ private fun SignInScreenLoadingPreview() {
             email = "ada@shareat.org",
             password = "hunter2000",
             isLoading = true,
-            errorMessage = null,
+            error = null,
             recoverySent = false,
             onEmailFieldChange = {},
             onPasswordFieldChange = {},
@@ -166,7 +178,7 @@ private fun SignInScreenErrorPreview() {
             email = "ada@shareat.org",
             password = "nope",
             isLoading = false,
-            errorMessage = "The email or password is incorrect.",
+            error = LoginError.INVALID_CREDENTIALS,
             recoverySent = false,
             onEmailFieldChange = {},
             onPasswordFieldChange = {},

@@ -12,10 +12,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.settings.ui.generated.resources.Res
+import shareat.feature.settings.ui.generated.resources.terms_back
+import shareat.feature.settings.ui.generated.resources.terms_title
 
 const val TERMS_AND_CONDITIONS_URL =
     "https://shareatofficial.github.io/app/terms-and-conditions.html"
@@ -36,11 +39,11 @@ fun TermsAndConditionsScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = "Go back",
+                    contentDescription = stringResource(Res.string.terms_back),
                 )
             }
             Text(
-                text = "Terms and Conditions",
+                text = stringResource(Res.string.terms_title),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 4.dp),

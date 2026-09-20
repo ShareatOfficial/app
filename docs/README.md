@@ -11,6 +11,7 @@ Esta carpeta es la fuente de verdad para explicar las decisiones técnicas y có
 | Datos | [Modelo de dominio](./data-model/README.md) | Entidades, relaciones y contratos de repositorio del MVP |
 | Navegación | [Navegación](./navigation/README.md) | Contratos por pantalla, `NavKey` y entry builders |
 | UI | [Estados de carga y skeletons](./ui/README.md) | `:shared:designsystem`, `shimmerEffect` y el patrón de skeleton por pantalla |
+| Localización | [Localización (i18n)](./localization/README.md) | `strings.xml` por módulo, inglés por defecto, español en `values-es`, y el selector de idioma de Ajustes |
 | Inyección | [Koin](./dependency-injection/README.md) | Composition root, módulos y selección de repositorios |
 | Calidad | [Pruebas y mocks](./testing/README.md) | Repositorios mock y pruebas de repositorios, use cases y ViewModels |
 | Backend | [Supabase local](./supabase/README.md) | Migraciones, Auth, RLS, Storage y flujo local/alojado |

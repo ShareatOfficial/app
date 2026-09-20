@@ -45,6 +45,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.Weekday
+import org.shareat.feature.profile.ui.settings.labelResource
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.settings.ui.generated.resources.Res
 import shareat.feature.settings.ui.generated.resources.*
@@ -81,7 +82,7 @@ internal fun StatelessRestaurantOnboardingScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Shareat", style = MaterialTheme.typography.titleLarge)
+                    Text(stringResource(Res.string.onboarding_brand), style = MaterialTheme.typography.titleLarge)
                 },
                 actions = {
                     TextButton(
@@ -135,7 +136,7 @@ internal fun StatelessRestaurantOnboardingScreen(
                             onValueChange = { onAction(RestaurantOnboardingAction.NameChanged(it)) },
                             label = { Text(stringResource(Res.string.onboarding_name)) },
                             isError = state.errors.name != null,
-                            supportingText = state.errors.name?.let { { ErrorText(it) } },
+                            supportingText = state.errors.name?.let { { ErrorText(it.label()) } },
                             modifier = Modifier.fillMaxWidth(),
                         )
                         OutlinedTextField(
@@ -151,7 +152,7 @@ internal fun StatelessRestaurantOnboardingScreen(
                     OnboardingSection(stringResource(Res.string.onboarding_contact)) {
                         ResponsivePair(wide,
                             first = {
-                                OnboardingField(state.publicEmail, { onAction(RestaurantOnboardingAction.EmailChanged(it)) }, stringResource(Res.string.onboarding_email), state.errors.email, KeyboardType.Email)
+                                OnboardingField(state.publicEmail, { onAction(RestaurantOnboardingAction.EmailChanged(it)) }, stringResource(Res.string.onboarding_email), state.errors.email?.label(), KeyboardType.Email)
                             },
                             second = {
                                 OnboardingField(state.publicPhone, { onAction(RestaurantOnboardingAction.PhoneChanged(it)) }, stringResource(Res.string.onboarding_phone), null, KeyboardType.Phone)
@@ -161,10 +162,10 @@ internal fun StatelessRestaurantOnboardingScreen(
                 }
                 item {
                     OnboardingSection(stringResource(Res.string.onboarding_location)) {
-                        OnboardingField(state.street, { onAction(RestaurantOnboardingAction.StreetChanged(it)) }, stringResource(Res.string.onboarding_street), state.errors.street)
+                        OnboardingField(state.street, { onAction(RestaurantOnboardingAction.StreetChanged(it)) }, stringResource(Res.string.onboarding_street), state.errors.street?.label())
                         ResponsivePair(wide,
-                            first = { OnboardingField(state.city, { onAction(RestaurantOnboardingAction.CityChanged(it)) }, stringResource(Res.string.onboarding_city), state.errors.city) },
-                            second = { OnboardingField(state.postcode, { onAction(RestaurantOnboardingAction.PostcodeChanged(it)) }, stringResource(Res.string.onboarding_postcode), state.errors.postcode, KeyboardType.Number) },
+                            first = { OnboardingField(state.city, { onAction(RestaurantOnboardingAction.CityChanged(it)) }, stringResource(Res.string.onboarding_city), state.errors.city?.label()) },
+                            second = { OnboardingField(state.postcode, { onAction(RestaurantOnboardingAction.PostcodeChanged(it)) }, stringResource(Res.string.onboarding_postcode), state.errors.postcode?.label(), KeyboardType.Number) },
                         )
                         ResponsivePair(wide,
                             first = { OnboardingField(state.province, { onAction(RestaurantOnboardingAction.ProvinceChanged(it)) }, stringResource(Res.string.onboarding_province), null) },
@@ -182,7 +183,7 @@ internal fun StatelessRestaurantOnboardingScreen(
                 }
                 item {
                     Column(Modifier.widthIn(max = 1040.dp).fillMaxWidth()) {
-                        state.errorMessage?.let { ErrorText(it) }
+                        state.submitError?.let { ErrorText(it.label()) }
                         Text(stringResource(Res.string.onboarding_draft_notice), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -234,15 +235,15 @@ private fun OnboardingField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    error: String?,
+    errorText: String?,
     keyboardType: KeyboardType = KeyboardType.Text,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        isError = error != null,
-        supportingText = error?.let { { ErrorText(it) } },
+        isError = errorText != null,
+        supportingText = errorText?.let { { ErrorText(it) } },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         modifier = Modifier.fillMaxWidth(),
     )
@@ -263,10 +264,10 @@ private fun OpeningHoursRow(hours: OnboardingOpeningHours, onAction: (Restaurant
         if (hours.enabled) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(Modifier.weight(1f)) {
-                    OnboardingField(hours.opensAt, { onAction(RestaurantOnboardingAction.OpensAtChanged(hours.day, it)) }, stringResource(Res.string.onboarding_opens), hours.error)
+                    OnboardingField(hours.opensAt, { onAction(RestaurantOnboardingAction.OpensAtChanged(hours.day, it)) }, stringResource(Res.string.onboarding_opens), hours.error?.label())
                 }
                 Box(Modifier.weight(1f)) {
-                    OnboardingField(hours.closesAt, { onAction(RestaurantOnboardingAction.ClosesAtChanged(hours.day, it)) }, stringResource(Res.string.onboarding_closes), hours.error)
+                    OnboardingField(hours.closesAt, { onAction(RestaurantOnboardingAction.ClosesAtChanged(hours.day, it)) }, stringResource(Res.string.onboarding_closes), hours.error?.label())
                 }
             }
         }
@@ -274,15 +275,7 @@ private fun OpeningHoursRow(hours: OnboardingOpeningHours, onAction: (Restaurant
 }
 
 @Composable
-private fun weekdayLabel(day: Weekday): String = stringResource(when (day) {
-    Weekday.Monday -> Res.string.weekday_monday
-    Weekday.Tuesday -> Res.string.weekday_tuesday
-    Weekday.Wednesday -> Res.string.weekday_wednesday
-    Weekday.Thursday -> Res.string.weekday_thursday
-    Weekday.Friday -> Res.string.weekday_friday
-    Weekday.Saturday -> Res.string.weekday_saturday
-    Weekday.Sunday -> Res.string.weekday_sunday
-})
+private fun weekdayLabel(day: Weekday): String = stringResource(day.labelResource())
 
 @Composable
 private fun ErrorText(message: String) = Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -313,8 +306,8 @@ private fun ValidationPreview() {
         StatelessRestaurantOnboardingScreen(
             RestaurantOnboardingUiState(
                 errors = OnboardingFieldErrors(
-                    name = "Introduce el nombre.",
-                    street = "Introduce la dirección.",
+                    name = OnboardingFieldError.NAME_REQUIRED,
+                    street = OnboardingFieldError.STREET_REQUIRED,
                 ),
             ),
             {},

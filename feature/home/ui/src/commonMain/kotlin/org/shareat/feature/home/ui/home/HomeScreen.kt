@@ -29,7 +29,10 @@ import org.shareat.feature.home.ui.home.composables.RestaurantCardSkeleton
 import org.shareat.feature.home.ui.home.composables.RestaurantHighlightsSection
 import org.shareat.feature.home.ui.home.composables.RestaurantHighlightsSectionSkeleton
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
+import org.shareat.feature.home.ui.home.composables.label
+import org.shareat.feature.home.ui.home.composables.ratingLabelOrUnrated
 import org.shareat.feature.home.ui.home.model.HomeContentUiState
+import org.shareat.feature.home.ui.home.model.HomeError
 import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
 import org.shareat.feature.home.ui.home.model.HomeUiState
 import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
@@ -38,6 +41,8 @@ import org.shareat.feature.home.ui.navigation.HomeNavigation
 import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.home.ui.generated.resources.Res
+import shareat.feature.home.ui.generated.resources.home_empty
+import shareat.feature.home.ui.generated.resources.home_retry
 import shareat.feature.home.ui.generated.resources.recommended
 import org.shareat.shared.designsystem.preview.FormFactorPreviews
 
@@ -83,8 +88,8 @@ private fun HomeScreenStateless(
                     HomeContentUiState.Loading ->
                         HomeLoading(modifier = Modifier.align(Alignment.TopStart))
 
-                    is HomeContentUiState.Error -> HomeError(
-                        message = content.message,
+                    is HomeContentUiState.Error -> HomeErrorContent(
+                        message = content.error.label(),
                         onRetryClick = onRetryClick,
                         modifier = Modifier.align(Alignment.Center),
                     )
@@ -151,7 +156,7 @@ private fun RestaurantStandaloneCard(
         name = restaurant.name,
         heroImageUrl = restaurant.heroImageUrl,
         heroImageDescription = restaurant.heroImageDescription,
-        ratingLabel = restaurant.ratingLabel,
+        ratingLabel = ratingLabelOrUnrated(restaurant.ratingLabel),
         isOpen = restaurant.isOpen,
         address = restaurant.address,
         dishReviews = restaurant.dishReviews,
@@ -175,14 +180,14 @@ private fun HomeLoading(modifier: Modifier = Modifier) {
 @Composable
 private fun HomeEmpty(modifier: Modifier = Modifier) {
     Text(
-        text = "No restaurants found.",
+        text = stringResource(Res.string.home_empty),
         modifier = modifier.padding(24.dp),
         style = MaterialTheme.typography.bodyLarge,
     )
 }
 
 @Composable
-private fun HomeError(
+private fun HomeErrorContent(
     message: String,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -198,7 +203,7 @@ private fun HomeError(
             color = MaterialTheme.colorScheme.error,
         )
         Button(onClick = onRetryClick) {
-            Text("Retry")
+            Text(stringResource(Res.string.home_retry))
         }
     }
 }
@@ -240,7 +245,7 @@ private object HomePreviewData {
     )
     val empty = HomeUiState(content = HomeContentUiState.Loaded(emptyList()))
     val error = HomeUiState(
-        content = HomeContentUiState.Error("The service is temporarily unavailable."),
+        content = HomeContentUiState.Error(HomeError.TEMPORARILY_UNAVAILABLE),
     )
 }
 

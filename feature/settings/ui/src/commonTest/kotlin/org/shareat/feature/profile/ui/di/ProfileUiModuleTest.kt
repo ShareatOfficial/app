@@ -9,7 +9,10 @@ import kotlinx.coroutines.test.setMain
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.shareat.app.domain.model.Account
+import org.shareat.app.domain.model.AppLanguage
+import org.shareat.app.domain.model.AppLanguageSelectionSupport
 import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.AccountRole
 import org.shareat.app.domain.model.AccountStatus
@@ -22,6 +25,7 @@ import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.AccountRepository
+import org.shareat.app.domain.repository.AppLanguageRepository
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
@@ -70,6 +74,7 @@ class ProfileUiModuleTest {
                     single<AuthRepository> { WiringAuthRepository(account) }
                     single<AccountRepository> { WiringAccountRepository(account) }
                     single<RestaurantRepository> { WiringRestaurantRepository(restaurant) }
+                    single<AppLanguageRepository> { WiringAppLanguageRepository }
                     single<ProfileNavigation> { WiringProfileNavigation }
                     single<EditProfileNavigation> { WiringEditProfileNavigation }
                     single<SettingsNavigation> { WiringSettingsNavigation }
@@ -83,6 +88,15 @@ class ProfileUiModuleTest {
             app.koin.get<SettingsViewModel>().uiState.value,
         )
         assertIs<EditProfileUiState>(app.koin.get<EditProfileViewModel>().uiState.value)
+    }
+}
+
+private data object WiringAppLanguageRepository : AppLanguageRepository {
+    private val selected = MutableStateFlow(AppLanguage.System)
+    override fun observeSelected() = selected
+    override suspend fun selectionSupport() = AppLanguageSelectionSupport.IMMEDIATE
+    override suspend fun select(language: AppLanguage) {
+        selected.value = language
     }
 }
 

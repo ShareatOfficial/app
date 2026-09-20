@@ -19,6 +19,7 @@ import org.shareat.app.domain.usecase.GetRestaurantsUseCase
 import org.shareat.app.domain.usecase.RestaurantSummary
 import org.shareat.feature.home.ui.home.model.DishReviewUiState
 import org.shareat.feature.home.ui.home.model.HomeContentUiState
+import org.shareat.feature.home.ui.home.model.HomeError
 import org.shareat.feature.home.ui.home.model.HomeUiState
 import org.shareat.feature.home.ui.home.model.RestaurantCardUiState
 import org.shareat.feature.home.ui.home.model.toFeedSections
@@ -78,7 +79,7 @@ class HomeViewModel(
                 }
 
                 is RepositoryResult.Failure -> _uiState.update {
-                    it.copy(content = HomeContentUiState.Error(result.error.toUserMessage()))
+                    it.copy(content = HomeContentUiState.Error(result.error.toHomeError()))
                 }
             }
         }
@@ -111,21 +112,20 @@ private fun RestaurantSummary.toCardUiState(): RestaurantCardUiState = Restauran
     },
 )
 
-private fun Int?.toRatingLabel(): String {
-    if (this == null) return "New"
+private fun Int?.toRatingLabel(): String? {
+    if (this == null) return null
     val whole = this / 10
     val decimal = this % 10
     return "$whole.$decimal"
 }
 
-private fun RepositoryError.toUserMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Your session credentials are no longer valid."
-    RepositoryError.Offline -> "You appear to be offline. Try again when connected."
-    RepositoryError.Unauthenticated -> "Your session has expired. Please sign in again."
-    RepositoryError.Forbidden -> "This account is not allowed to perform that action."
-    is RepositoryError.Unavailable -> "The service is temporarily unavailable."
-    is RepositoryError.AlreadyExists -> "The $entity already exists."
-    is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "The requested $entity could not be found."
-    is RepositoryError.Validation -> reason
+private fun RepositoryError.toHomeError(): HomeError = when (this) {
+    RepositoryError.InvalidCredentials -> HomeError.INVALID_CREDENTIALS
+    RepositoryError.Offline -> HomeError.OFFLINE
+    RepositoryError.Unauthenticated -> HomeError.UNAUTHENTICATED
+    RepositoryError.Forbidden -> HomeError.FORBIDDEN
+    is RepositoryError.Unavailable -> HomeError.TEMPORARILY_UNAVAILABLE
+    is RepositoryError.AlreadyExists -> HomeError.ALREADY_EXISTS
+    is RepositoryError.NotFound -> HomeError.NOT_FOUND
+    is RepositoryError.Conflict, is RepositoryError.Validation -> HomeError.UNKNOWN
 }

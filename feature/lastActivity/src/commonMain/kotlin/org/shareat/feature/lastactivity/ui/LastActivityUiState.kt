@@ -8,12 +8,12 @@ sealed interface LastActivityUiState {
     data object Loading : LastActivityUiState
     data class Content(val items: List<LastActivityReviewUiState>) : LastActivityUiState
     data object Empty : LastActivityUiState
-    data class Error(val message: String) : LastActivityUiState
+    data class Error(val error: LastActivityError) : LastActivityUiState
 }
 
 data class LastActivityReviewUiState(
     val id: ReviewId,
-    val type: String,
+    val type: LastActivityTargetType,
     val imageUrl: String?,
     val imageDescription: String?,
     val name: String,

@@ -80,27 +80,27 @@ class LastActivityViewModel(
             } else {
                 LastActivityUiState.Content(result.value.map { it.toUiState() })
             }
-            is RepositoryResult.Failure -> _uiState.value = LastActivityUiState.Error(result.error.message())
+            is RepositoryResult.Failure -> _uiState.value = LastActivityUiState.Error(result.error.toLastActivityError())
         }
     }
 }
 
 private fun org.shareat.feature.lastactivity.domain.LastActivityItem.toUiState() = when (val target = target) {
     is ReviewedTarget.Dish -> LastActivityReviewUiState(
-        id = review.id, type = "Plato", imageUrl = target.dish.image?.url,
+        id = review.id, type = LastActivityTargetType.DISH, imageUrl = target.dish.image?.url,
         imageDescription = target.dish.image?.alternativeText, name = target.dish.name,
         description = target.dish.description, rating = review.rating.value, comment = review.comment,
     )
     is ReviewedTarget.Restaurant -> LastActivityReviewUiState(
-        id = review.id, type = "Restaurante", imageUrl = target.restaurant.heroImage?.url,
+        id = review.id, type = LastActivityTargetType.RESTAURANT, imageUrl = target.restaurant.heroImage?.url,
         imageDescription = target.restaurant.heroImage?.alternativeText, name = target.restaurant.name,
         description = target.restaurant.description, rating = review.rating.value, comment = review.comment,
     )
 }
 
-private fun RepositoryError.message() = when (this) {
-    RepositoryError.Offline -> "Parece que no tienes conexión. Inténtalo de nuevo."
-    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Inicia sesión de nuevo."
-    is RepositoryError.Unavailable -> "El servicio no está disponible ahora mismo."
-    else -> "No pudimos cargar tu actividad. Inténtalo de nuevo."
+private fun RepositoryError.toLastActivityError() = when (this) {
+    RepositoryError.Offline -> LastActivityError.OFFLINE
+    RepositoryError.Unauthenticated -> LastActivityError.UNAUTHENTICATED
+    is RepositoryError.Unavailable -> LastActivityError.TEMPORARILY_UNAVAILABLE
+    else -> LastActivityError.UNKNOWN
 }
