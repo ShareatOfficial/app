@@ -7,6 +7,10 @@ on:
         description: User-visible version; leave empty to use 1.0.0
         required: false
         type: string
+      version_code:
+        description: Version code (integer); leave empty to use current timestamp
+        required: false
+        type: string
       destination:
         description: Where to send the signed build
         required: true
@@ -43,8 +47,13 @@ jobs:
         shell: bash
         env:
           INPUT_VERSION_NAME: ${{ inputs.version_name }}
+          INPUT_VERSION_CODE: ${{ inputs.version_code }}
         run: |
-          version_code="$(date -u +%s)"
+          if [[ -n "$INPUT_VERSION_CODE" ]]; then
+            version_code="$INPUT_VERSION_CODE"
+          else
+            version_code="$(date -u +%s)"
+          fi
           version_name="${INPUT_VERSION_NAME:-1.0.0}"
 
           if (( version_code > 2100000000 )); then
