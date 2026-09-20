@@ -50,7 +50,21 @@ import androidx.compose.ui.unit.dp
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
+import org.jetbrains.compose.resources.stringResource
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import shareat.feature.settings.ui.generated.resources.Res
+import shareat.feature.settings.ui.generated.resources.edit_profile_back
+import shareat.feature.settings.ui.generated.resources.edit_profile_change_photo
+import shareat.feature.settings.ui.generated.resources.edit_profile_clear_display_name
+import shareat.feature.settings.ui.generated.resources.edit_profile_display_name
+import shareat.feature.settings.ui.generated.resources.edit_profile_display_name_hint
+import shareat.feature.settings.ui.generated.resources.edit_profile_email
+import shareat.feature.settings.ui.generated.resources.edit_profile_full_name
+import shareat.feature.settings.ui.generated.resources.edit_profile_personal_data
+import shareat.feature.settings.ui.generated.resources.edit_profile_phone
+import shareat.feature.settings.ui.generated.resources.edit_profile_save
+import shareat.feature.settings.ui.generated.resources.edit_profile_title
+import shareat.feature.settings.ui.generated.resources.edit_profile_verified
 
 @Composable
 fun EditProfileScreen(
@@ -106,7 +120,7 @@ private fun EditProfileScreenStateless(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "Datos personales",
+                    text = stringResource(Res.string.edit_profile_personal_data),
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.headlineSmall,
                 )
@@ -117,9 +131,9 @@ private fun EditProfileScreenStateless(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                uiState.errorMessage?.let { message ->
+                uiState.error?.let { error ->
                     Text(
-                        text = message,
+                        text = error.label(),
                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error,
@@ -130,7 +144,7 @@ private fun EditProfileScreenStateless(
                     value = uiState.fullName,
                     onValueChange = { onAction(EditProfileAction.FullNameChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Nombre completo") },
+                    label = { Text(stringResource(Res.string.edit_profile_full_name)) },
                     singleLine = true,
                     enabled = !uiState.isLoading && !uiState.isSaving,
                 )
@@ -140,8 +154,10 @@ private fun EditProfileScreenStateless(
                     value = uiState.displayName,
                     onValueChange = { onAction(EditProfileAction.DisplayNameChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Nombre público") },
-                    supportingText = { Text("Así te verán el resto de comensales.") },
+                    label = { Text(stringResource(Res.string.edit_profile_display_name)) },
+                    supportingText = {
+                        Text(stringResource(Res.string.edit_profile_display_name_hint))
+                    },
                     trailingIcon = {
                         if (uiState.displayName.isNotEmpty()) {
                             IconButton(
@@ -149,7 +165,11 @@ private fun EditProfileScreenStateless(
                                     onAction(EditProfileAction.DisplayNameChanged(""))
                                 },
                             ) {
-                                Icon(Icons.Default.Close, contentDescription = "Borrar el nombre público")
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription =
+                                        stringResource(Res.string.edit_profile_clear_display_name),
+                                )
                             }
                         }
                     },
@@ -162,7 +182,7 @@ private fun EditProfileScreenStateless(
                     value = uiState.email,
                     onValueChange = {},
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Correo electrónico") },
+                    label = { Text(stringResource(Res.string.edit_profile_email)) },
                     leadingIcon = { Icon(Icons.Outlined.Mail, contentDescription = null) },
                     trailingIcon = {
                         if (uiState.isEmailVerified) {
@@ -178,7 +198,7 @@ private fun EditProfileScreenStateless(
                                     tint = MaterialTheme.colorScheme.primary,
                                 )
                                 Text(
-                                    text = "Verificado",
+                                    text = stringResource(Res.string.edit_profile_verified),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
@@ -195,19 +215,10 @@ private fun EditProfileScreenStateless(
                     value = uiState.phoneNumber,
                     onValueChange = { onAction(EditProfileAction.PhoneNumberChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Teléfono") },
+                    label = { Text(stringResource(Res.string.edit_profile_phone)) },
                     leadingIcon = { Icon(Icons.Outlined.Phone, contentDescription = null) },
                     singleLine = true,
                     enabled = !uiState.isLoading && !uiState.isSaving,
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-
-                LanguageField(
-                    selected = uiState.preferredLanguage,
-                    enabled = !uiState.isLoading && !uiState.isSaving,
-                    onSelected = {
-                        onAction(EditProfileAction.PreferredLanguageChanged(it))
-                    },
                 )
             }
         }
@@ -226,10 +237,13 @@ private fun EditProfileTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBackClick, enabled = !isSaving) {
-            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
+            Icon(
+                Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = stringResource(Res.string.edit_profile_back),
+            )
         }
         Text(
-            text = "Editar perfil",
+            text = stringResource(Res.string.edit_profile_title),
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.headlineSmall,
         )
@@ -237,7 +251,7 @@ private fun EditProfileTopBar(
             if (isSaving) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             } else {
-                Text("Guardar")
+                Text(stringResource(Res.string.edit_profile_save))
             }
         }
     }
@@ -279,43 +293,7 @@ private fun ProfileAvatar(
             onClick = onChangePhoto,
             colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
         ) {
-            Text("Cambiar foto")
-        }
-    }
-}
-
-@Composable
-private fun LanguageField(
-    selected: ProfileLanguage,
-    enabled: Boolean,
-    onSelected: (ProfileLanguage) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedButton(
-            onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth().height(58.dp),
-            enabled = enabled,
-        ) {
-            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-                Text("Idioma preferido", style = MaterialTheme.typography.labelSmall)
-                Text(selected.label, style = MaterialTheme.typography.bodyLarge)
-            }
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
-            ProfileLanguage.entries.forEach { language ->
-                DropdownMenuItem(
-                    text = { Text(language.label) },
-                    onClick = {
-                        expanded = false
-                        onSelected(language)
-                    },
-                )
-            }
+            Text(stringResource(Res.string.edit_profile_change_photo))
         }
     }
 }

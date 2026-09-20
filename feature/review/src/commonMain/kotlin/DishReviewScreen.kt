@@ -39,6 +39,16 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.shareat.app.domain.model.DishId
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.review.generated.resources.Res
+import shareat.feature.review.generated.resources.dish_review_star_rating
+import shareat.feature.review.generated.resources.dish_review_comment
+import shareat.feature.review.generated.resources.dish_review_rate_dish
+import shareat.feature.review.generated.resources.dish_review_rate_restaurant
+import shareat.feature.review.generated.resources.dish_review_submit
+import shareat.feature.review.generated.resources.dish_review_submitted
+import shareat.feature.review.generated.resources.dish_review_title
 
 @Composable
 fun DishReviewScreen(
@@ -99,12 +109,12 @@ private fun DishReviewScreenContent(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Text(
-                text = "Cuéntanos qué te ha parecido",
+                text = stringResource(Res.string.dish_review_title),
                 style = MaterialTheme.typography.headlineSmall,
             )
 
             ReviewSection(
-                title = "Valora el plato",
+                title = stringResource(Res.string.dish_review_rate_dish),
                 rating = uiState.dishRating,
                 comment = uiState.dishComment,
                 enabled = !uiState.isSubmitting,
@@ -115,7 +125,7 @@ private fun DishReviewScreenContent(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             ReviewSection(
-                title = "Valora el restaurante",
+                title = stringResource(Res.string.dish_review_rate_restaurant),
                 rating = uiState.restaurantRating,
                 comment = uiState.restaurantComment,
                 enabled = !uiState.isSubmitting,
@@ -134,20 +144,20 @@ private fun DishReviewScreenContent(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
-                    Text(text = "Enviar valoraciones")
+                    Text(text = stringResource(Res.string.dish_review_submit))
                 }
             }
 
-            uiState.errorMessage?.let { message ->
+            uiState.error?.let { error ->
                 Text(
-                    text = message,
+                    text = error.label(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
             }
             if (uiState.submitSucceeded) {
                 Text(
-                    text = "Tus valoraciones se han guardado.",
+                    text = stringResource(Res.string.dish_review_submitted),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -182,7 +192,7 @@ private fun ReviewSection(
             onValueChange = onCommentChange,
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
-            label = { Text(text = "Comentario (opcional)") },
+            label = { Text(text = stringResource(Res.string.dish_review_comment)) },
             minLines = 3,
             maxLines = 5,
         )
@@ -208,11 +218,11 @@ private fun StarRating(
             ) {
                 Icon(
                     imageVector = if (star <= rating) Icons.Filled.Star else Icons.Outlined.Star,
-                    contentDescription = if (star == DishReviewRatingRange.first) {
-                        "$star estrella"
-                    } else {
-                        "$star estrellas"
-                    },
+                    contentDescription = pluralStringResource(
+                        Res.plurals.dish_review_star_rating,
+                        star,
+                        star,
+                    ),
                     tint = if (star <= rating) {
                         MaterialTheme.colorScheme.primary
                     } else {

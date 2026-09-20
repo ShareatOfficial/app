@@ -19,6 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.home.ui.generated.resources.Res
+import shareat.feature.home.ui.generated.resources.home_closed
+import shareat.feature.home.ui.generated.resources.home_open
 
 private val OpenStatusBadgeShape = RoundedCornerShape(12.dp)
 
@@ -52,7 +56,7 @@ internal fun OpenStatusBadge(
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = if (isOpen) "Abierto" else "Cerrado",
+            text = stringResource(if (isOpen) Res.string.home_open else Res.string.home_closed),
             color = contentColor,
             style = MaterialTheme.typography.labelLarge,
         )

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
+import org.shareat.feature.restaurant.ui.model.RestaurantError
 import shareat.feature.restaurant.ui.generated.resources.Res
 import shareat.feature.restaurant.ui.generated.resources.allergen_celery
 import shareat.feature.restaurant.ui.generated.resources.allergen_crustaceans
@@ -24,6 +25,14 @@ import shareat.feature.restaurant.ui.generated.resources.category_main_courses
 import shareat.feature.restaurant.ui.generated.resources.category_small_bites
 import shareat.feature.restaurant.ui.generated.resources.category_starters
 import shareat.feature.restaurant.ui.generated.resources.restaurant_all_categories
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_already_exists
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_credentials
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_forbidden
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_generic
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_not_found
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_offline
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_session
+import shareat.feature.restaurant.ui.generated.resources.restaurant_error_unavailable
 
 @Composable
 internal fun DishCategory?.label(): String = when (this) {
@@ -51,3 +60,17 @@ internal fun EuAllergen.label(): String = when (this) {
     EuAllergen.Soybeans -> stringResource(Res.string.allergen_soybeans)
     EuAllergen.SulphurDioxideAndSulphites -> stringResource(Res.string.allergen_sulphites)
 }
+
+@Composable
+internal fun RestaurantError.label(): String = stringResource(
+    when (this) {
+        RestaurantError.INVALID_CREDENTIALS -> Res.string.restaurant_error_credentials
+        RestaurantError.OFFLINE -> Res.string.restaurant_error_offline
+        RestaurantError.UNAUTHENTICATED -> Res.string.restaurant_error_session
+        RestaurantError.FORBIDDEN -> Res.string.restaurant_error_forbidden
+        RestaurantError.TEMPORARILY_UNAVAILABLE -> Res.string.restaurant_error_unavailable
+        RestaurantError.ALREADY_EXISTS -> Res.string.restaurant_error_already_exists
+        RestaurantError.NOT_FOUND -> Res.string.restaurant_error_not_found
+        RestaurantError.UNKNOWN -> Res.string.restaurant_error_generic
+    },
+)

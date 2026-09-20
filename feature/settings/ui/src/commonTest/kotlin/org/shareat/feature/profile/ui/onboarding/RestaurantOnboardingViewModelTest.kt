@@ -149,7 +149,7 @@ class RestaurantOnboardingViewModelTest {
 
         viewModel.onAction(RestaurantOnboardingAction.Submit)
         advanceUntilIdle()
-        assertTrue(viewModel.uiState.value.errorMessage?.contains("Sin conexión") == true)
+        assertEquals(OnboardingSubmitError.OFFLINE, viewModel.uiState.value.submitError)
 
         viewModel.onAction(RestaurantOnboardingAction.Submit)
         advanceUntilIdle()
@@ -167,7 +167,7 @@ class RestaurantOnboardingViewModelTest {
         viewModel.onAction(RestaurantOnboardingAction.Submit)
         advanceUntilIdle()
 
-        assertTrue(viewModel.uiState.value.errorMessage?.contains("sesión ha caducado") == true)
+        assertEquals(OnboardingSubmitError.UNAUTHENTICATED, viewModel.uiState.value.submitError)
         assertEquals("Casa Nueva", viewModel.uiState.value.name)
     }
 

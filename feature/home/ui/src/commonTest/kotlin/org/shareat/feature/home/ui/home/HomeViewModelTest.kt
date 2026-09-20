@@ -29,6 +29,7 @@ import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.usecase.DishReviewHighlight
 import org.shareat.app.domain.usecase.RestaurantSummary
 import org.shareat.feature.home.ui.home.model.HomeContentUiState
+import org.shareat.feature.home.ui.home.model.HomeError
 import org.shareat.feature.home.ui.home.model.HomeFeedSectionUiState
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -119,7 +120,7 @@ class HomeViewModelTest {
         advanceUntilIdle()
 
         val content = assertIs<HomeContentUiState.Error>(viewModel.uiState.value.content)
-        assertEquals("Parece que no tienes conexión. Inténtalo de nuevo.", content.message)
+        assertEquals(HomeError.OFFLINE, content.error)
     }
 
     @Test

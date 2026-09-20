@@ -34,11 +34,8 @@ class EditProfileViewModel(
             is EditProfileAction.FullNameChanged -> edit { copy(fullName = action.value) }
             is EditProfileAction.DisplayNameChanged -> edit { copy(displayName = action.value) }
             is EditProfileAction.PhoneNumberChanged -> edit { copy(phoneNumber = action.value) }
-            is EditProfileAction.PreferredLanguageChanged -> edit {
-                copy(preferredLanguage = action.value)
-            }
             EditProfileAction.ChangePhoto -> _uiState.update {
-                it.copy(errorMessage = "Todavía no se puede cambiar la foto de perfil.")
+                it.copy(error = EditProfileError.PHOTO_UNSUPPORTED)
             }
             EditProfileAction.Save -> save()
         }
@@ -61,11 +58,11 @@ class EditProfileViewModel(
                     )
                     is ProfileSettings.RestaurantOwner -> _uiState.value = EditProfileUiState(
                         isLoading = false,
-                        errorMessage = "Solo las cuentas de cliente pueden editar el perfil personal.",
+                        error = EditProfileError.CUSTOMER_ONLY,
                     )
                 }
                 is RepositoryResult.Failure -> _uiState.update {
-                    it.copy(isLoading = false, errorMessage = result.error.toEditProfileMessage())
+                    it.copy(isLoading = false, error = result.error.toEditProfileError())
                 }
             }
         }
@@ -76,7 +73,7 @@ class EditProfileViewModel(
         val accountId = state.accountId ?: return
         if (!state.canSave) return
 
-        _uiState.update { it.copy(isSaving = true, saveSucceeded = false, errorMessage = null) }
+        _uiState.update { it.copy(isSaving = true, saveSucceeded = false, error = null) }
         viewModelScope.launch {
             when (val result = updateCustomerProfileUseCase(
                 UpdateCustomerProfileParams(
@@ -103,7 +100,7 @@ class EditProfileViewModel(
                     it.copy(
                         isSaving = false,
                         saveSucceeded = false,
-                        errorMessage = result.error.toEditProfileMessage(),
+                        error = result.error.toEditProfileError(),
                     )
                 }
             }
@@ -111,18 +108,17 @@ class EditProfileViewModel(
     }
 
     private fun edit(transform: EditProfileUiState.() -> EditProfileUiState) {
-        _uiState.update { it.transform().copy(saveSucceeded = false, errorMessage = null) }
+        _uiState.update { it.transform().copy(saveSucceeded = false, error = null) }
     }
 }
 
-private fun RepositoryError.toEditProfileMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Tus credenciales ya no son válidas."
-    RepositoryError.Offline -> "Parece que no tienes conexión. Inténtalo de nuevo."
-    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Vuelve a iniciar sesión."
-    RepositoryError.Forbidden -> "Esta cuenta no puede actualizar el perfil."
-    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
-    is RepositoryError.AlreadyExists -> "${entity} ya existe."
-    is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "No hemos encontrado ${entity}."
-    is RepositoryError.Validation -> reason
+private fun RepositoryError.toEditProfileError(): EditProfileError = when (this) {
+    RepositoryError.InvalidCredentials -> EditProfileError.INVALID_CREDENTIALS
+    RepositoryError.Offline -> EditProfileError.OFFLINE
+    RepositoryError.Unauthenticated -> EditProfileError.UNAUTHENTICATED
+    RepositoryError.Forbidden -> EditProfileError.FORBIDDEN
+    is RepositoryError.Unavailable -> EditProfileError.TEMPORARILY_UNAVAILABLE
+    is RepositoryError.AlreadyExists -> EditProfileError.ALREADY_EXISTS
+    is RepositoryError.NotFound -> EditProfileError.NOT_FOUND
+    is RepositoryError.Conflict, is RepositoryError.Validation -> EditProfileError.UNKNOWN
 }

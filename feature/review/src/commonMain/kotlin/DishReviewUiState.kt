@@ -9,7 +9,7 @@ public data class DishReviewUiState(
     val restaurantComment: String = "",
     val isSubmitting: Boolean = false,
     val submitSucceeded: Boolean = false,
-    val errorMessage: String? = null,
+    val error: DishReviewError? = null,
 ) {
     val canSubmit: Boolean
         get() = !isSubmitting &&

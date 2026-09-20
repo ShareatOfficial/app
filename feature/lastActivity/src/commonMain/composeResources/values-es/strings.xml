@@ -1,0 +1,14 @@
+<resources>
+    <string name="last_activity_title">Actividad</string>
+    <string name="last_activity_type_dish">Plato</string>
+    <string name="last_activity_type_restaurant">Restaurante</string>
+    <string name="last_activity_image_unavailable">Imagen no disponible de %1$s</string>
+    <string name="last_activity_rating">%1$d de 5 estrellas</string>
+    <string name="last_activity_guest">Si quieres ver tus últimas reviews, loguéate.</string>
+    <string name="last_activity_empty">Aún no has escrito ninguna review.</string>
+    <string name="last_activity_retry">Reintentar</string>
+    <string name="last_activity_error_offline">Parece que no tienes conexión. Inténtalo de nuevo.</string>
+    <string name="last_activity_error_session">Tu sesión ha caducado. Inicia sesión de nuevo.</string>
+    <string name="last_activity_error_unavailable">El servicio no está disponible ahora mismo.</string>
+    <string name="last_activity_error_generic">No pudimos cargar tu actividad. Inténtalo de nuevo.</string>
+</resources>

@@ -1,15 +1,20 @@
 package org.shareat.feature.profile.ui.settings
 
+import org.shareat.app.domain.model.AppLanguage
+import org.shareat.app.domain.model.AppLanguageSelectionSupport
+
 sealed interface SettingsUiState {
     val isLoading: Boolean
-    val errorMessage: String?
+    val error: SettingsError?
+    val language: AppLanguageUiState
 
     data class User(
         val name: String = "Alex Rivera",
         val email: String = "alex.rivera@example.com",
         val initials: String = "AR",
         override val isLoading: Boolean = false,
-        override val errorMessage: String? = null,
+        override val error: SettingsError? = null,
+        override val language: AppLanguageUiState = AppLanguageUiState(),
     ) : SettingsUiState
 
     data class Restaurant(
@@ -26,18 +31,32 @@ sealed interface SettingsUiState {
         override val isLoading: Boolean = false,
         val isSaving: Boolean = false,
         val saveSucceeded: Boolean = false,
-        override val errorMessage: String? = null,
+        override val error: SettingsError? = null,
+        override val language: AppLanguageUiState = AppLanguageUiState(),
     ) : SettingsUiState
 }
 
-enum class OpeningDay(val label: String) {
-    Monday("Lunes"),
-    Tuesday("Martes"),
-    Wednesday("Miércoles"),
-    Thursday("Jueves"),
-    Friday("Viernes"),
-    Saturday("Sábado"),
-    Sunday("Domingo"),
+internal fun SettingsUiState.withLanguage(language: AppLanguageUiState): SettingsUiState =
+    when (this) {
+        is SettingsUiState.User -> copy(language = language)
+        is SettingsUiState.Restaurant -> copy(language = language)
+    }
+
+data class AppLanguageUiState(
+    val selected: AppLanguage = AppLanguage.System,
+    val support: AppLanguageSelectionSupport = AppLanguageSelectionSupport.IMMEDIATE,
+) {
+    val canSelect: Boolean get() = support != AppLanguageSelectionSupport.UNSUPPORTED
+}
+
+enum class OpeningDay {
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday,
 }
 
 data class OpeningHoursUiState(

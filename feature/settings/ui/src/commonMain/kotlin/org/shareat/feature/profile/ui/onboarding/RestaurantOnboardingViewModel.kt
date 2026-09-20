@@ -62,7 +62,7 @@ class RestaurantOnboardingViewModel(
         val validation = validate(state)
         _uiState.value = validation.state
         val restaurantProfile = validation.restaurantProfile ?: return
-        _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
+        _uiState.update { it.copy(isSubmitting = true, submitError = null) }
         viewModelScope.launch {
             when (val result = createRestaurantProfileUseCase(restaurantProfile)) {
                 is RepositoryResult.Success -> {
@@ -70,7 +70,7 @@ class RestaurantOnboardingViewModel(
                     complete()
                 }
                 is RepositoryResult.Failure -> _uiState.update {
-                    it.copy(isSubmitting = false, errorMessage = result.error.toSpanishMessage())
+                    it.copy(isSubmitting = false, submitError = result.error.toSubmitError())
                 }
             }
         }
@@ -82,12 +82,12 @@ class RestaurantOnboardingViewModel(
 
     private fun logout() {
         if (_uiState.value.isSubmitting) return
-        _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
+        _uiState.update { it.copy(isSubmitting = true, submitError = null) }
         viewModelScope.launch {
             when (val result = signOutUseCase()) {
                 is RepositoryResult.Success -> eventChannel.send(RestaurantOnboardingEvent.LogoutSuccess)
                 is RepositoryResult.Failure -> _uiState.update {
-                    it.copy(isSubmitting = false, errorMessage = result.error.toSpanishMessage())
+                    it.copy(isSubmitting = false, submitError = result.error.toSubmitError())
                 }
             }
         }
@@ -99,7 +99,7 @@ class RestaurantOnboardingViewModel(
     ) = edit { copy(hours = hours.map { if (it.day == day) it.transform() else it }) }
 
     private fun edit(transform: RestaurantOnboardingUiState.() -> RestaurantOnboardingUiState) {
-        _uiState.update { it.transform().copy(errorMessage = null, errors = OnboardingFieldErrors()) }
+        _uiState.update { it.transform().copy(submitError = null, errors = OnboardingFieldErrors()) }
     }
 }
 
@@ -118,17 +118,17 @@ private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
     // mandatory to publish. Half of one is still rejected, because half an address is not one.
     val addressStarted = street.isNotEmpty() || city.isNotEmpty() || postcode.isNotEmpty()
     var errors = OnboardingFieldErrors(
-        name = if (name.isEmpty()) "Introduce el nombre del restaurante." else null,
-        street = if (addressStarted && street.isEmpty()) "Introduce la calle y el número." else null,
-        city = if (addressStarted && city.isEmpty()) "Introduce la ciudad." else null,
+        name = if (name.isEmpty()) OnboardingFieldError.NAME_REQUIRED else null,
+        street = if (addressStarted && street.isEmpty()) OnboardingFieldError.STREET_REQUIRED else null,
+        city = if (addressStarted && city.isEmpty()) OnboardingFieldError.CITY_REQUIRED else null,
         postcode = when {
-            addressStarted && postcode.isEmpty() -> "Introduce el código postal."
+            addressStarted && postcode.isEmpty() -> OnboardingFieldError.POSTCODE_REQUIRED
             postcode.isNotEmpty() && !postcode.matches(Regex("\\d{5}")) ->
-                "Introduce un código postal español de 5 cifras."
+                OnboardingFieldError.POSTCODE_INVALID
             else -> null
         },
         email = if (email.isNotEmpty() && !email.matches(Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))) {
-            "Introduce un correo válido."
+            OnboardingFieldError.EMAIL_INVALID
         } else null,
     )
     val mappedHours = mutableListOf<DailyOpeningHours>()
@@ -137,8 +137,8 @@ private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
         val opens = hours.opensAt.toLocalTimeOrNull()
         val closes = hours.closesAt.toLocalTimeOrNull()
         val error = when {
-            opens == null || closes == null -> "Usa el formato HH:mm."
-            opens == closes -> "La apertura y el cierre deben ser distintos."
+            opens == null || closes == null -> OnboardingHoursError.TIME_FORMAT
+            opens == closes -> OnboardingHoursError.SAME_TIMES
             else -> null
         }
         if (error == null) {
@@ -147,7 +147,7 @@ private fun validate(state: RestaurantOnboardingUiState): ValidationResult {
         hours.copy(error = error)
     }
     if (updatedHours.any { it.error != null }) errors = errors.copy()
-    val updatedState = state.copy(errors = errors, hours = updatedHours, errorMessage = null)
+    val updatedState = state.copy(errors = errors, hours = updatedHours, submitError = null)
     if (errors.hasErrors || updatedHours.any { it.error != null }) return ValidationResult(updatedState, null)
     return ValidationResult(
         updatedState,
@@ -181,14 +181,13 @@ private fun String.toLocalTimeOrNull(): LocalTime? {
     return runCatching { LocalTime(hour, minute) }.getOrNull()
 }
 
-private fun RepositoryError.toSpanishMessage(): String = when (this) {
-    RepositoryError.Offline -> "Sin conexión. Comprueba tu red e inténtalo de nuevo."
+private fun RepositoryError.toSubmitError(): OnboardingSubmitError = when (this) {
+    RepositoryError.Offline -> OnboardingSubmitError.OFFLINE
     RepositoryError.Unauthenticated, RepositoryError.InvalidCredentials ->
-        "La sesión ha caducado. Cierra sesión y vuelve a entrar."
-    RepositoryError.Forbidden -> "Esta cuenta no puede crear un perfil de restaurante."
-    is RepositoryError.Validation -> reason
-    is RepositoryError.AlreadyExists -> "El perfil ya existe."
-    is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "No se encontró el recurso solicitado."
-    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
+        OnboardingSubmitError.UNAUTHENTICATED
+    RepositoryError.Forbidden -> OnboardingSubmitError.FORBIDDEN
+    is RepositoryError.AlreadyExists -> OnboardingSubmitError.ALREADY_EXISTS
+    is RepositoryError.NotFound -> OnboardingSubmitError.NOT_FOUND
+    is RepositoryError.Unavailable -> OnboardingSubmitError.TEMPORARILY_UNAVAILABLE
+    is RepositoryError.Validation, is RepositoryError.Conflict -> OnboardingSubmitError.UNKNOWN
 }

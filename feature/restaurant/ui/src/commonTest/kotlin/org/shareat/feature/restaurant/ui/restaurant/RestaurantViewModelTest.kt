@@ -49,6 +49,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import org.shareat.feature.restaurant.ui.model.RestaurantError
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RestaurantViewModelTest {
@@ -175,10 +176,7 @@ class RestaurantViewModelTest {
         val state = viewModel.uiState.value
         assertFalse(state.isRefreshing)
         assertEquals(listOf("Croquetas", "Lubina", "Torrija"), state.dishes.map { it.name })
-        assertEquals(
-            "Parece que no tienes conexión. Inténtalo de nuevo más tarde.",
-            state.errorMessage,
-        )
+        assertEquals(RestaurantError.OFFLINE, state.error)
     }
 
     @Test
@@ -189,7 +187,7 @@ class RestaurantViewModelTest {
 
         viewModel.onErrorShown()
 
-        assertNull(viewModel.uiState.value.errorMessage)
+        assertNull(viewModel.uiState.value.error)
     }
 
     @Test

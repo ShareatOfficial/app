@@ -10,6 +10,11 @@ import org.shareat.app.data.fake.FakeMenuRepository
 import org.shareat.app.data.fake.FakeRestaurantRepository
 import org.shareat.app.data.fake.FakeReviewRepository
 import org.shareat.app.data.fake.FakeShareatData
+import org.shareat.app.data.language.AppLanguageApplier
+import org.shareat.app.data.language.AppLanguageStorage
+import org.shareat.app.data.language.LocalAppLanguageRepository
+import org.shareat.app.data.language.NoAppLanguageStorage
+import org.shareat.app.data.language.UnsupportedAppLanguageApplier
 import org.shareat.app.data.supabase.SupabaseAccountRepository
 import org.shareat.app.data.supabase.SupabaseAuthRepository
 import org.shareat.app.data.supabase.SupabaseConfig
@@ -21,12 +26,26 @@ import org.shareat.app.data.supabase.SupabaseReviewRepository
 import org.shareat.app.data.supabase.SecureSessionStorage
 import org.shareat.app.data.supabase.createShareatSupabaseClient
 import org.shareat.app.domain.repository.AccountRepository
+import org.shareat.app.domain.repository.AppLanguageRepository
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.DishRepository
 import org.shareat.app.domain.repository.ImageRepository
 import org.shareat.app.domain.repository.MenuRepository
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.domain.repository.ReviewRepository
+
+/**
+ * The selected app language. Bound independently of the data source: it is a device preference,
+ * not something either backend owns. Platforms without bindings fall back to "follow the system".
+ */
+val appLanguageModule: Module = module {
+    single<AppLanguageRepository> {
+        LocalAppLanguageRepository(
+            getOrNull<AppLanguageStorage>() ?: NoAppLanguageStorage,
+            getOrNull<AppLanguageApplier>() ?: UnsupportedAppLanguageApplier,
+        )
+    }
+}
 
 /**
  * Deterministic bindings for previews, unit tests and explicit demo scenarios.

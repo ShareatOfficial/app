@@ -15,7 +15,10 @@ import org.koin.core.annotation.KoinViewModel
 import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
+import org.shareat.feature.profile.domain.GetAppLanguageSupportUseCase
 import org.shareat.feature.profile.domain.LoadProfileSettingsUseCase
+import org.shareat.feature.profile.domain.ObserveAppLanguageUseCase
+import org.shareat.feature.profile.domain.SelectAppLanguageUseCase
 import org.shareat.feature.profile.domain.ProfileSettings
 import org.shareat.feature.profile.domain.SignOutUseCase
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoUseCase
@@ -26,6 +29,9 @@ class SettingsViewModel(
     private val loadProfileSettingsUseCase: LoadProfileSettingsUseCase,
     private val updateRestaurantInfoUseCase: UpdateRestaurantInfoUseCase,
     private val signOutUseCase: SignOutUseCase,
+    private val observeAppLanguageUseCase: ObserveAppLanguageUseCase,
+    private val getAppLanguageSupportUseCase: GetAppLanguageSupportUseCase,
+    private val selectAppLanguageUseCase: SelectAppLanguageUseCase,
 ) : ViewModel() {
     private val eventChannel = Channel<SettingsEvent>(capacity = Channel.BUFFERED)
     internal val events: Flow<SettingsEvent> = eventChannel.receiveAsFlow()
@@ -37,8 +43,26 @@ class SettingsViewModel(
 
     private var loadedRestaurant: Restaurant? = null
 
+    /** Kept aside so replacing the whole state after a load or save does not drop the language. */
+    private var languageState = AppLanguageUiState()
+
     init {
         loadSettings()
+        observeLanguage()
+    }
+
+    fun onLanguageAction(action: SettingsLanguageAction) {
+        viewModelScope.launch { selectAppLanguageUseCase(action.language) }
+    }
+
+    private fun observeLanguage() {
+        viewModelScope.launch {
+            val support = getAppLanguageSupportUseCase()
+            observeAppLanguageUseCase().collect { language ->
+                languageState = AppLanguageUiState(selected = language, support = support)
+                updateCurrentState { withLanguage(languageState) }
+            }
+        }
     }
 
     fun onUserAction(action: SettingsUserAction) {
@@ -80,10 +104,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             when (val result = loadProfileSettingsUseCase()) {
                 is RepositoryResult.Success -> when (val settings = result.value) {
-                    is ProfileSettings.User -> _uiState.value = settings.toUiState()
+                    is ProfileSettings.User ->
+                        _uiState.value = settings.toUiState().withLanguage(languageState)
                     is ProfileSettings.RestaurantOwner -> {
                         loadedRestaurant = settings.restaurant
-                        _uiState.value = settings.toUiState()
+                        _uiState.value = settings.toUiState().withLanguage(languageState)
                     }
                 }
 
@@ -91,12 +116,12 @@ class SettingsViewModel(
                     when (this) {
                         is SettingsUiState.User -> copy(
                             isLoading = false,
-                            errorMessage = result.error.toUserMessage(),
+                            error = result.error.toSettingsError(),
                         )
 
                         is SettingsUiState.Restaurant -> copy(
                             isLoading = false,
-                            errorMessage = result.error.toUserMessage(),
+                            error = result.error.toSettingsError(),
                         )
                     }
                 }
@@ -133,31 +158,32 @@ class SettingsViewModel(
     private fun saveRestaurantChanges() {
         val state = _uiState.value as? SettingsUiState.Restaurant ?: return
         val original = loadedRestaurant ?: return updateRestaurant {
-            copy(errorMessage = "Los datos del restaurante no están disponibles.")
+            copy(error = SettingsError.RestaurantUnavailable)
         }
         when (val mapping = state.toUpdateParams(original)) {
             is RestaurantSettingsMappingResult.Failure -> updateRestaurant {
-                copy(errorMessage = mapping.message, saveSucceeded = false)
+                copy(error = mapping.error, saveSucceeded = false)
             }
 
             is RestaurantSettingsMappingResult.Success -> viewModelScope.launch {
                 updateRestaurant {
                     copy(
                         isSaving = true,
-                        errorMessage = null,
+                        error = null,
                         saveSucceeded = false
                     )
                 }
                 when (val result = updateRestaurantInfoUseCase(mapping.params)) {
                     is RepositoryResult.Success -> {
                         loadedRestaurant = result.value
-                        _uiState.value = result.value.toUiState().copy(saveSucceeded = true)
+                        _uiState.value = result.value.toUiState()
+                            .copy(saveSucceeded = true, language = languageState)
                     }
 
                     is RepositoryResult.Failure -> updateRestaurant {
                         copy(
                             isSaving = false,
-                            errorMessage = result.error.toUserMessage(),
+                            error = result.error.toSettingsError(),
                             saveSucceeded = false,
                         )
                     }
@@ -171,8 +197,8 @@ class SettingsViewModel(
 
         updateCurrentState {
             when (this) {
-                is SettingsUiState.User -> copy(isLoading = true, errorMessage = null)
-                is SettingsUiState.Restaurant -> copy(isLoading = true, errorMessage = null)
+                is SettingsUiState.User -> copy(isLoading = true, error = null)
+                is SettingsUiState.Restaurant -> copy(isLoading = true, error = null)
             }
         }
         viewModelScope.launch {
@@ -191,12 +217,12 @@ class SettingsViewModel(
                     when (this) {
                         is SettingsUiState.User -> copy(
                             isLoading = false,
-                            errorMessage = result.error.toUserMessage(),
+                            error = result.error.toSettingsError(),
                         )
 
                         is SettingsUiState.Restaurant -> copy(
                             isLoading = false,
-                            errorMessage = result.error.toUserMessage(),
+                            error = result.error.toSettingsError(),
                         )
                     }
                 }
@@ -205,7 +231,7 @@ class SettingsViewModel(
     }
 
     private fun emitEvent(event: SettingsEvent) {
-        check(eventChannel.trySend(event).isSuccess) { "No se ha podido emitir el evento de ajustes." }
+        check(eventChannel.trySend(event).isSuccess) { "Could not emit the settings event." }
     }
 
     private fun updateOpeningHours(
@@ -230,7 +256,7 @@ class SettingsViewModel(
     private fun editRestaurant(
         transform: SettingsUiState.Restaurant.() -> SettingsUiState.Restaurant,
     ) = updateRestaurant {
-        transform().copy(errorMessage = null, saveSucceeded = false)
+        transform().copy(error = null, saveSucceeded = false)
     }
 
     private fun updateCurrentState(transform: SettingsUiState.() -> SettingsUiState) {
@@ -238,14 +264,13 @@ class SettingsViewModel(
     }
 }
 
-private fun RepositoryError.toUserMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Tus credenciales ya no son válidas."
-    RepositoryError.Offline -> "Parece que no tienes conexión. Inténtalo de nuevo."
-    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Vuelve a iniciar sesión."
-    RepositoryError.Forbidden -> "Esta cuenta no puede realizar esa acción."
-    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
-    is RepositoryError.AlreadyExists -> "${entity} ya existe."
-    is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "No hemos encontrado ${entity}."
-    is RepositoryError.Validation -> reason
+private fun RepositoryError.toSettingsError(): SettingsError = when (this) {
+    RepositoryError.InvalidCredentials -> SettingsError.InvalidCredentials
+    RepositoryError.Offline -> SettingsError.Offline
+    RepositoryError.Unauthenticated -> SettingsError.Unauthenticated
+    RepositoryError.Forbidden -> SettingsError.Forbidden
+    is RepositoryError.Unavailable -> SettingsError.TemporarilyUnavailable
+    is RepositoryError.AlreadyExists -> SettingsError.AlreadyExists
+    is RepositoryError.NotFound -> SettingsError.NotFound
+    is RepositoryError.Conflict, is RepositoryError.Validation -> SettingsError.Unknown
 }

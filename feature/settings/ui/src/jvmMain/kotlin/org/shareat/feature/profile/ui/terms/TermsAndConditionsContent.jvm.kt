@@ -11,6 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.settings.ui.generated.resources.Res
+import shareat.feature.settings.ui.generated.resources.terms_open_button
+import shareat.feature.settings.ui.generated.resources.terms_open_in_browser
 
 @Composable
 actual fun TermsAndConditionsContent(modifier: Modifier) {
@@ -20,12 +24,12 @@ actual fun TermsAndConditionsContent(modifier: Modifier) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "Abre los términos en tu navegador:",
+            text = stringResource(Res.string.terms_open_in_browser),
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(TERMS_AND_CONDITIONS_URL, style = MaterialTheme.typography.bodyMedium)
         Button(onClick = { uriHandler.openUri(TERMS_AND_CONDITIONS_URL) }) {
-            Text("Abrir términos")
+            Text(stringResource(Res.string.terms_open_button))
         }
     }
 }

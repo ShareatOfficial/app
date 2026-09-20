@@ -47,23 +47,23 @@ internal fun Restaurant.toUiState(): SettingsUiState.Restaurant = SettingsUiStat
 
 internal sealed interface RestaurantSettingsMappingResult {
     data class Success(val params: UpdateRestaurantInfoParams) : RestaurantSettingsMappingResult
-    data class Failure(val message: String) : RestaurantSettingsMappingResult
+    data class Failure(val error: SettingsError) : RestaurantSettingsMappingResult
 }
 
 internal fun SettingsUiState.Restaurant.toUpdateParams(
     original: Restaurant,
 ): RestaurantSettingsMappingResult {
     val trimmedName = name.trim()
-    if (trimmedName.isEmpty()) return mappingFailure("El nombre del restaurante no puede estar vacío.")
+    if (trimmedName.isEmpty()) return mappingFailure(SettingsError.NameRequired)
     // A draft may have no address at all, but a partly filled one is always a mistake.
     val addressStarted = streetAddress.isNotBlank() || city.isNotBlank() || postcode.isNotBlank()
     if (addressStarted && (streetAddress.isBlank() || city.isBlank() || postcode.isBlank())) {
-        return mappingFailure("La calle, la localidad y el código postal van juntos.")
+        return mappingFailure(SettingsError.AddressIncomplete)
     }
 
     val mappedEmail = email.trim().takeIf(String::isNotEmpty)?.let { value ->
         runCatching { EmailAddress(value) }.getOrElse {
-            return mappingFailure("Introduce un correo de contacto válido.")
+            return mappingFailure(SettingsError.InvalidEmail)
         }
     }
 
@@ -78,11 +78,11 @@ internal fun SettingsUiState.Restaurant.toUpdateParams(
             emptyList()
         } else {
             val opensAt = hours.openingTime.toDomainTime()
-                ?: return mappingFailure("Usa el formato HH:mm para la hora de apertura del ${hours.day.label}.")
+                ?: return mappingFailure(SettingsError.InvalidOpeningTime(hours.day))
             val closesAt = hours.closingTime.toDomainTime()
-                ?: return mappingFailure("Usa el formato HH:mm para la hora de cierre del ${hours.day.label}.")
+                ?: return mappingFailure(SettingsError.InvalidClosingTime(hours.day))
             if (opensAt == closesAt) {
-                return mappingFailure("La apertura y el cierre del ${hours.day.label} deben ser distintos.")
+                return mappingFailure(SettingsError.SameOpeningAndClosingTime(hours.day))
             }
             listOf(OpeningPeriod(opensAt, closesAt)) + originalPeriods.drop(1)
         }
@@ -101,7 +101,7 @@ internal fun SettingsUiState.Restaurant.toUpdateParams(
         )
     }.getOrNull()
     if (isPublished && mappedAddress == null) {
-        return mappingFailure("Añade calle, localidad y código postal antes de publicar.")
+        return mappingFailure(SettingsError.AddressRequiredToPublish)
     }
 
     return RestaurantSettingsMappingResult.Success(
@@ -123,7 +123,7 @@ internal fun SettingsUiState.Restaurant.toUpdateParams(
     )
 }
 
-private fun mappingFailure(message: String) = RestaurantSettingsMappingResult.Failure(message)
+private fun mappingFailure(error: SettingsError) = RestaurantSettingsMappingResult.Failure(error)
 
 private fun String.toInitials(): String = trim()
     .split(Regex("\\s+"))

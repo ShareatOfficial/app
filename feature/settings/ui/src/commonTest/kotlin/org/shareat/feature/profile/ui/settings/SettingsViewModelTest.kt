@@ -25,6 +25,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.shareat.app.domain.model.AppLanguage
+import org.shareat.app.domain.model.AppLanguageSelectionSupport
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
@@ -59,6 +62,9 @@ class SettingsViewModelTest {
                 error("Restaurant update must not run for user settings")
             },
             signOutUseCase = { RepositoryResult.Success(Unit) },
+            observeAppLanguageUseCase = { MutableStateFlow(AppLanguage.System) },
+            getAppLanguageSupportUseCase = { AppLanguageSelectionSupport.IMMEDIATE },
+            selectAppLanguageUseCase = {},
         )
 
         advanceUntilIdle()
@@ -134,7 +140,7 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         assertEquals(0, updates)
-        assertTrue(assertIs<SettingsUiState.Restaurant>(viewModel.uiState.value).errorMessage != null)
+        assertTrue(assertIs<SettingsUiState.Restaurant>(viewModel.uiState.value).error != null)
     }
 
     @Test
@@ -166,6 +172,33 @@ class SettingsViewModelTest {
 
         assertEquals(SettingsEvent.NavigateToEditProfile, viewModel.events.first())
     }
+
+    @Test
+    fun theSelectedLanguageAndItsPlatformSupportReachTheUiState() = runTest(dispatcher) {
+        val viewModel = viewModelFor(
+            restaurantFixture(),
+            selectedLanguage = MutableStateFlow(AppLanguage.Spanish),
+        )
+
+        advanceUntilIdle()
+
+        val state = assertIs<SettingsUiState.Restaurant>(viewModel.uiState.value)
+        assertEquals(AppLanguage.Spanish, state.language.selected)
+        assertEquals(AppLanguageSelectionSupport.IMMEDIATE, state.language.support)
+    }
+
+    @Test
+    fun choosingALanguagePublishesItWithoutDroppingTheLoadedRestaurant() = runTest(dispatcher) {
+        val viewModel = viewModelFor(restaurantFixture())
+        advanceUntilIdle()
+
+        viewModel.onLanguageAction(SettingsLanguageAction(AppLanguage.English))
+        advanceUntilIdle()
+
+        val state = assertIs<SettingsUiState.Restaurant>(viewModel.uiState.value)
+        assertEquals(AppLanguage.English, state.language.selected)
+        assertEquals("Casa Naranja", state.name)
+    }
 }
 
 private fun viewModelFor(
@@ -174,6 +207,7 @@ private fun viewModelFor(
         RepositoryResult.Success(restaurant)
     },
     signOut: SignOutUseCase = SignOutUseCase { RepositoryResult.Success(Unit) },
+    selectedLanguage: MutableStateFlow<AppLanguage> = MutableStateFlow(AppLanguage.System),
 ): SettingsViewModel {
     val account = Account(
         AccountId("owner-id"),
@@ -187,5 +221,8 @@ private fun viewModelFor(
         },
         updateRestaurantInfoUseCase = update,
         signOutUseCase = signOut,
+        observeAppLanguageUseCase = { selectedLanguage },
+        getAppLanguageSupportUseCase = { AppLanguageSelectionSupport.IMMEDIATE },
+        selectAppLanguageUseCase = { selectedLanguage.value = it },
     )
 }

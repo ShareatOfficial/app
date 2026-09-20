@@ -56,7 +56,7 @@ public class DishReviewViewModel(
         val state = _uiState.value
         if (!state.canSubmit) return
 
-        _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
+        _uiState.update { it.copy(isSubmitting = true, error = null) }
         viewModelScope.launch {
             val result = submitDishReviews(
                 SubmitDishReviewsParams(
@@ -72,12 +72,12 @@ public class DishReviewViewModel(
                     is RepositoryResult.Success -> it.copy(
                         isSubmitting = false,
                         submitSucceeded = true,
-                        errorMessage = null,
+                        error = null,
                     )
                     is RepositoryResult.Failure -> it.copy(
                         isSubmitting = false,
                         submitSucceeded = false,
-                        errorMessage = result.error.toReviewMessage(),
+                        error = result.error.toReviewError(),
                     )
                 }
             }
@@ -98,19 +98,18 @@ public class DishReviewViewModel(
     private inline fun edit(transform: DishReviewUiState.() -> DishReviewUiState) {
         _uiState.update { state ->
             if (state.isSubmitting) state
-            else state.transform().copy(submitSucceeded = false, errorMessage = null)
+            else state.transform().copy(submitSucceeded = false, error = null)
         }
     }
 }
 
-private fun RepositoryError.toReviewMessage(): String = when (this) {
-    RepositoryError.InvalidCredentials -> "Las credenciales de tu sesión ya no son válidas."
-    RepositoryError.Offline -> "No hay conexión. Comprueba tu red e inténtalo de nuevo."
-    RepositoryError.Unauthenticated -> "Tu sesión ha caducado. Inicia sesión de nuevo."
-    RepositoryError.Forbidden -> "Solo los clientes activos pueden publicar valoraciones."
-    is RepositoryError.Unavailable -> "El servicio no está disponible temporalmente."
-    is RepositoryError.AlreadyExists -> "La valoración ya existe."
-    is RepositoryError.Conflict -> reason
-    is RepositoryError.NotFound -> "No se ha encontrado el plato que quieres valorar."
-    is RepositoryError.Validation -> reason
+private fun RepositoryError.toReviewError(): DishReviewError = when (this) {
+    RepositoryError.InvalidCredentials -> DishReviewError.INVALID_CREDENTIALS
+    RepositoryError.Offline -> DishReviewError.OFFLINE
+    RepositoryError.Unauthenticated -> DishReviewError.UNAUTHENTICATED
+    RepositoryError.Forbidden -> DishReviewError.FORBIDDEN
+    is RepositoryError.Unavailable -> DishReviewError.TEMPORARILY_UNAVAILABLE
+    is RepositoryError.AlreadyExists -> DishReviewError.ALREADY_EXISTS
+    is RepositoryError.NotFound -> DishReviewError.NOT_FOUND
+    is RepositoryError.Conflict, is RepositoryError.Validation -> DishReviewError.UNKNOWN
 }

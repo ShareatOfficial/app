@@ -39,6 +39,19 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.feature.subscription.domain.SubscriptionPackage
 import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.subscription.ui.generated.resources.Res
+import shareat.feature.subscription.ui.generated.resources.subscription_access_active
+import shareat.feature.subscription.ui.generated.resources.subscription_access_locked
+import shareat.feature.subscription.ui.generated.resources.subscription_back
+import shareat.feature.subscription.ui.generated.resources.subscription_choose
+import shareat.feature.subscription.ui.generated.resources.subscription_manage
+import shareat.feature.subscription.ui.generated.resources.subscription_processing
+import shareat.feature.subscription.ui.generated.resources.subscription_renews_automatically
+import shareat.feature.subscription.ui.generated.resources.subscription_restore
+import shareat.feature.subscription.ui.generated.resources.subscription_retry
+import shareat.feature.subscription.ui.generated.resources.subscription_show_paywall
+import shareat.feature.subscription.ui.generated.resources.subscription_title
 
 @Composable
 fun SubscriptionScreen(
@@ -89,10 +102,13 @@ private fun SubscriptionContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Volver")
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = stringResource(Res.string.subscription_back),
+                    )
                 }
                 Text(
-                    "Shareat Unlimited",
+                    stringResource(Res.string.subscription_title),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.headlineSmall,
                 )
@@ -121,7 +137,7 @@ private fun SubscriptionContent(
                     ) {
                         Column(Modifier.fillMaxWidth().padding(16.dp)) {
                             Text(message, color = MaterialTheme.colorScheme.onErrorContainer)
-                            TextButton(onClick = onRetry) { Text("Reintentar") }
+                            TextButton(onClick = onRetry) { Text(stringResource(Res.string.subscription_retry)) }
                         }
                     }
                 }
@@ -134,7 +150,7 @@ private fun SubscriptionContent(
                     ) {
                         Icon(Icons.Outlined.AllInclusive, contentDescription = null)
                         Spacer(Modifier.size(8.dp))
-                        Text("Ver opciones de suscripción")
+                        Text(stringResource(Res.string.subscription_show_paywall))
                     }
                 }
 
@@ -154,7 +170,7 @@ private fun SubscriptionContent(
                     ) {
                         CircularProgressIndicator(Modifier.size(20.dp))
                         Spacer(Modifier.size(8.dp))
-                        Text("Actualizando la suscripción…")
+                        Text(stringResource(Res.string.subscription_processing))
                     }
                 }
 
@@ -166,7 +182,7 @@ private fun SubscriptionContent(
                     ) {
                         Icon(Icons.Outlined.ManageAccounts, contentDescription = null)
                         Spacer(Modifier.size(8.dp))
-                        Text("Gestionar suscripción")
+                        Text(stringResource(Res.string.subscription_manage))
                     }
                 }
 
@@ -175,7 +191,7 @@ private fun SubscriptionContent(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.isProcessing,
                 ) {
-                    Text("Restaurar compras")
+                    Text(stringResource(Res.string.subscription_restore))
                 }
             }
         }
@@ -208,14 +224,20 @@ private fun AccessStatusCard(state: SubscriptionUiState) {
             )
             Column {
                 Text(
-                    if (hasAccess) "Unlimited access active" else "Unlock Shareat Unlimited",
+                    stringResource(
+                        if (hasAccess) {
+                            Res.string.subscription_access_active
+                        } else {
+                            Res.string.subscription_access_locked
+                        },
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
                 state.customerInfo?.activeProductId?.let { productId ->
                     Text(
                         text = if (state.customerInfo.willRenew) {
-                            "$productId · renews automatically"
+                            stringResource(Res.string.subscription_renews_automatically, productId)
                         } else {
                             productId
                         },
@@ -254,7 +276,7 @@ private fun ProductCard(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            Button(onClick = onPurchase, enabled = enabled) { Text("Elegir") }
+            Button(onClick = onPurchase, enabled = enabled) { Text(stringResource(Res.string.subscription_choose)) }
         }
     }
 }

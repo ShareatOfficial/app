@@ -1,9 +1,14 @@
 package org.shareat.feature.profile.ui.settings
 
+import org.shareat.app.domain.model.AppLanguage
+
 enum class SettingsUserAction {
     EditProfile,
     LogOut,
 }
+
+/** Chosen from either settings screen: the app language is a device preference, not a role one. */
+data class SettingsLanguageAction(val language: AppLanguage)
 
 sealed interface SettingsRestaurantAction {
     data class NameChanged(val value: String) : SettingsRestaurantAction

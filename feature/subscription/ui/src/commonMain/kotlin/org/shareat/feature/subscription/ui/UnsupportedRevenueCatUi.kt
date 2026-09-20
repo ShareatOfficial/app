@@ -10,6 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.subscription.ui.generated.resources.Res
+import shareat.feature.subscription.ui.generated.resources.subscription_close
+import shareat.feature.subscription.ui.generated.resources.subscription_unsupported_platform
 
 @Composable
 internal fun UnsupportedRevenueCatUi(
@@ -21,9 +25,9 @@ internal fun UnsupportedRevenueCatUi(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("Los paywalls y el Customer Center de RevenueCat solo están disponibles en las apps de Android e iOS.")
+        Text(stringResource(Res.string.subscription_unsupported_platform))
         Button(onClick = onDismiss, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Cerrar")
+            Text(stringResource(Res.string.subscription_close))
         }
     }
 }

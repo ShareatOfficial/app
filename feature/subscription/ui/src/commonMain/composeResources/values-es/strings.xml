@@ -1,0 +1,15 @@
+<resources>
+    <string name="subscription_back">Volver</string>
+    <string name="subscription_title">Shareat Unlimited</string>
+    <string name="subscription_retry">Reintentar</string>
+    <string name="subscription_show_paywall">Ver opciones de suscripción</string>
+    <string name="subscription_processing">Actualizando la suscripción…</string>
+    <string name="subscription_manage">Gestionar suscripción</string>
+    <string name="subscription_restore">Restaurar compras</string>
+    <string name="subscription_choose">Elegir</string>
+    <string name="subscription_access_active">Acceso Unlimited activo</string>
+    <string name="subscription_access_locked">Desbloquea Shareat Unlimited</string>
+    <string name="subscription_renews_automatically">%1$s · se renueva automáticamente</string>
+    <string name="subscription_unsupported_platform">Los paywalls y el Customer Center de RevenueCat solo están disponibles en las apps de Android e iOS.</string>
+    <string name="subscription_close">Cerrar</string>
+</resources>
