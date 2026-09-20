@@ -26,9 +26,7 @@ import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
-import io.github.vinceglb.filekit.mimeType
 import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.DishCategory
@@ -38,7 +36,7 @@ import org.shareat.feature.restauranthome.ui.model.RestaurantHomeEditor
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeMode
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeUiState
 import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
-import org.shareat.feature.restauranthome.ui.model.imageUploadFrom
+import org.shareat.feature.restauranthome.ui.model.preparedImageUpload
 import org.shareat.feature.restauranthome.ui.model.toDisplayAddress
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.CustomerModeTopBar
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.DishEditBottomSheet
@@ -122,13 +120,8 @@ fun RestaurantHomeScreen(
 
 private enum class ImagePickerTarget { Restaurant, Dish }
 
-private suspend fun PlatformFile.toImageUploadValidationResult(): ImageUploadValidationResult = runCatching {
-    imageUploadFrom(
-        bytes = readBytes(),
-        mimeType = mimeType()?.toString()?.substringBefore(';'),
-        fileName = name,
-    )
-}.getOrElse { ImageUploadValidationResult.InvalidFile }
+private suspend fun PlatformFile.toImageUploadValidationResult(): ImageUploadValidationResult =
+    preparedImageUpload(fileName = name) { compression -> compressedAsJpeg(compression) }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

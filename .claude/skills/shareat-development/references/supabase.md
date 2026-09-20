@@ -6,7 +6,7 @@ The client only ever receives the project URL and a **publishable** key, generat
 
 Auth uses email/password, PKCE, and the `shareat://auth-callback` redirect; web uses its own origin. Email confirmation and OAuth are out of scope for the MVP. Android declares the intent filter, iOS the URL scheme, web a CSP restricting connections and images to the app's origin and the Supabase project.
 
-Storage has a private `avatars` bucket and public `restaurant-images`/`dish-images` buckets. All of them cap JPEG/PNG/WebP at 500 KB. Replacing an image uploads a new random path, updates the row, and only then attempts to delete the old file (never delete-then-upload).
+Storage has a private `avatars` bucket and public `restaurant-images`/`dish-images` buckets. All of them cap JPEG/PNG/WebP at 500 KB. Replacing an image uploads a new random path, updates the row, and only then attempts to delete the old file (never delete-then-upload). Before uploading, the client resizes and re-encodes to JPEG (1600 px long side at quality 80, stepping down to 1280/70 and 1024/60 while still over the limit), so camera photos and HEIC fit without the user shrinking them. Every Storage policy derives the folder with `private.storage_folder_uuid(name)`, never a direct `::uuid` cast.
 
 ## Local flow
 
