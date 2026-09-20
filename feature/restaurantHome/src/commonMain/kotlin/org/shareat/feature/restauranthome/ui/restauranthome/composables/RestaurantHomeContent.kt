@@ -1,6 +1,5 @@
 package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,9 +20,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
 import org.shareat.shared.designsystem.shimmerEffect
 import shareat.feature.restauranthome.ui.generated.resources.Res
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_add_dish
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_empty
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_empty_management
-import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_add_dish
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_forbidden
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_generic
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_image_format
@@ -36,6 +35,7 @@ import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_err
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_unavailable
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_retry
 
+// TODO to check and work on this states.
 @Composable
 internal fun ErrorContent(
     error: RestaurantHomeError,
@@ -88,17 +88,35 @@ internal fun RestaurantHomeSkeleton(modifier: Modifier = Modifier) {
         Card(modifier = Modifier.fillMaxWidth()) {
             Box(modifier = Modifier.fillMaxWidth().height(180.dp).shimmerEffect(color))
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(Modifier.fillMaxWidth(.65f).height(28.dp).shimmerEffect(color, RoundedCornerShape(4.dp)))
-                Box(Modifier.fillMaxWidth().height(18.dp).shimmerEffect(color, RoundedCornerShape(4.dp)))
-                Box(Modifier.fillMaxWidth(.4f).height(36.dp).shimmerEffect(color, RoundedCornerShape(18.dp)))
+                Box(
+                    Modifier.fillMaxWidth(.65f).height(28.dp)
+                        .shimmerEffect(color, RoundedCornerShape(4.dp))
+                )
+                Box(
+                    Modifier.fillMaxWidth().height(18.dp)
+                        .shimmerEffect(color, RoundedCornerShape(4.dp))
+                )
+                Box(
+                    Modifier.fillMaxWidth(.4f).height(36.dp)
+                        .shimmerEffect(color, RoundedCornerShape(18.dp))
+                )
             }
         }
         repeat(3) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Box(Modifier.fillMaxWidth(.55f).height(22.dp).shimmerEffect(color, RoundedCornerShape(4.dp)))
-                    Box(Modifier.fillMaxWidth().height(16.dp).shimmerEffect(color, RoundedCornerShape(4.dp)))
-                    Box(Modifier.fillMaxWidth(.25f).height(18.dp).shimmerEffect(color, RoundedCornerShape(4.dp)))
+                    Box(
+                        Modifier.fillMaxWidth(.55f).height(22.dp)
+                            .shimmerEffect(color, RoundedCornerShape(4.dp))
+                    )
+                    Box(
+                        Modifier.fillMaxWidth().height(16.dp)
+                            .shimmerEffect(color, RoundedCornerShape(4.dp))
+                    )
+                    Box(
+                        Modifier.fillMaxWidth(.25f).height(18.dp)
+                            .shimmerEffect(color, RoundedCornerShape(4.dp))
+                    )
                 }
             }
         }
@@ -118,6 +136,7 @@ private fun RestaurantHomeError.message(): String = stringResource(
         RestaurantHomeError.IMAGE_READ_FAILED -> Res.string.restaurant_home_error_image_read
         RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED ->
             Res.string.restaurant_home_error_image_upload_after_details_saved
+
         RestaurantHomeError.VALIDATION, RestaurantHomeError.UNKNOWN -> Res.string.restaurant_home_error_generic
     },
 )

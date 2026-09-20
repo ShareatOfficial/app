@@ -1,4 +1,4 @@
-package org.shareat.feature.restauranthome.ui.restauranthome.tonepackage
+package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomePreviewData
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.RestaurantImage
 import org.shareat.shared.designsystem.theme.ShareatTheme
 
 @Composable

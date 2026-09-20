@@ -11,13 +11,16 @@
     <string name="restaurant_home_dish_edit">Editar plato</string>
     <string name="restaurant_home_name">Nombre del restaurante</string>
     <string name="restaurant_home_dish_name">Nombre del plato</string>
+    <string name="restaurant_home_dish_name_placeholder">Ej. Arroz marinero</string>
     <string name="restaurant_home_description">Descripción</string>
+    <string name="restaurant_home_description_placeholder">Describe el plato y sus ingredientes principales</string>
     <string name="restaurant_home_street">Calle y número</string>
     <string name="restaurant_home_locality">Localidad</string>
     <string name="restaurant_home_postal_code">Código postal</string>
     <string name="restaurant_home_region">Provincia o comunidad autónoma</string>
     <string name="restaurant_home_price">Precio: %1$d,%2$s €</string>
     <string name="restaurant_home_price_label">Precio</string>
+    <string name="restaurant_home_price_placeholder">Ej. 12,50</string>
     <string name="restaurant_home_price_invalid">Indica un precio válido, por ejemplo 12,50.</string>
     <string name="restaurant_home_restaurant_name_invalid">El nombre es obligatorio.</string>
     <string name="restaurant_home_dish_name_invalid">El nombre del plato es obligatorio.</string>

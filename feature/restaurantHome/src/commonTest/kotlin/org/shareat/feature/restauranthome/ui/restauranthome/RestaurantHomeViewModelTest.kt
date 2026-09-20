@@ -11,41 +11,40 @@ import org.shareat.app.domain.model.AccountId
 import org.shareat.app.domain.model.Dish
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.DishId
+import org.shareat.app.domain.model.ImageUpload
+import org.shareat.app.domain.model.IsoTimestamp
 import org.shareat.app.domain.model.Menu
 import org.shareat.app.domain.model.MenuDetails
 import org.shareat.app.domain.model.MenuDish
 import org.shareat.app.domain.model.MenuId
 import org.shareat.app.domain.model.MenuPublicationState
 import org.shareat.app.domain.model.Money
-import org.shareat.app.domain.model.ImageUpload
 import org.shareat.app.domain.model.PostalAddress
-import org.shareat.app.domain.model.RatingSummary
 import org.shareat.app.domain.model.Rating
+import org.shareat.app.domain.model.RatingSummary
+import org.shareat.app.domain.model.Restaurant
+import org.shareat.app.domain.model.RestaurantId
+import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewId
 import org.shareat.app.domain.model.ReviewModerationStatus
 import org.shareat.app.domain.model.ReviewTarget
 import org.shareat.app.domain.model.ReviewVisibility
-import org.shareat.app.domain.model.IsoTimestamp
-import org.shareat.app.domain.model.Restaurant
-import org.shareat.app.domain.model.RestaurantId
-import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.WeeklyOpeningHours
-import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RepositoryError
-import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
+import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
+import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCase
-import org.shareat.feature.restauranthome.domain.UpdateRestaurantPublicationStateUseCase
-import org.shareat.feature.restauranthome.domain.model.OwnerRatedMenuDish
-import org.shareat.feature.restauranthome.domain.model.RestaurantHome
-import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantMenu
 import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishUpdate
+import org.shareat.feature.restauranthome.domain.model.OwnerRatedMenuDish
 import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantInfoDraft
+import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantMenu
+import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeEditor
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
@@ -59,11 +58,13 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RestaurantHomeViewModelTest {
+class LegacyRestaurantHomeViewModelTest {
     private val dispatcher = StandardTestDispatcher()
 
-    @BeforeTest fun setUp() = Dispatchers.setMain(dispatcher)
-    @AfterTest fun tearDown() = Dispatchers.resetMain()
+    @BeforeTest
+    fun setUp() = Dispatchers.setMain(dispatcher)
+    @AfterTest
+    fun tearDown() = Dispatchers.resetMain()
 
     @Test
     fun loadsThePrivateMenuAndTogglesCustomerPreview() = runTest(dispatcher) {
@@ -105,7 +106,8 @@ class RestaurantHomeViewModelTest {
         val viewModel = viewModelFor(home = home, onPublicationChange = { publicationState = it })
         advanceUntilIdle()
 
-        val mappedDish = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content).restaurant.dishes.first()
+        val mappedDish =
+            assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content).restaurant.dishes.first()
         assertEquals("5,0", mappedDish.ratingLabel)
         assertEquals(1, mappedDish.reviewCount)
 
@@ -202,67 +204,79 @@ class RestaurantHomeViewModelTest {
     }
 
     @Test
-    fun imageRetryAfterDishCreationUpdatesThePersistedDishInsteadOfCreatingAnother() = runTest(dispatcher) {
-        var createCalls = 0
-        var updateCalls = 0
-        var imageCalls = 0
-        val update = newDishUpdate(ownerHome())
-        val viewModel = viewModelFor(
-            onCreateDish = {
-                createCalls++
-                RepositoryResult.Success(update)
-            },
-            onUpdateDish = { _, _ ->
-                updateCalls++
-                RepositoryResult.Success(update)
-            },
-            onReplaceDishImage = { _, _ ->
-                imageCalls++
-                RepositoryResult.Failure(RepositoryError.Offline)
-            },
-        )
-        advanceUntilIdle()
-        viewModel.onAddDishClick()
-        viewModel.onDishNameChanged("Croquetas")
-        viewModel.onDishPriceChanged("9,50")
-        viewModel.onDishImageSelected(ImageUpload(byteArrayOf(1), "image/jpeg", "Croquetas"))
+    fun imageRetryAfterDishCreationUpdatesThePersistedDishInsteadOfCreatingAnother() =
+        runTest(dispatcher) {
+            var createCalls = 0
+            var updateCalls = 0
+            var imageCalls = 0
+            val update = newDishUpdate(ownerHome())
+            val viewModel = viewModelFor(
+                onCreateDish = {
+                    createCalls++
+                    RepositoryResult.Success(update)
+                },
+                onUpdateDish = { _, _ ->
+                    updateCalls++
+                    RepositoryResult.Success(update)
+                },
+                onReplaceDishImage = { _, _ ->
+                    imageCalls++
+                    RepositoryResult.Failure(RepositoryError.Offline)
+                },
+            )
+            advanceUntilIdle()
+            viewModel.onAddDishClick()
+            viewModel.onDishNameChanged("Croquetas")
+            viewModel.onDishPriceChanged("9,50")
+            viewModel.onDishImageSelected(ImageUpload(byteArrayOf(1), "image/jpeg", "Croquetas"))
 
-        viewModel.onSaveDish()
-        advanceUntilIdle()
+            viewModel.onSaveDish()
+            advanceUntilIdle()
 
-        assertEquals(1, createCalls)
-        assertEquals("dish-new", assertIs<RestaurantHomeEditor.Dish>(viewModel.uiState.value.editor).form.dishId)
+            assertEquals(1, createCalls)
+            assertEquals(
+                "dish-new",
+                assertIs<RestaurantHomeEditor.Dish>(viewModel.uiState.value.editor).form.dishId
+            )
 
-        viewModel.onSaveDish()
-        advanceUntilIdle()
+            viewModel.onSaveDish()
+            advanceUntilIdle()
 
-        assertEquals(1, createCalls)
-        assertEquals(1, updateCalls)
-        assertEquals(2, imageCalls)
-    }
+            assertEquals(1, createCalls)
+            assertEquals(1, updateCalls)
+            assertEquals(2, imageCalls)
+        }
 
     @Test
-    fun restaurantImageFailureKeepsTheEditorOpenAndConfirmsDetailsWereSaved() = runTest(dispatcher) {
-        val viewModel = viewModelFor(
-            onReplaceRestaurantImage = {
-                RepositoryResult.Failure(RepositoryError.Offline)
-            },
-        )
-        advanceUntilIdle()
-        viewModel.onEditRestaurantClick()
-        viewModel.onRestaurantNameChanged("Casa Renombrada")
-        viewModel.onRestaurantImageSelected(ImageUpload(byteArrayOf(1), "image/jpeg", "Fachada"))
+    fun restaurantImageFailureKeepsTheEditorOpenAndConfirmsDetailsWereSaved() =
+        runTest(dispatcher) {
+            val viewModel = viewModelFor(
+                onReplaceRestaurantImage = {
+                    RepositoryResult.Failure(RepositoryError.Offline)
+                },
+            )
+            advanceUntilIdle()
+            viewModel.onEditRestaurantClick()
+            viewModel.onRestaurantNameChanged("Casa Renombrada")
+            viewModel.onRestaurantImageSelected(
+                ImageUpload(
+                    byteArrayOf(1),
+                    "image/jpeg",
+                    "Fachada"
+                )
+            )
 
-        viewModel.onSaveRestaurant()
-        advanceUntilIdle()
+            viewModel.onSaveRestaurant()
+            advanceUntilIdle()
 
-        val form = assertIs<RestaurantHomeEditor.Restaurant>(viewModel.uiState.value.editor).form
-        assertEquals(RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED, form.error)
-        assertEquals(
-            "Casa Renombrada",
-            assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content).restaurant.name,
-        )
-    }
+            val form =
+                assertIs<RestaurantHomeEditor.Restaurant>(viewModel.uiState.value.editor).form
+            assertEquals(RestaurantHomeError.IMAGE_UPLOAD_FAILED_AFTER_DETAILS_SAVED, form.error)
+            assertEquals(
+                "Casa Renombrada",
+                assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content).restaurant.name,
+            )
+        }
 
     private fun viewModelFor(
         home: RestaurantHome = ownerHome(),
@@ -274,10 +288,18 @@ class RestaurantHomeViewModelTest {
             error("unused")
         },
         onCreateDish: (OwnerDishCreateDraft) -> RepositoryResult<OwnerDishUpdate> = { error("unused") },
-        onUpdateDish: (DishId, org.shareat.feature.restauranthome.domain.model.OwnerDishDraft) -> RepositoryResult<OwnerDishUpdate> = { _, _ -> error("unused") },
-        onReplaceDishImage: (DishId, ImageUpload) -> RepositoryResult<org.shareat.app.domain.model.ImageRef> = { _, _ -> error("unused") },
-    ): RestaurantHomeViewModel {
-        return RestaurantHomeViewModel(
+        onUpdateDish: (DishId, org.shareat.feature.restauranthome.domain.model.OwnerDishDraft) -> RepositoryResult<OwnerDishUpdate> = { _, _ ->
+            error(
+                "unused"
+            )
+        },
+        onReplaceDishImage: (DishId, ImageUpload) -> RepositoryResult<org.shareat.app.domain.model.ImageRef> = { _, _ ->
+            error(
+                "unused"
+            )
+        },
+    ): LegacyRestaurantHomeViewModel {
+        return LegacyRestaurantHomeViewModel(
             loadOwnerRestaurantHome = {
                 onLoadHome?.invoke() ?: RepositoryResult.Success(home)
             },
@@ -285,16 +307,132 @@ class RestaurantHomeViewModelTest {
             updateOwnerRestaurantInfo = { draft ->
                 onUpdateRestaurant()
                 onRestaurantDraft(draft)
-                RepositoryResult.Success(home.restaurant.copy(name = draft.name, address = draft.address))
+                RepositoryResult.Success(
+                    home.restaurant.copy(
+                        name = draft.name,
+                        address = draft.address
+                    )
+                )
             },
             updateRestaurantPublicationState = { state ->
                 onPublicationChange(state)
                 RepositoryResult.Success(home.restaurant.copy(publicationState = state))
             },
-            replaceOwnerRestaurantImage = ReplaceOwnerRestaurantImageUseCase(onReplaceRestaurantImage),
+            replaceOwnerRestaurantImage = ReplaceOwnerRestaurantImageUseCase(
+                onReplaceRestaurantImage
+            ),
             updateOwnerDish = UpdateOwnerDishUseCase(onUpdateDish),
             replaceOwnerDishImage = ReplaceOwnerDishImageUseCase(onReplaceDishImage),
         )
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class RestaurantHomeViewModelTest {
+    private val dispatcher = StandardTestDispatcher()
+
+    @BeforeTest
+    fun setUp() = Dispatchers.setMain(dispatcher)
+    @AfterTest
+    fun tearDown() = Dispatchers.resetMain()
+
+    @Test
+    fun addDishOpensAnEmptyEditableForm() = runTest(dispatcher) {
+        val viewModel = RestaurantHomeViewModel(
+            loadRestaurantHome = GetRestaurantHomeUseCase {
+                RepositoryResult.Success(ownerHome())
+            },
+            createOwnerDish = CreateOwnerDishUseCase { error("Not used in this test") },
+            updateOwnerDish = UpdateOwnerDishUseCase { _, _ -> error("Not used in this test") },
+            updateOwnerRestaurantInfo = UpdateOwnerRestaurantInfoUseCase {
+                error("Not used in this test")
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onAddDishClick()
+
+        assertEquals(RestaurantHomeBottomSheet.EDIT_DISH, viewModel.uiState.value.activeBottomSheet)
+        assertNull(viewModel.uiState.value.selectedDishId)
+        val form = requireNotNull(viewModel.uiState.value.dishEditForm)
+        assertNull(form.dishId)
+        assertEquals("", form.name)
+        assertEquals("", form.description)
+        assertEquals("", form.price)
+        assertTrue(form.allergens.isEmpty())
+
+        viewModel.onDishNameChange("Paella del Baratie")
+
+        assertEquals("Paella del Baratie", viewModel.uiState.value.dishEditForm?.name)
+    }
+
+    @Test
+    fun saveNewDishPersistsRefreshesTheMenuAndClosesTheSheet() = runTest(dispatcher) {
+        val home = ownerHome()
+        var submittedDraft: OwnerDishCreateDraft? = null
+        val viewModel = RestaurantHomeViewModel(
+            loadRestaurantHome = GetRestaurantHomeUseCase {
+                RepositoryResult.Success(home)
+            },
+            createOwnerDish = CreateOwnerDishUseCase { draft ->
+                submittedDraft = draft
+                RepositoryResult.Success(newDishUpdate(home))
+            },
+            updateOwnerDish = UpdateOwnerDishUseCase { _, _ -> error("Not used in this test") },
+            updateOwnerRestaurantInfo = UpdateOwnerRestaurantInfoUseCase {
+                error("Not used in this test")
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onAddDishClick()
+        viewModel.onDishNameChange("Paella del Baratie")
+        viewModel.onDishPriceChange("9,50")
+        viewModel.onSaveDish()
+        advanceUntilIdle()
+
+        assertEquals("Paella del Baratie", submittedDraft?.name)
+        assertEquals(Money(950), submittedDraft?.price)
+        assertNull(viewModel.uiState.value.activeBottomSheet)
+        assertNull(viewModel.uiState.value.dishEditForm)
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertTrue(content.restaurant.dishes.any { it.id == "dish-new" })
+    }
+
+    @Test
+    fun saveMainInfoPersistsRefreshesTheRestaurantAndClosesTheSheet() = runTest(dispatcher) {
+        val home = ownerHome()
+        var submittedDraft: OwnerRestaurantInfoDraft? = null
+        val viewModel = RestaurantHomeViewModel(
+            loadRestaurantHome = GetRestaurantHomeUseCase {
+                RepositoryResult.Success(home)
+            },
+            createOwnerDish = CreateOwnerDishUseCase { error("Not used in this test") },
+            updateOwnerDish = UpdateOwnerDishUseCase { _, _ -> error("Not used in this test") },
+            updateOwnerRestaurantInfo = UpdateOwnerRestaurantInfoUseCase { draft ->
+                submittedDraft = draft
+                RepositoryResult.Success(
+                    home.restaurant.copy(
+                        name = draft.name,
+                        description = draft.description,
+                    ),
+                )
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onMainInfoClick()
+        viewModel.onRestaurantNameChange("Baratie renovado")
+        viewModel.onRestaurantDescriptionChange("Restaurante flotante del East Blue")
+        viewModel.onSaveMainInfo()
+        advanceUntilIdle()
+
+        assertEquals("Baratie renovado", submittedDraft?.name)
+        assertEquals("Restaurante flotante del East Blue", submittedDraft?.description)
+        assertNull(viewModel.uiState.value.activeBottomSheet)
+        assertNull(viewModel.uiState.value.mainInfoDraft)
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertEquals("Baratie renovado", content.restaurant.name)
     }
 }
 
@@ -303,7 +441,12 @@ private fun newDishUpdate(home: RestaurantHome): OwnerDishUpdate {
     val menu = requireNotNull(home.menu).menu
     val details = MenuDetails(
         menu,
-        home.menu.dishes.map(OwnerRatedMenuDish::menuDish) + MenuDish(dish, Money(950), position = 2, isEnabled = false),
+        home.menu.dishes.map(OwnerRatedMenuDish::menuDish) + MenuDish(
+            dish,
+            Money(950),
+            position = 2,
+            isEnabled = false
+        ),
     )
     return OwnerDishUpdate(dish, details)
 }
@@ -314,7 +457,7 @@ private fun newPublishedDishUpdate(home: RestaurantHome): OwnerDishUpdate {
     val details = MenuDetails(
         menu,
         home.menu.dishes.map(OwnerRatedMenuDish::menuDish) +
-            MenuDish(dish, Money(950), position = 2, isEnabled = true),
+                MenuDish(dish, Money(950), position = 2, isEnabled = true),
     )
     return OwnerDishUpdate(dish, details)
 }
@@ -345,10 +488,30 @@ private fun ownerHome(): RestaurantHome {
         restaurant = restaurant,
         restaurantRatingSummary = RatingSummary.Unrated,
         menu = OwnerRestaurantMenu(
-            menu = Menu(MenuId("menu"), restaurant.id, "Carta", publicationState = MenuPublicationState.Published),
+            menu = Menu(
+                MenuId("menu"),
+                restaurant.id,
+                "Carta",
+                publicationState = MenuPublicationState.Published
+            ),
             dishes = listOf(
-                OwnerRatedMenuDish(MenuDish(enabled, Money(1200), 0, category = DishCategory.MainCourses), emptyList()),
-                OwnerRatedMenuDish(MenuDish(disabled, Money(800), 1, isEnabled = false, category = DishCategory.Desserts), emptyList()),
+                OwnerRatedMenuDish(
+                    MenuDish(
+                        enabled,
+                        Money(1200),
+                        0,
+                        category = DishCategory.MainCourses
+                    ), emptyList()
+                ),
+                OwnerRatedMenuDish(
+                    MenuDish(
+                        disabled,
+                        Money(800),
+                        1,
+                        isEnabled = false,
+                        category = DishCategory.Desserts
+                    ), emptyList()
+                ),
             ),
         ),
     )

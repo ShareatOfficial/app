@@ -1,4 +1,4 @@
-package org.shareat.feature.restauranthome.ui.restauranthome.tonepackage
+package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.DishCategory
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.label
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_category_other

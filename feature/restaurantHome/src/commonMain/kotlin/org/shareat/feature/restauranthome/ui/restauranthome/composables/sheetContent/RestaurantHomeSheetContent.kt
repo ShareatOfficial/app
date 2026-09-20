@@ -1,4 +1,4 @@
-package org.shareat.feature.restauranthome.ui.restauranthome.tonepackage
+package org.shareat.feature.restauranthome.ui.restauranthome.composables.sheetContent
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +16,7 @@ import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeBottomSheet
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeUiStateByTone
+import org.shareat.feature.restauranthome.ui.restauranthome.composables.ViewDishContent
 import org.shareat.shared.designsystem.components.RatingBadge
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_reviews
@@ -30,11 +31,13 @@ internal fun RestaurantHomeSheetContent(
     onRestaurantNameChange: (String) -> Unit,
     onRestaurantDescriptionChange: (String) -> Unit,
     onRestaurantImageChange: () -> Unit,
+    onSaveMainInfo: () -> Unit,
     onDishImageChange: () -> Unit,
     onDishNameChange: (String) -> Unit,
     onDishDescriptionChange: (String) -> Unit,
     onDishPriceChange: (String) -> Unit,
     onDishAllergenClick: (EuAllergen) -> Unit,
+    onSaveDish: () -> Unit,
     onAddressStreetLineChange: (String) -> Unit,
     onAddressLocalityChange: (String) -> Unit,
     onAddressPostalCodeChange: (String) -> Unit,
@@ -59,12 +62,14 @@ internal fun RestaurantHomeSheetContent(
             RestaurantHomeBottomSheet.EDIT_DISH -> {
                 uiState.dishEditForm?.let { form ->
                     EditDishContent(
+                        dish = uiState.selectedDish,
                         form = form,
                         onImageChange = onDishImageChange,
                         onDishNameChange = onDishNameChange,
                         onDescriptionChange = onDishDescriptionChange,
                         onPriceChange = onDishPriceChange,
                         onAllergenClick = onDishAllergenClick,
+                        onSaveClick = onSaveDish,
                     )
                 }
             }
@@ -77,6 +82,10 @@ internal fun RestaurantHomeSheetContent(
                     onImageChange = onRestaurantImageChange,
                     onRestaurantNameChange = onRestaurantNameChange,
                     onDescriptionChange = onRestaurantDescriptionChange,
+                    onSaveClick = onSaveMainInfo,
+                    isSaving = draft.isSaving,
+                    nameInvalid = draft.nameInvalid,
+                    error = draft.error,
                 )
             }
 

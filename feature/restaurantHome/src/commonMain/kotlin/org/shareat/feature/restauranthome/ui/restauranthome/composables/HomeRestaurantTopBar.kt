@@ -1,4 +1,4 @@
-package org.shareat.feature.restauranthome.ui.restauranthome.tonepackage
+package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

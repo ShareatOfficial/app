@@ -1,4 +1,4 @@
-package org.shareat.feature.restauranthome.ui.restauranthome.tonepackage
+package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,8 +26,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomePreviewData
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.RestaurantImage
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.label
 import org.shareat.shared.designsystem.components.RatingBadge
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res

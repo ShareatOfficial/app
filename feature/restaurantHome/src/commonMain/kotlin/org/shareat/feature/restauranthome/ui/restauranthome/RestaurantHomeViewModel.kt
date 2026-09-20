@@ -8,16 +8,29 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.shareat.app.domain.model.DishCategory
+import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
+import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
+import org.shareat.feature.restauranthome.domain.UpdateOwnerDishUseCase
+import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCase
+import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
+import org.shareat.feature.restauranthome.domain.model.OwnerDishDraft
+import org.shareat.feature.restauranthome.domain.model.OwnerDishUpdate
+import org.shareat.feature.restauranthome.domain.model.OwnerRatedMenuDish
+import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantInfoDraft
+import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
+import org.shareat.feature.restauranthome.ui.model.DishFormValidation
 import org.shareat.feature.restauranthome.ui.model.RestaurantAddressUiState
 import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
+import org.shareat.feature.restauranthome.ui.model.toAllergenDeclaration
 import org.shareat.feature.restauranthome.ui.model.toEditablePrice
+import org.shareat.feature.restauranthome.ui.model.toMoneyOrNull
 import org.shareat.feature.restauranthome.ui.model.toRestaurantHomeData
 
 enum class RestaurantHomeBottomSheet {
@@ -34,6 +47,9 @@ data class RestaurantMainInfoDraft(
     val name: String,
     val description: String,
     val imageUrl: String,
+    val isSaving: Boolean = false,
+    val nameInvalid: Boolean = false,
+    val error: RestaurantHomeError? = null,
 )
 
 data class RestaurantAddressDraft(
@@ -62,9 +78,14 @@ data class RestaurantHomeUiStateByTone(
 }
 
 @Stable
-class RestaurantHomeViewModelV2ByTone(
+class RestaurantHomeViewModel(
     private val loadRestaurantHome: GetRestaurantHomeUseCase,
+    private val createOwnerDish: CreateOwnerDishUseCase,
+    private val updateOwnerDish: UpdateOwnerDishUseCase,
+    private val updateOwnerRestaurantInfo: UpdateOwnerRestaurantInfoUseCase,
 ) : ViewModel() {
+    private var ownerHome: RestaurantHome? = null
+
     private val _uiState = MutableStateFlow(RestaurantHomeUiStateByTone())
     val uiState: StateFlow<RestaurantHomeUiStateByTone> = _uiState.asStateFlow()
 
@@ -98,6 +119,26 @@ class RestaurantHomeViewModelV2ByTone(
             selectedDishId = dishId,
             mainInfoDraft = null,
             dishEditForm = if (isEditMode) dish.toEditForm() else null,
+            addressDraft = null,
+            categoriesDraft = null,
+        )
+    }
+
+    fun onAddDishClick() {
+        if (!_uiState.value.isEditMode || _uiState.value.content !is RestaurantHomeContent.Loaded) return
+        _uiState.value = _uiState.value.copy(
+            activeBottomSheet = RestaurantHomeBottomSheet.EDIT_DISH,
+            selectedDishId = null,
+            mainInfoDraft = null,
+            dishEditForm = DishEditFormUiState(
+                dishId = null,
+                name = "",
+                description = "",
+                price = "",
+                allergens = emptySet(),
+                imageUrl = null,
+                isPublished = false,
+            ),
             addressDraft = null,
             categoriesDraft = null,
         )
@@ -155,9 +196,52 @@ class RestaurantHomeViewModelV2ByTone(
         )
     }
 
-    fun onRestaurantNameChange(value: String) = updateMainInfoDraft { copy(name = value) }
+    fun onRestaurantNameChange(value: String) = updateMainInfoDraft {
+        copy(name = value, nameInvalid = false, error = null)
+    }
 
-    fun onRestaurantDescriptionChange(value: String) = updateMainInfoDraft { copy(description = value) }
+    fun onRestaurantDescriptionChange(value: String) = updateMainInfoDraft {
+        copy(description = value, error = null)
+    }
+
+    fun onSaveMainInfo() {
+        val form = _uiState.value.mainInfoDraft ?: return
+        if (form.isSaving) return
+        if (form.name.isBlank()) {
+            updateMainInfoDraft { copy(nameInvalid = true) }
+            return
+        }
+        val home = ownerHome ?: return
+
+        updateMainInfoDraft { copy(isSaving = true, error = null) }
+        viewModelScope.launch {
+            when (
+                val result = updateOwnerRestaurantInfo(
+                    OwnerRestaurantInfoDraft(
+                        name = form.name.trim(),
+                        description = form.description.trim().ifEmpty { null },
+                        address = home.restaurant.address,
+                        publicEmail = home.restaurant.publicEmail,
+                        publicPhone = home.restaurant.publicPhone,
+                        openingHours = home.restaurant.openingHours,
+                    ),
+                )
+            ) {
+                is RepositoryResult.Success -> {
+                    ownerHome = home.copy(restaurant = result.value)
+                    _uiState.value = _uiState.value.copy(
+                        activeBottomSheet = null,
+                        mainInfoDraft = null,
+                    )
+                    publishLoadedContent()
+                }
+
+                is RepositoryResult.Failure -> updateMainInfoDraft {
+                    copy(isSaving = false, error = result.error.toUiError())
+                }
+            }
+        }
+    }
 
     fun onDishNameChange(value: String) = updateDishEditForm {
         copy(
@@ -186,6 +270,64 @@ class RestaurantHomeViewModelV2ByTone(
         )
     }
 
+    fun onSaveDish() {
+        val form = _uiState.value.dishEditForm ?: return
+        if (form.isSaving) return
+
+        val price = form.price.toMoneyOrNull()
+        val validation = DishFormValidation(
+            nameInvalid = form.name.isBlank(),
+            priceInvalid = price == null,
+        )
+        if (validation.nameInvalid || validation.priceInvalid) {
+            updateDishEditForm { copy(validation = validation) }
+            return
+        }
+
+        updateDishEditForm { copy(isSaving = true, error = null) }
+        viewModelScope.launch {
+            val draft = OwnerDishDraft(
+                name = form.name.trim(),
+                description = form.description.trim().ifEmpty { null },
+                allergenDeclaration = form.allergens.toAllergenDeclaration(),
+                isEnabled = form.isPublished,
+                price = requireNotNull(price),
+            )
+            val result = if (form.dishId == null) {
+                createOwnerDish(
+                    OwnerDishCreateDraft(
+                        name = draft.name,
+                        description = draft.description,
+                        allergenDeclaration = draft.allergenDeclaration,
+                        isEnabled = draft.isEnabled,
+                        price = draft.price,
+                    ),
+                )
+            } else {
+                updateOwnerDish(DishId(form.dishId), draft)
+            }
+
+            when (result) {
+                is RepositoryResult.Success -> {
+                    applyDishUpdate(result.value)
+                    _uiState.value = _uiState.value.copy(
+                        activeBottomSheet = null,
+                        selectedDishId = null,
+                        mainInfoDraft = null,
+                        dishEditForm = null,
+                        addressDraft = null,
+                        categoriesDraft = null,
+                    )
+                    publishLoadedContent()
+                }
+
+                is RepositoryResult.Failure -> updateDishEditForm {
+                    copy(isSaving = false, error = result.error.toUiError())
+                }
+            }
+        }
+    }
+
     fun onAddressStreetLineChange(value: String) = updateAddressDraft { copy(streetLine = value) }
 
     fun onAddressLocalityChange(value: String) = updateAddressDraft { copy(locality = value) }
@@ -206,6 +348,10 @@ class RestaurantHomeViewModelV2ByTone(
     }
 
     fun onDismissBottomSheet() {
+        if (
+            _uiState.value.dishEditForm?.isSaving == true ||
+            _uiState.value.mainInfoDraft?.isSaving == true
+        ) return
         _uiState.value = _uiState.value.copy(
             activeBottomSheet = null,
             selectedDishId = null,
@@ -229,12 +375,12 @@ class RestaurantHomeViewModelV2ByTone(
         viewModelScope.launch {
             when (val result = loadRestaurantHome()) {
                 is RepositoryResult.Success -> {
-                    _uiState.value = _uiState.value.copy(
-                        content = RestaurantHomeContent.Loaded(result.value.toRestaurantHomeData()),
-                    )
+                    ownerHome = result.value
+                    publishLoadedContent()
                 }
 
                 is RepositoryResult.Failure -> {
+                    ownerHome = null
                     _uiState.value = _uiState.value.copy(
                         content = RestaurantHomeContent.Error(result.error.toUiError()),
                     )
@@ -273,6 +419,28 @@ class RestaurantHomeViewModelV2ByTone(
     private fun updateAddressDraft(change: RestaurantAddressDraft.() -> RestaurantAddressDraft) {
         val draft = _uiState.value.addressDraft ?: return
         _uiState.value = _uiState.value.copy(addressDraft = draft.change())
+    }
+
+    private fun publishLoadedContent() {
+        val home = ownerHome ?: return
+        _uiState.value = _uiState.value.copy(
+            content = RestaurantHomeContent.Loaded(home.toRestaurantHomeData()),
+        )
+    }
+
+    private fun applyDishUpdate(update: OwnerDishUpdate) {
+        val home = ownerHome ?: return
+        val menu = home.menu ?: return
+        val oldDishes = menu.dishes.associateBy { it.menuDish.dish.id }
+        ownerHome = home.copy(
+            menu = menu.copy(
+                menu = update.menu.menu,
+                dishes = update.menu.items.map { item ->
+                    oldDishes[item.dish.id]?.copy(menuDish = item)
+                        ?: OwnerRatedMenuDish(menuDish = item, reviews = emptyList())
+                },
+            ),
+        )
     }
 }
 
