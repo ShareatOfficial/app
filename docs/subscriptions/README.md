@@ -68,11 +68,11 @@ without denying legitimate access if verification cannot complete.
 Create the products in each store first, then import them in RevenueCat → Product catalog →
 Products. For the Test Store, create them directly in RevenueCat.
 
-| Product ID | Type | RevenueCat package |
+| Store product ID | Type | RevenueCat package |
 | --- | --- | --- |
+| `shareat_unlimited:monthly` | Google Play auto-renewing monthly base plan (`monthly`); use `monthly` on Apple/Test Store | Monthly (`$rc_monthly`) |
+| `shareat_unlimited:quarterly` | Google Play auto-renewing three-month base plan (`quarterly`); use `quarterly` on Apple/Test Store | Three month (`$rc_three_month`) |
 | `lifetime` | Non-consumable, one-time purchase | Lifetime (`$rc_lifetime`) |
-| `yearly` | Auto-renewing annual subscription | Annual (`$rc_annual`) |
-| `monthly` | Auto-renewing monthly subscription | Monthly (`$rc_monthly`) |
 
 Then:
 

@@ -175,7 +175,7 @@ private fun CustomerInfo.toDomain(): CustomerSubscriptionInfo {
 }
 
 private fun Package.toDomain(): SubscriptionPackage? {
-    val normalizedProductId = storeProduct.id.substringBefore(':')
+    val normalizedProductId = storeProduct.id.toSubscriptionProductId()
     val product = SubscriptionProduct.entries.firstOrNull { candidate ->
         candidate.productId == normalizedProductId || candidate.productId == identifier
     } ?: return null
