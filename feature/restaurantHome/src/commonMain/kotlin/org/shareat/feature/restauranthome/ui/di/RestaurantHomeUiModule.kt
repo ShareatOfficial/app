@@ -19,6 +19,7 @@ import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCas
 import org.shareat.feature.restauranthome.domain.UpdateRestaurantPublicationStateUseCase
 import org.shareat.feature.restauranthome.domain.UpdateRestaurantPublicationStateUseCaseImpl
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeViewModel
+import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeViewModelV2ByTone
 
 /** Koin wiring for the restaurant-owner home feature. */
 val restaurantHomeUiModule: Module = module {
@@ -48,5 +49,8 @@ val restaurantHomeUiModule: Module = module {
 
     viewModel {
         RestaurantHomeViewModel(get(), get(), get(), get(), get(), get(), get())
+    }
+    viewModel {
+        RestaurantHomeViewModelV2ByTone(get())
     }
 }

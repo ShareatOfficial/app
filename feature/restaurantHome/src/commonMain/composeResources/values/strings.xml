@@ -44,6 +44,7 @@
     <string name="restaurant_home_edit_address">Editar dirección</string>
     <string name="restaurant_home_view_address">Dirección</string>
     <string name="restaurant_home_edit_categories">Editar categorías</string>
+    <string name="restaurant_home_categories_help">Selecciona las categorías que quieres mostrar en la carta.</string>
     <string name="restaurant_home_view_ratings">Valoraciones</string>
     <string name="restaurant_home_feature_coming_soon">Este contenido estará disponible próximamente.</string>
     <string name="restaurant_home_cancel">Cancelar</string>

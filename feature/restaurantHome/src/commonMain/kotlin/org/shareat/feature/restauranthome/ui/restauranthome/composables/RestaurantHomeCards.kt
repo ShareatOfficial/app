@@ -29,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -69,8 +68,8 @@ internal fun RestaurantHeaderCard(
                         contentScale = ContentScale.Crop,
                     )
                 } else {
-                    AsyncImage(
-                        model = imageUrl,
+                    RestaurantImage(
+                        imageUrl = imageUrl,
                         contentDescription = imageDescription,
                         modifier = Modifier.fillMaxWidth().height(180.dp),
                         contentScale = ContentScale.Crop,
@@ -158,8 +157,8 @@ internal fun ManagementDishCard(
                     modifier = Modifier.clip(RoundedCornerShape(12.dp)).size(88.dp),
                 )
             } else {
-                AsyncImage(
-                    model = dish.imageUrl,
+                RestaurantImage(
+                    imageUrl = dish.imageUrl,
                     contentDescription = dish.imageDescription,
                     modifier = Modifier.clip(RoundedCornerShape(12.dp)).size(88.dp),
                     contentScale = ContentScale.Crop,

@@ -48,7 +48,7 @@ internal fun HomeRestaurantTopBar(
                 )
             }
             .safeDrawingPadding()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp),
     ) {
         Box(
             modifier = Modifier
