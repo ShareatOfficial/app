@@ -17,18 +17,26 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import shareat.feature.login.ui.generated.resources.Res
 import shareat.feature.login.ui.generated.resources.high_quality_immersive_vertical_food_photography_for_a_restaurant_app_welcome
+import shareat.feature.login.ui.generated.resources.login_back
 
 private val welcomeBackground: DrawableResource
     get() = Res.drawable.high_quality_immersive_vertical_food_photography_for_a_restaurant_app_welcome
@@ -43,6 +51,8 @@ private val welcomeBackground: DrawableResource
 @Composable
 internal fun LoginBackground(
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = false,
+    onBackClick: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     val systemBarHeight = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
@@ -86,6 +96,28 @@ internal fun LoginBackground(
                 ),
             ),
         )
+        if (showBackButton) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(
+                            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+                        ),
+                    )
+                    .padding(8.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.6f),
+                contentColor = Color.White,
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = stringResource(Res.string.login_back),
+                    )
+                }
+            }
+        }
         Surface(
             modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),

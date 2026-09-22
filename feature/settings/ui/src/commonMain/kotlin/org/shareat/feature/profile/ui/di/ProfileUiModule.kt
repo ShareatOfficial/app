@@ -34,7 +34,7 @@ val profileUiModule: Module = module {
     factory<SelectAppLanguageUseCase> { SelectAppLanguageUseCaseImpl(get()) }
     factory<CreateRestaurantProfileUseCase> { CreateRestaurantProfileUseCaseImpl(get(), get(), get()) }
 
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { EditProfileViewModel(get(), get()) }
     viewModel { RestaurantOnboardingViewModel(get(), get()) }
 }

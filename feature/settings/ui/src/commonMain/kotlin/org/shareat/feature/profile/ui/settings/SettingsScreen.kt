@@ -86,6 +86,7 @@ import shareat.feature.settings.ui.generated.resources.settings_day_open
 import shareat.feature.settings.ui.generated.resources.settings_edit_profile
 import shareat.feature.settings.ui.generated.resources.settings_hidden
 import shareat.feature.settings.ui.generated.resources.settings_hours_dialog_title
+import shareat.feature.settings.ui.generated.resources.settings_log_in
 import shareat.feature.settings.ui.generated.resources.settings_log_out
 import shareat.feature.settings.ui.generated.resources.settings_opens
 import shareat.feature.settings.ui.generated.resources.settings_postcode
@@ -129,6 +130,7 @@ fun SettingsScreen(
         modifier = modifier,
         callbacks = SettingsCallbacks(
             onBackClick = navigator::goBack,
+            onLoginClick = navigator::openLogin,
             onTermsAndConditionsClick = navigator::openTermsAndConditions,
             onLanguageSelected = { viewModel.onLanguageAction(SettingsLanguageAction(it)) },
             onUserAction = viewModel::onUserAction,
@@ -139,6 +141,7 @@ fun SettingsScreen(
 
 private data class SettingsCallbacks(
     val onBackClick: () -> Unit = {},
+    val onLoginClick: () -> Unit = {},
     val onTermsAndConditionsClick: () -> Unit = {},
     val onLanguageSelected: (AppLanguage) -> Unit = {},
     val onUserAction: (SettingsUserAction) -> Unit = {},
@@ -160,6 +163,7 @@ private fun SettingsScreenStateless(
         Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
             SettingsTopBar(
                 title = when (uiState) {
+                    is SettingsUiState.Guest -> stringResource(Res.string.settings_title)
                     is SettingsUiState.User -> stringResource(Res.string.settings_title)
                     is SettingsUiState.Restaurant -> stringResource(Res.string.settings_restaurant_title)
                 },
@@ -177,6 +181,12 @@ private fun SettingsScreenStateless(
             )
 
             when (uiState) {
+                is SettingsUiState.Guest -> GuestSettings(
+                    uiState = uiState,
+                    callbacks = callbacks,
+                    onLanguageClick = { showLanguageSheet = true },
+                )
+
                 is SettingsUiState.User -> UserSettings(
                     uiState = uiState,
                     callbacks = callbacks,
@@ -232,6 +242,51 @@ private fun SettingsTopBar(
         if (actionText != null) {
             TextButton(onClick = onActionClick, enabled = actionEnabled) {
                 Text(actionText)
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuestSettings(
+    uiState: SettingsUiState.Guest,
+    callbacks: SettingsCallbacks,
+    onLanguageClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        uiState.error?.let { error ->
+            SettingsStatusText(message = error.label(), isError = true)
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
+        ) {
+            AppLanguageSettingsItem(uiState.language, onLanguageClick)
+            SettingsDivider()
+            SettingsItem(
+                leadingIcon = Icons.Outlined.Description,
+                text = stringResource(Res.string.settings_terms),
+                onClick = callbacks.onTermsAndConditionsClick,
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+        if (uiState.error == null) {
+            Button(
+                onClick = callbacks.onLoginClick,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading,
+            ) {
+                Text(stringResource(Res.string.settings_log_in))
             }
         }
     }
@@ -925,6 +980,14 @@ private fun SettingsDivider() {
         modifier = Modifier.padding(horizontal = 16.dp),
         color = MaterialTheme.colorScheme.outlineVariant,
     )
+}
+
+@Preview
+@Composable
+private fun GuestSettingsScreenPreview() {
+    ShareatTheme {
+        SettingsScreenStateless(uiState = SettingsUiState.Guest())
+    }
 }
 
 @Preview

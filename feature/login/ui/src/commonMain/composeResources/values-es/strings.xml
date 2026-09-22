@@ -3,7 +3,6 @@
     <string name="login_welcome_subtitle">Descubre restaurantes de confianza y los platos por los que se vuelve.</string>
     <string name="login_create_account">Crear cuenta</string>
     <string name="login_sign_in">Iniciar sesión</string>
-    <string name="login_browse_as_guest">Explorar sin cuenta</string>
     <string name="login_back">Volver</string>
     <string name="login_register_title">Crea tu cuenta</string>
     <string name="login_sign_in_title">Bienvenido de nuevo</string>

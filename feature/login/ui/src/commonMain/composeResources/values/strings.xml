@@ -3,7 +3,6 @@
     <string name="login_welcome_subtitle">Discover restaurants you can trust and the dishes people come back for.</string>
     <string name="login_create_account">Create account</string>
     <string name="login_sign_in">Sign in</string>
-    <string name="login_browse_as_guest">Browse without an account</string>
     <string name="login_back">Back</string>
     <string name="login_register_title">Create your account</string>
     <string name="login_sign_in_title">Welcome back</string>

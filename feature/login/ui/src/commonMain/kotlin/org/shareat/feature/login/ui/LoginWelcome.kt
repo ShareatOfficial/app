@@ -12,16 +12,13 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.login.ui.generated.resources.Res
-import shareat.feature.login.ui.generated.resources.login_browse_as_guest
 import shareat.feature.login.ui.generated.resources.login_create_account
 import shareat.feature.login.ui.generated.resources.login_sign_in
 import shareat.feature.login.ui.generated.resources.login_welcome_subtitle
@@ -32,7 +29,6 @@ import shareat.feature.login.ui.generated.resources.login_welcome_title
 internal fun LoginWelcome(
     onSignInClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    onBrowseAsGuestClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -70,12 +66,6 @@ internal fun LoginWelcome(
         ) {
             Text(text = stringResource(Res.string.login_sign_in))
         }
-        TextButton(
-            onClick = onBrowseAsGuestClick,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        ) {
-            Text(text = stringResource(Res.string.login_browse_as_guest))
-        }
     }
 }
 
@@ -86,7 +76,6 @@ private fun LoginWelcomePreview() {
         LoginWelcome(
             onSignInClick = {},
             onRegisterClick = {},
-            onBrowseAsGuestClick = {},
         )
     }
 }
