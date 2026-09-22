@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -88,6 +89,11 @@ internal fun HomeRestaurantTopBar(
                 text = restaurantName,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    maxFontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                ),
+                maxLines = 1,
             )
         }
         Row(

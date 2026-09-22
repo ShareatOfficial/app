@@ -35,6 +35,7 @@
     <string name="restaurant_home_allergens">Alérgenos</string>
     <string name="restaurant_home_allergen_filter">Filtrar por alérgenos</string>
     <string name="restaurant_home_publish_restaurant">Publicar restaurante</string>
+    <string name="restaurant_home_publish_requires_dish">Añade al menos un plato antes de publicar.</string>
     <string name="restaurant_home_publish_dish">Habilitar y publicar plato</string>
     <string name="restaurant_home_published">Visible para los clientes</string>
     <string name="restaurant_home_hidden">Oculto para los clientes</string>

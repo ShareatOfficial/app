@@ -1,59 +1,33 @@
 package org.shareat.feature.restauranthome.ui.restauranthome
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
 import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
-import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
-import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
 import org.shareat.feature.restauranthome.ui.model.preparedImageUpload
 import org.shareat.feature.restauranthome.ui.model.toEditablePrice
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.ErrorContent
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.RestaurantHomeEmptyContent
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.RestaurantHomeSkeleton
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.CategoriesRow
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.HomeRestaurantTopBar
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.sheetContent.RestaurantHomeSheetContent
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.RestaurantInfo
-import org.shareat.feature.restauranthome.ui.restauranthome.composables.restaurantDishListContent
 import org.shareat.shared.designsystem.preview.FormFactorPreviews
 import org.shareat.shared.designsystem.theme.ShareatTheme
-import shareat.feature.restauranthome.ui.generated.resources.Res
-import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_title
 
 //Three parts. Top Bar with the options that the restaurant have. Switch to customer preview. change layout type.
 /*
@@ -71,6 +45,8 @@ fun RestaurantHomeScreen(
     viewModel: RestaurantHomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    // picker image things should be manage in viewModel if possible.
     val pickerScope = rememberCoroutineScope()
     var imageTarget by remember { mutableStateOf<ImagePickerTarget?>(null) }
     val imagePicker = rememberFilePickerLauncher(type = FileKitType.Image) { file ->
@@ -93,11 +69,12 @@ fun RestaurantHomeScreen(
         }
     }
 
-    RestaurantHomeStatelessV2ByTone(
+    RestaurantHomeStateless(
         uiState = uiState,
         modifier = modifier,
         onRetryClick = viewModel::onRetryClick,
         onEditModeChange = viewModel::onEditModeChange,
+        onPublicationStateChange = viewModel::onPublicationStateChange,
         onMainInfoClick = viewModel::onMainInfoClick,
         onAddressClick = viewModel::onAddressClick,
         onRatingClick = viewModel::onRatingClick,
@@ -137,48 +114,53 @@ private suspend fun PlatformFile.toImageUploadValidationResult(): ImageUploadVal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun RestaurantHomeStatelessV2ByTone(
+internal fun RestaurantHomeStateless(
     uiState: RestaurantHomeUiStateByTone,
     modifier: Modifier = Modifier,
-    onRetryClick: () -> Unit = {},
-    onEditModeChange: (Boolean) -> Unit = {},
-    onMainInfoClick: () -> Unit = {},
-    onAddressClick: () -> Unit = {},
-    onRatingClick: () -> Unit = {},
-    onCategoriesEditClick: () -> Unit = {},
-    onDishClick: (String) -> Unit = {},
-    onAddDishClick: () -> Unit = {},
-    onDismissBottomSheet: () -> Unit = {},
-    onRestaurantNameChange: (String) -> Unit = {},
-    onRestaurantDescriptionChange: (String) -> Unit = {},
-    onRestaurantImageChange: () -> Unit = {},
-    onSaveMainInfo: () -> Unit = {},
-    onDishImageChange: () -> Unit = {},
-    onDishNameChange: (String) -> Unit = {},
-    onDishDescriptionChange: (String) -> Unit = {},
-    onDishPriceChange: (String) -> Unit = {},
-    onDishAllergenClick: (EuAllergen) -> Unit = {},
-    onSaveDish: () -> Unit = {},
-    onAddressStreetLineChange: (String) -> Unit = {},
-    onAddressLocalityChange: (String) -> Unit = {},
-    onAddressPostalCodeChange: (String) -> Unit = {},
-    onAddressRegionChange: (String) -> Unit = {},
-    onCategoryClick: (DishCategory) -> Unit = {},
+    onRetryClick: () -> Unit,
+    onEditModeChange: (Boolean) -> Unit,
+    onPublicationStateChange: (Boolean) -> Unit,
+    onMainInfoClick: () -> Unit,
+    onAddressClick: () -> Unit,
+    onRatingClick: () -> Unit,
+    onCategoriesEditClick: () -> Unit,
+    onDishClick: (String) -> Unit,
+    onAddDishClick: () -> Unit,
+    onDismissBottomSheet: () -> Unit,
+    onRestaurantNameChange: (String) -> Unit,
+    onRestaurantDescriptionChange: (String) -> Unit,
+    onRestaurantImageChange: () -> Unit,
+    onSaveMainInfo: () -> Unit,
+    onDishImageChange: () -> Unit,
+    onDishNameChange: (String) -> Unit,
+    onDishDescriptionChange: (String) -> Unit,
+    onDishPriceChange: (String) -> Unit,
+    onDishAllergenClick: (EuAllergen) -> Unit,
+    onSaveDish: () -> Unit,
+    onAddressStreetLineChange: (String) -> Unit,
+    onAddressLocalityChange: (String) -> Unit,
+    onAddressPostalCodeChange: (String) -> Unit,
+    onAddressRegionChange: (String) -> Unit,
+    onCategoryClick: (DishCategory) -> Unit,
     onDishReviewClick: ((String) -> Unit)? = null,
 ) {
+    // skeleton a tomar por culo, cada componente tendría que tener su propio skeleton idealmente.
+    // instead of having a when to choose the content. We should have it to choose have the screen size
     when (val content = uiState.content) {
-        RestaurantHomeContent.Loading -> RestaurantHomeSkeleton(modifier = modifier)
-        is RestaurantHomeContent.Error -> ErrorContent(
-            error = content.error,
-            onRetryClick = onRetryClick,
-            modifier = modifier,
-        )
+        // TODO remove this three empty states.
+        RestaurantHomeContent.Loading,
+            // For errors we should show the error in the correct part or integrate it with the screnn
+        is RestaurantHomeContent.Error,
+        RestaurantHomeContent.Empty -> {
+        }
 
-        RestaurantHomeContent.Empty -> RestaurantHomeEmptyContent(modifier = modifier)
         is RestaurantHomeContent.Loaded -> RestaurantHomeCompact(
             restaurant = content.restaurant,
             isEditMode = uiState.isEditMode,
             onEditModeChange = onEditModeChange,
+            isPublicationUpdating = uiState.isPublicationUpdating,
+            publicationError = uiState.publicationError,
+            onPublicationStateChange = onPublicationStateChange,
             onOpenDirectionsClick = onAddressClick,
             onRateClick = onRatingClick,
             onEditMainInfoClick = onMainInfoClick,
@@ -222,172 +204,9 @@ internal fun RestaurantHomeStatelessV2ByTone(
     }
 }
 
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun RestaurantHomeCompact(
-    restaurant: RestaurantHomeData,
-    isEditMode: Boolean,
-    onEditModeChange: (Boolean) -> Unit,
-    onOpenDirectionsClick: () -> Unit,
-    onRateClick: () -> Unit,
-    onEditMainInfoClick: () -> Unit,
-    onEditCategoryClick: () -> Unit,
-    onDishClick: (RestaurantDish) -> Unit,
-    onAddDishClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val categorySections = remember(restaurant.dishes) {
-        restaurant.dishes.groupBy { it.category }.entries.toList()
-    }
-    val categoryItemIndices = rememberCategoryItemWithIndices(categorySections)
-    val categoryListState = rememberLazyListState()
-    val dishListState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    val topBarHeightPx = remember { mutableIntStateOf(0) }
-
-    val categoryBarHeightPx = remember { mutableIntStateOf(0) }
-
-    val categoryBarTranslationPx = remember(dishListState, topBarHeightPx) {
-        derivedStateOf {
-            val categoryBarOffsetPx = dishListState.layoutInfo.visibleItemsInfo
-                .firstOrNull { it.key == "category-navigation" }
-                ?.offset
-                ?: return@derivedStateOf 0
-
-            (topBarHeightPx.intValue - categoryBarOffsetPx)
-                .coerceIn(0, topBarHeightPx.intValue)
-        }
-    }
-    val pinnedNavigationHeightPx = topBarHeightPx.intValue + categoryBarHeightPx.intValue
-    val selectedCategoryIndex =
-        rememberSelectedCategoryIndex(dishListState, categoryItemIndices, pinnedNavigationHeightPx)
-
-    LaunchedEffect(selectedCategoryIndex) {
-        if (categorySections.isNotEmpty()) {
-            categoryListState.animateScrollToItem(selectedCategoryIndex)
-        }
-    }
-
-    Box(modifier = modifier) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = dishListState,
-            contentPadding = PaddingValues(bottom = 16.dp),
-        ) {
-            item(key = "restaurant-info") {
-                RestaurantInfo(
-                    restaurant = restaurant,
-                    onOpenDirectionsClick = onOpenDirectionsClick,
-                    onRateClick = onRateClick,
-                    onEditMainInfoClick = onEditMainInfoClick,
-                    isEditMode = isEditMode,
-                )
-            }
-
-            stickyHeader(key = "category-navigation") {
-                CategoriesRow(
-                    categories = restaurant.categories,
-                    selectedCategoryIndex = selectedCategoryIndex,
-                    categoryListState = categoryListState,
-                    onHeightChanged = { categoryBarHeightPx.intValue = it },
-                    onCategoryClick = { index ->
-                        categoryItemIndices.getOrNull(index)?.let { itemIndex ->
-                            coroutineScope.launch {
-                                dishListState.animateScrollToItem(
-                                    index = itemIndex,
-                                    scrollOffset = -pinnedNavigationHeightPx,
-                                )
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .graphicsLayer {
-                            translationY = categoryBarTranslationPx.value.toFloat()
-                        }
-                        .zIndex(1f),
-                    isEditMode = isEditMode,
-                    onEditCategoryClick = onEditCategoryClick,
-                )
-            }
-
-            restaurantDishListContent(
-                categorySections = categorySections,
-                isEditMode = isEditMode,
-                onAddDishClick = onAddDishClick,
-                onDishClick = onDishClick,
-            )
-        }
-
-        HomeRestaurantTopBar(
-            title = stringResource(Res.string.restaurant_home_title),
-            isEditMode = isEditMode,
-            onEditModeChange = onEditModeChange,
-            restaurantName = restaurant.name,
-            scrollState = dishListState,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .zIndex(2f)
-                .onSizeChanged {
-                    topBarHeightPx.intValue = it.height
-                }, // FIX this what make the height change y tal quiero menos height
-        )
-    }
-}
-
-@Composable
-private fun rememberCategoryItemWithIndices(
-    categorySections: List<Map.Entry<DishCategory?, List<RestaurantDish>>>,
-): List<Int> {
-    return remember(categorySections) {
-        // Restaurant info, sticky navigation and the animated add action occupy three items.
-        var nextItemIndex = 3
-        categorySections.map { section ->
-            nextItemIndex.also {
-                nextItemIndex += section.value.size + 1
-            }
-        }
-    }
-}
-
-@Composable
-private fun rememberSelectedCategoryIndex(
-    dishListState: LazyListState,
-    categoryItemIndices: List<Int>,
-    pinnedNavigationHeightPx: Int
-): Int {
-    return remember(
-        dishListState,
-        categoryItemIndices,
-        pinnedNavigationHeightPx,
-    ) {
-        derivedStateOf {
-            val firstContentItemIndex = dishListState.layoutInfo.visibleItemsInfo
-                .firstOrNull { item ->
-                    item.index >= (categoryItemIndices.firstOrNull() ?: Int.MAX_VALUE) &&
-                            item.offset + item.size > pinnedNavigationHeightPx
-                }
-                ?.index
-                ?: dishListState.firstVisibleItemIndex
-
-            when {
-                categoryItemIndices.isEmpty() -> 0
-                dishListState.layoutInfo.totalItemsCount == 0 -> 0
-                !dishListState.canScrollForward && dishListState.firstVisibleItemIndex > 0 ->
-                    categoryItemIndices.lastIndex
-
-                else -> categoryItemIndices
-                    .indexOfLast { it <= firstContentItemIndex }
-                    .coerceAtLeast(0)
-            }
-        }
-    }.value
-}
-
-
 @FormFactorPreviews
 @Composable
-private fun RestaurantHomeStatelessV2ByTonePreview() {
+private fun RestaurantHomeStatelessPreview() {
     ShareatTheme {
         val content = RestaurantHomePreviewData.loaded.content
         val restaurant = (content as RestaurantHomeContent.Loaded).restaurant
@@ -395,7 +214,7 @@ private fun RestaurantHomeStatelessV2ByTonePreview() {
             mutableStateOf(RestaurantHomeUiStateByTone(content = content))
         }
 
-        RestaurantHomeStatelessV2ByTone(
+        RestaurantHomeStateless(
             uiState = uiState,
             onEditModeChange = { isEditMode ->
                 uiState = uiState.copy(
@@ -408,6 +227,7 @@ private fun RestaurantHomeStatelessV2ByTonePreview() {
                     categoriesDraft = null,
                 )
             },
+            onPublicationStateChange = {},
             onMainInfoClick = {
                 uiState = uiState.copy(
                     activeBottomSheet = RestaurantHomeBottomSheet.EDIT_MAIN_INFO,
@@ -608,6 +428,11 @@ private fun RestaurantHomeStatelessV2ByTonePreview() {
                     )
                 }
             },
+            onRetryClick = {},
+            onRestaurantImageChange = {},
+            onSaveMainInfo = {},
+            onDishImageChange = {},
+            onDishReviewClick = {},
         )
     }
 }

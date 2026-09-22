@@ -12,6 +12,7 @@ import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.ImageUpload
+import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
@@ -20,6 +21,7 @@ import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCase
+import org.shareat.feature.restauranthome.domain.UpdateRestaurantPublicationStateUseCase
 import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishUpdate
@@ -75,6 +77,8 @@ data class RestaurantHomeUiStateByTone(
     val dishEditForm: DishEditFormUiState? = null,
     val addressDraft: RestaurantAddressDraft? = null,
     val categoriesDraft: Set<DishCategory>? = null,
+    val isPublicationUpdating: Boolean = false,
+    val publicationError: RestaurantHomeError? = null,
 ) {
     val selectedDish: RestaurantDish?
         get() = (content as? RestaurantHomeContent.Loaded)
@@ -89,6 +93,7 @@ class RestaurantHomeViewModel(
     private val createOwnerDish: CreateOwnerDishUseCase,
     private val updateOwnerDish: UpdateOwnerDishUseCase,
     private val updateOwnerRestaurantInfo: UpdateOwnerRestaurantInfoUseCase,
+    private val updateRestaurantPublicationState: UpdateRestaurantPublicationStateUseCase,
     private val replaceOwnerRestaurantImage: ReplaceOwnerRestaurantImageUseCase,
     private val replaceOwnerDishImage: ReplaceOwnerDishImageUseCase,
 ) : ViewModel() {
@@ -112,7 +117,45 @@ class RestaurantHomeViewModel(
             dishEditForm = null,
             addressDraft = null,
             categoriesDraft = null,
+            publicationError = null,
         )
+    }
+
+    fun onPublicationStateChange(isPublished: Boolean) {
+        val state = _uiState.value
+        val restaurant = (state.content as? RestaurantHomeContent.Loaded)?.restaurant ?: return
+        if (!state.isEditMode || state.isPublicationUpdating) return
+        if (isPublished == restaurant.isPublished) return
+        if (isPublished && restaurant.dishes.isEmpty()) return
+
+        _uiState.value = state.copy(
+            isPublicationUpdating = true,
+            publicationError = null,
+        )
+        viewModelScope.launch {
+            val targetState = if (isPublished) {
+                RestaurantPublicationState.Published
+            } else {
+                RestaurantPublicationState.Draft
+            }
+            when (val result = updateRestaurantPublicationState(targetState)) {
+                is RepositoryResult.Success -> {
+                    ownerHome = ownerHome?.copy(restaurant = result.value)
+                    _uiState.value = _uiState.value.copy(
+                        isPublicationUpdating = false,
+                        publicationError = null,
+                    )
+                    publishLoadedContent()
+                }
+
+                is RepositoryResult.Failure -> {
+                    _uiState.value = _uiState.value.copy(
+                        isPublicationUpdating = false,
+                        publicationError = result.error.toUiError(),
+                    )
+                }
+            }
+        }
     }
 
     fun onDishClick(dishId: String) {
@@ -431,6 +474,8 @@ class RestaurantHomeViewModel(
             dishEditForm = null,
             addressDraft = null,
             categoriesDraft = null,
+            isPublicationUpdating = false,
+            publicationError = null,
         )
         viewModelScope.launch {
             when (val result = loadRestaurantHome()) {
