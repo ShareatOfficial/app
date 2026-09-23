@@ -8,6 +8,12 @@ sealed interface SettingsUiState {
     val error: SettingsError?
     val language: AppLanguageUiState
 
+    data class Guest(
+        override val isLoading: Boolean = false,
+        override val error: SettingsError? = null,
+        override val language: AppLanguageUiState = AppLanguageUiState(),
+    ) : SettingsUiState
+
     data class User(
         val name: String = "Alex Rivera",
         val email: String = "alex.rivera@example.com",
@@ -38,6 +44,7 @@ sealed interface SettingsUiState {
 
 internal fun SettingsUiState.withLanguage(language: AppLanguageUiState): SettingsUiState =
     when (this) {
+        is SettingsUiState.Guest -> copy(language = language)
         is SettingsUiState.User -> copy(language = language)
         is SettingsUiState.Restaurant -> copy(language = language)
     }

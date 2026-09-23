@@ -43,6 +43,7 @@
     <string name="settings_saved">Changes saved.</string>
     <string name="settings_edit_profile">Edit profile</string>
     <string name="settings_terms">Terms and conditions</string>
+    <string name="settings_log_in">Sign in</string>
     <string name="settings_log_out">Log out</string>
     <string name="settings_section_basic">Basic information</string>
     <string name="settings_section_address">Address</string>
