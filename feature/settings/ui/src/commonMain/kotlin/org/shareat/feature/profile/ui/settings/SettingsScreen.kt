@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.outlined.AllInclusive
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.LocationOn
@@ -34,6 +33,7 @@ import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,12 +60,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.AppLanguage
+import org.shareat.app.domain.PublicPages
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
@@ -83,12 +85,21 @@ import shareat.feature.settings.ui.generated.resources.settings_contact_email
 import shareat.feature.settings.ui.generated.resources.settings_contact_phone
 import shareat.feature.settings.ui.generated.resources.settings_day_closed
 import shareat.feature.settings.ui.generated.resources.settings_day_open
+import shareat.feature.settings.ui.generated.resources.settings_delete_account
+import shareat.feature.settings.ui.generated.resources.settings_delete_cancel
+import shareat.feature.settings.ui.generated.resources.settings_delete_close
+import shareat.feature.settings.ui.generated.resources.settings_delete_confirm
+import shareat.feature.settings.ui.generated.resources.settings_delete_description
+import shareat.feature.settings.ui.generated.resources.settings_delete_success_description
+import shareat.feature.settings.ui.generated.resources.settings_delete_success_title
+import shareat.feature.settings.ui.generated.resources.settings_delete_title
 import shareat.feature.settings.ui.generated.resources.settings_edit_profile
 import shareat.feature.settings.ui.generated.resources.settings_hidden
 import shareat.feature.settings.ui.generated.resources.settings_hours_dialog_title
 import shareat.feature.settings.ui.generated.resources.settings_log_out
 import shareat.feature.settings.ui.generated.resources.settings_opens
 import shareat.feature.settings.ui.generated.resources.settings_postcode
+import shareat.feature.settings.ui.generated.resources.settings_privacy_policy
 import shareat.feature.settings.ui.generated.resources.settings_published
 import shareat.feature.settings.ui.generated.resources.settings_restaurant_name
 import shareat.feature.settings.ui.generated.resources.settings_restaurant_title
@@ -99,10 +110,8 @@ import shareat.feature.settings.ui.generated.resources.settings_section_account
 import shareat.feature.settings.ui.generated.resources.settings_section_address
 import shareat.feature.settings.ui.generated.resources.settings_section_basic
 import shareat.feature.settings.ui.generated.resources.settings_section_hours
-import shareat.feature.settings.ui.generated.resources.settings_section_management
 import shareat.feature.settings.ui.generated.resources.settings_short_description
 import shareat.feature.settings.ui.generated.resources.settings_street
-import shareat.feature.settings.ui.generated.resources.settings_subscription_plan
 import shareat.feature.settings.ui.generated.resources.settings_terms
 import shareat.feature.settings.ui.generated.resources.settings_title
 import shareat.feature.settings.ui.generated.resources.settings_visibility_status
@@ -114,11 +123,15 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val uriHandler = LocalUriHandler.current
+    var showDeletionConfirmation by remember { mutableStateOf(false) }
+    var showDeletionSuccess by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 SettingsEvent.LogoutSuccess -> navigator.onLogoutSuccess()
+                SettingsEvent.DeletionRequested -> showDeletionSuccess = true
                 SettingsEvent.NavigateToEditProfile -> navigator.openEditProfile()
                 SettingsEvent.NavigateToSubscription -> navigator.openSubscription()
             }
@@ -130,16 +143,55 @@ fun SettingsScreen(
         callbacks = SettingsCallbacks(
             onBackClick = navigator::goBack,
             onTermsAndConditionsClick = navigator::openTermsAndConditions,
+            onPrivacyPolicyClick = { uriHandler.openUri(PublicPages.PRIVACY_POLICY) },
+            onRequestDeletionClick = { showDeletionConfirmation = true },
             onLanguageSelected = { viewModel.onLanguageAction(SettingsLanguageAction(it)) },
             onUserAction = viewModel::onUserAction,
             onRestaurantAction = viewModel::onRestaurantAction,
         ),
     )
+
+    if (showDeletionConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeletionConfirmation = false },
+            title = { Text(stringResource(Res.string.settings_delete_title)) },
+            text = { Text(stringResource(Res.string.settings_delete_description)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeletionConfirmation = false
+                    when (uiState) {
+                        is SettingsUiState.User -> viewModel.onUserAction(SettingsUserAction.RequestDeletion)
+                        is SettingsUiState.Restaurant ->
+                            viewModel.onRestaurantAction(SettingsRestaurantAction.RequestDeletion)
+                    }
+                }) { Text(stringResource(Res.string.settings_delete_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeletionConfirmation = false }) {
+                    Text(stringResource(Res.string.settings_delete_cancel))
+                }
+            },
+        )
+    }
+    if (showDeletionSuccess) {
+        AlertDialog(
+            onDismissRequest = { showDeletionSuccess = false },
+            title = { Text(stringResource(Res.string.settings_delete_success_title)) },
+            text = { Text(stringResource(Res.string.settings_delete_success_description)) },
+            confirmButton = {
+                TextButton(onClick = { showDeletionSuccess = false }) {
+                    Text(stringResource(Res.string.settings_delete_close))
+                }
+            },
+        )
+    }
 }
 
 private data class SettingsCallbacks(
     val onBackClick: () -> Unit = {},
     val onTermsAndConditionsClick: () -> Unit = {},
+    val onPrivacyPolicyClick: () -> Unit = {},
+    val onRequestDeletionClick: () -> Unit = {},
     val onLanguageSelected: (AppLanguage) -> Unit = {},
     val onUserAction: (SettingsUserAction) -> Unit = {},
     val onRestaurantAction: (SettingsRestaurantAction) -> Unit = {},
@@ -284,6 +336,19 @@ private fun UserSettings(
                 leadingIcon = Icons.Outlined.Description,
                 text = stringResource(Res.string.settings_terms),
                 onClick = callbacks.onTermsAndConditionsClick,
+            )
+            SettingsDivider()
+            SettingsItem(
+                leadingIcon = Icons.Outlined.Description,
+                text = stringResource(Res.string.settings_privacy_policy),
+                onClick = callbacks.onPrivacyPolicyClick,
+            )
+            SettingsDivider()
+            SettingsItem(
+                leadingIcon = Icons.Outlined.ManageAccounts,
+                text = stringResource(Res.string.settings_delete_account),
+                onClick = callbacks.onRequestDeletionClick,
+                isDestructive = true,
             )
         }
 
@@ -466,18 +531,6 @@ private fun RestaurantSettings(
         }
         item {
             RestaurantSectionCard(
-                title = stringResource(Res.string.settings_section_management),
-                icon = Icons.Outlined.AllInclusive,
-            ) {
-                SettingsItem(
-                    Icons.Outlined.AllInclusive,
-                    stringResource(Res.string.settings_subscription_plan),
-                    { callbacks.onRestaurantAction(SettingsRestaurantAction.Subscription) },
-                )
-            }
-        }
-        item {
-            RestaurantSectionCard(
                 title = stringResource(Res.string.settings_section_account),
                 icon = Icons.Outlined.ManageAccounts,
             ) {
@@ -516,6 +569,19 @@ private fun RestaurantSettings(
                     Icons.Outlined.Description,
                     stringResource(Res.string.settings_terms),
                     callbacks.onTermsAndConditionsClick,
+                )
+                SettingsDivider()
+                SettingsItem(
+                    Icons.Outlined.Description,
+                    stringResource(Res.string.settings_privacy_policy),
+                    callbacks.onPrivacyPolicyClick,
+                )
+                SettingsDivider()
+                SettingsItem(
+                    leadingIcon = Icons.Outlined.ManageAccounts,
+                    text = stringResource(Res.string.settings_delete_account),
+                    onClick = callbacks.onRequestDeletionClick,
+                    isDestructive = true,
                 )
                 SettingsDivider()
                 SettingsItem(

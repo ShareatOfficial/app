@@ -43,6 +43,7 @@
     <string name="settings_saved">Changes saved.</string>
     <string name="settings_edit_profile">Edit profile</string>
     <string name="settings_terms">Terms and conditions</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
     <string name="settings_log_out">Log out</string>
     <string name="settings_section_basic">Basic information</string>
     <string name="settings_section_address">Address</string>
@@ -133,4 +134,12 @@
     <string name="settings_language_spanish">Español</string>
     <string name="settings_language_next_launch">The language changes the next time you open the app.</string>
     <string name="settings_language_unsupported">The web app follows your browser language.</string>
+    <string name="settings_delete_account">Delete account</string>
+    <string name="settings_delete_title">Request account deletion</string>
+    <string name="settings_delete_description">Your account and associated data will be deleted after we process the request. We will do this within 30 days and confirm by email. If you have a subscription, cancel it in your store settings: deleting your account does not cancel billing.</string>
+    <string name="settings_delete_confirm">Send request</string>
+    <string name="settings_delete_cancel">Cancel</string>
+    <string name="settings_delete_close">Close</string>
+    <string name="settings_delete_success_title">Request received</string>
+    <string name="settings_delete_success_description">We have recorded your request. We will confirm by email when deletion is complete.</string>
 </resources>

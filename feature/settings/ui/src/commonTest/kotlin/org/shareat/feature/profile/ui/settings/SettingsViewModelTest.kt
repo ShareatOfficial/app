@@ -17,6 +17,7 @@ import org.shareat.app.domain.model.EmailAddress
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.profile.domain.ProfileSettings
 import org.shareat.feature.profile.domain.SignOutUseCase
+import org.shareat.feature.profile.domain.RequestAccountDeletionUseCase
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoParams
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoUseCase
 import kotlin.test.AfterTest
@@ -65,6 +66,7 @@ class SettingsViewModelTest {
             observeAppLanguageUseCase = { MutableStateFlow(AppLanguage.System) },
             getAppLanguageSupportUseCase = { AppLanguageSelectionSupport.IMMEDIATE },
             selectAppLanguageUseCase = {},
+            requestAccountDeletionUseCase = { RepositoryResult.Success(Unit) },
         )
 
         advanceUntilIdle()
@@ -164,6 +166,26 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun deletionRequestIsSentOnceAndConfirmed() = runTest(dispatcher) {
+        var requests = 0
+        val viewModel = viewModelFor(
+            restaurant = restaurantFixture(),
+            requestDeletion = RequestAccountDeletionUseCase {
+                requests += 1
+                RepositoryResult.Success(Unit)
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onRestaurantAction(SettingsRestaurantAction.RequestDeletion)
+        viewModel.onRestaurantAction(SettingsRestaurantAction.RequestDeletion)
+        advanceUntilIdle()
+
+        assertEquals(1, requests)
+        assertEquals(SettingsEvent.DeletionRequested, viewModel.events.first())
+    }
+
+    @Test
     fun editProfileEmitsNavigationEvent() = runTest(dispatcher) {
         val viewModel = viewModelFor(restaurantFixture())
         advanceUntilIdle()
@@ -207,6 +229,9 @@ private fun viewModelFor(
         RepositoryResult.Success(restaurant)
     },
     signOut: SignOutUseCase = SignOutUseCase { RepositoryResult.Success(Unit) },
+    requestDeletion: RequestAccountDeletionUseCase = RequestAccountDeletionUseCase {
+        RepositoryResult.Success(Unit)
+    },
     selectedLanguage: MutableStateFlow<AppLanguage> = MutableStateFlow(AppLanguage.System),
 ): SettingsViewModel {
     val account = Account(
@@ -224,5 +249,6 @@ private fun viewModelFor(
         observeAppLanguageUseCase = { selectedLanguage },
         getAppLanguageSupportUseCase = { AppLanguageSelectionSupport.IMMEDIATE },
         selectAppLanguageUseCase = { selectedLanguage.value = it },
+        requestAccountDeletionUseCase = requestDeletion,
     )
 }

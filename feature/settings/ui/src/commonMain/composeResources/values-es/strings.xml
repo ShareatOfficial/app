@@ -43,6 +43,7 @@
     <string name="settings_saved">Cambios guardados.</string>
     <string name="settings_edit_profile">Editar perfil</string>
     <string name="settings_terms">Términos y condiciones</string>
+    <string name="settings_privacy_policy">Política de privacidad</string>
     <string name="settings_log_out">Cerrar sesión</string>
     <string name="settings_section_basic">Información básica</string>
     <string name="settings_section_address">Dirección</string>
@@ -133,4 +134,12 @@
     <string name="settings_language_spanish">Español</string>
     <string name="settings_language_next_launch">El idioma cambiará la próxima vez que abras la app.</string>
     <string name="settings_language_unsupported">La versión web sigue el idioma de tu navegador.</string>
+    <string name="settings_delete_account">Eliminar cuenta</string>
+    <string name="settings_delete_title">Solicitar eliminación de cuenta</string>
+    <string name="settings_delete_description">Se eliminarán tu cuenta y los datos asociados cuando tramitemos la solicitud. Lo haremos en un máximo de 30 días y te avisaremos por correo. Si tienes una suscripción, cancélala en los ajustes de la tienda: eliminar tu cuenta no cancela el cobro.</string>
+    <string name="settings_delete_confirm">Enviar solicitud</string>
+    <string name="settings_delete_cancel">Cancelar</string>
+    <string name="settings_delete_close">Cerrar</string>
+    <string name="settings_delete_success_title">Solicitud recibida</string>
+    <string name="settings_delete_success_description">Hemos registrado tu solicitud. Te confirmaremos por correo cuando termine la eliminación.</string>
 </resources>
