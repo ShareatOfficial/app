@@ -25,6 +25,7 @@ import org.shareat.app.domain.model.Restaurant
 import org.shareat.app.domain.model.RestaurantProfileDraft
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.repository.AccountRepository
+import org.shareat.app.domain.repository.AccountDeletionRepository
 import org.shareat.app.domain.repository.AppLanguageRepository
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
@@ -73,6 +74,11 @@ class ProfileUiModuleTest {
                 module {
                     single<AuthRepository> { WiringAuthRepository(account) }
                     single<AccountRepository> { WiringAccountRepository(account) }
+                    single<AccountDeletionRepository> {
+                        object : AccountDeletionRepository {
+                            override suspend fun requestAccountDeletion() = RepositoryResult.Success(Unit)
+                        }
+                    }
                     single<RestaurantRepository> { WiringRestaurantRepository(restaurant) }
                     single<AppLanguageRepository> { WiringAppLanguageRepository }
                     single<ProfileNavigation> { WiringProfileNavigation }

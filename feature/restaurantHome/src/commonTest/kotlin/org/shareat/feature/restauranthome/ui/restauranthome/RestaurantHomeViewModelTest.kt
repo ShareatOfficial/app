@@ -33,6 +33,7 @@ import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.UpdateOwnerRestaurantInfoUseCase
+import org.shareat.feature.restauranthome.domain.UpdateRestaurantPublicationStateUseCase
 import org.shareat.feature.restauranthome.domain.model.OwnerDishCreateDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishDraft
 import org.shareat.feature.restauranthome.domain.model.OwnerDishUpdate
@@ -86,6 +87,74 @@ class RestaurantHomeViewModelTest {
 
         val content = assertIs<RestaurantHomeContent.Error>(viewModel.uiState.value.content)
         assertEquals(RestaurantHomeError.OFFLINE, content.error)
+    }
+
+    @Test
+    fun publicationSwitchUpdatesTheRestaurantState() = runTest(dispatcher) {
+        val home = ownerHome()
+        var submittedState: RestaurantPublicationState? = null
+        val viewModel = viewModelFor(
+            home = home,
+            onUpdatePublication = { state ->
+                submittedState = state
+                RepositoryResult.Success(home.restaurant.copy(publicationState = state))
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onPublicationStateChange(false)
+        assertTrue(viewModel.uiState.value.isPublicationUpdating)
+        advanceUntilIdle()
+
+        assertEquals(RestaurantPublicationState.Draft, submittedState)
+        assertFalse(viewModel.uiState.value.isPublicationUpdating)
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertFalse(content.restaurant.isPublished)
+    }
+
+    @Test
+    fun publicationFailureKeepsTheCurrentStateAndExposesTheError() = runTest(dispatcher) {
+        val viewModel = viewModelFor(
+            onUpdatePublication = {
+                RepositoryResult.Failure(RepositoryError.Offline)
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onPublicationStateChange(false)
+        advanceUntilIdle()
+
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertTrue(content.restaurant.isPublished)
+        assertEquals(RestaurantHomeError.OFFLINE, viewModel.uiState.value.publicationError)
+        assertFalse(viewModel.uiState.value.isPublicationUpdating)
+    }
+
+    @Test
+    fun restaurantWithoutDishesCannotBePublished() = runTest(dispatcher) {
+        val publishedHome = ownerHome()
+        val draftHome = publishedHome.copy(
+            restaurant = publishedHome.restaurant.copy(
+                publicationState = RestaurantPublicationState.Draft,
+            ),
+            menu = publishedHome.menu?.copy(dishes = emptyList()),
+        )
+        var updateCalls = 0
+        val viewModel = viewModelFor(
+            home = draftHome,
+            onUpdatePublication = {
+                updateCalls++
+                error("A restaurant without dishes must not be published")
+            },
+        )
+        advanceUntilIdle()
+
+        viewModel.onPublicationStateChange(true)
+        advanceUntilIdle()
+
+        assertEquals(0, updateCalls)
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertFalse(content.restaurant.isPublished)
     }
 
     @Test
@@ -428,6 +497,9 @@ class RestaurantHomeViewModelTest {
         onUpdateRestaurant: suspend (OwnerRestaurantInfoDraft) -> RepositoryResult<Restaurant> = {
             error("Update restaurant was not expected")
         },
+        onUpdatePublication: suspend (RestaurantPublicationState) -> RepositoryResult<Restaurant> = {
+            error("Update publication was not expected")
+        },
         onReplaceRestaurantImage: suspend (ImageUpload) -> RepositoryResult<ImageRef> = {
             error("Replace restaurant image was not expected")
         },
@@ -439,6 +511,7 @@ class RestaurantHomeViewModelTest {
         createOwnerDish = CreateOwnerDishUseCase(onCreateDish),
         updateOwnerDish = UpdateOwnerDishUseCase(onUpdateDish),
         updateOwnerRestaurantInfo = UpdateOwnerRestaurantInfoUseCase(onUpdateRestaurant),
+        updateRestaurantPublicationState = UpdateRestaurantPublicationStateUseCase(onUpdatePublication),
         replaceOwnerRestaurantImage = ReplaceOwnerRestaurantImageUseCase(onReplaceRestaurantImage),
         replaceOwnerDishImage = ReplaceOwnerDishImageUseCase(onReplaceDishImage),
     )

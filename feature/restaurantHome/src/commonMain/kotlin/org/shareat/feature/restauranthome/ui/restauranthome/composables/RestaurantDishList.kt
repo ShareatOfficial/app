@@ -1,6 +1,10 @@
 package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -78,6 +82,17 @@ private fun AnimatedAddDishButton(
                 easing = FastOutSlowInEasing,
             ),
             initialOffsetY = { fullHeight -> -fullHeight },
+        ) + expandVertically(
+            animationSpec = tween(
+                durationMillis = 280,
+                easing = FastOutSlowInEasing,
+            ),
+            expandFrom = Alignment.Top,
+        ) + fadeIn(
+            animationSpec = tween(
+                durationMillis = 160,
+                delayMillis = 40,
+            ),
         ),
         exit = slideOutVertically(
             animationSpec = tween(
@@ -85,6 +100,14 @@ private fun AnimatedAddDishButton(
                 easing = FastOutLinearInEasing,
             ),
             targetOffsetY = { fullHeight -> -fullHeight },
+        ) + shrinkVertically(
+            animationSpec = tween(
+                durationMillis = 180,
+                easing = FastOutLinearInEasing,
+            ),
+            shrinkTowards = Alignment.Top,
+        ) + fadeOut(
+            animationSpec = tween(durationMillis = 120),
         ),
     ) {
         Button(

@@ -1,6 +1,13 @@
 package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
@@ -23,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,10 +40,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomePreviewData
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import shareat.feature.restauranthome.ui.generated.resources.Res
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_hidden
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_publish_requires_dish
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_publish_restaurant
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_published
 
 @Composable
 internal fun RestaurantInfo(
@@ -44,8 +59,10 @@ internal fun RestaurantInfo(
     onRateClick: () -> Unit,
     modifier: Modifier = Modifier,
     onEditMainInfoClick: () -> Unit = {},
-    isEditMode: Boolean = false
-
+    isEditMode: Boolean = false,
+    isPublicationUpdating: Boolean = false,
+    publicationError: RestaurantHomeError? = null,
+    onPublicationStateChange: (Boolean) -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -134,6 +151,99 @@ internal fun RestaurantInfo(
                 trailingContent = {}
             )
         }
+        AnimatedVisibility(
+            visible = isEditMode,
+            enter = slideInHorizontally(
+                animationSpec = tween(
+                    durationMillis = 280,
+                    easing = FastOutSlowInEasing,
+                ),
+                initialOffsetX = { it },
+            ) + expandVertically(
+                animationSpec = tween(
+                    durationMillis = 280,
+                    easing = FastOutSlowInEasing,
+                ),
+                expandFrom = Alignment.Top,
+            ) + fadeIn(
+                animationSpec = tween(
+                    durationMillis = 160,
+                    delayMillis = 40,
+                ),
+            ),
+            exit = slideOutHorizontally(
+                animationSpec = tween(
+                    durationMillis = 180,
+                    easing = FastOutLinearInEasing,
+                ),
+                targetOffsetX = { it },
+            ) + shrinkVertically(
+                animationSpec = tween(
+                    durationMillis = 180,
+                    easing = FastOutLinearInEasing,
+                ),
+                shrinkTowards = Alignment.Top,
+            ) + fadeOut(
+                animationSpec = tween(durationMillis = 120),
+            ),
+            label = "restaurant_publication_state_animation",
+        ) {
+            val canPublish = restaurant.dishes.isNotEmpty()
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.restaurant_home_publish_restaurant),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            text = stringResource(
+                                if (restaurant.isPublished) {
+                                    Res.string.restaurant_home_published
+                                } else {
+                                    Res.string.restaurant_home_hidden
+                                },
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = restaurant.isPublished,
+                        onCheckedChange = onPublicationStateChange,
+                        enabled = !isPublicationUpdating && (restaurant.isPublished || canPublish),
+                    )
+                }
+
+                if (!canPublish && !restaurant.isPublished) {
+                    Text(
+                        text = stringResource(Res.string.restaurant_home_publish_requires_dish),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                publicationError?.let { error ->
+                    Text(
+                        text = error.label(),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -178,4 +288,3 @@ private fun RestaurantInfoPreviewContent(isEditMode: Boolean) {
         )
     }
 }
-

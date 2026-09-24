@@ -24,6 +24,7 @@ import org.shareat.feature.profile.domain.ObserveAppLanguageUseCase
 import org.shareat.feature.profile.domain.SelectAppLanguageUseCase
 import org.shareat.feature.profile.domain.ProfileSettings
 import org.shareat.feature.profile.domain.SignOutUseCase
+import org.shareat.feature.profile.domain.RequestAccountDeletionUseCase
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoUseCase
 
 @Stable
@@ -36,6 +37,7 @@ class SettingsViewModel(
     private val observeAppLanguageUseCase: ObserveAppLanguageUseCase,
     private val getAppLanguageSupportUseCase: GetAppLanguageSupportUseCase,
     private val selectAppLanguageUseCase: SelectAppLanguageUseCase,
+    private val requestAccountDeletionUseCase: RequestAccountDeletionUseCase,
 ) : ViewModel() {
     private val eventChannel = Channel<SettingsEvent>(capacity = Channel.BUFFERED)
     internal val events: Flow<SettingsEvent> = eventChannel.receiveAsFlow()
@@ -46,6 +48,7 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     private var loadedRestaurant: Restaurant? = null
+    private var deletionRequestInProgress = false
 
     /** Kept aside so replacing the whole state after a load or save does not drop the language. */
     private var languageState = AppLanguageUiState()
@@ -103,6 +106,7 @@ class SettingsViewModel(
     fun onUserAction(action: SettingsUserAction) {
         when (action) {
             SettingsUserAction.EditProfile -> emitEvent(SettingsEvent.NavigateToEditProfile)
+            SettingsUserAction.RequestDeletion -> requestAccountDeletion()
             SettingsUserAction.LogOut -> onLogOut()
         }
     }
@@ -130,6 +134,7 @@ class SettingsViewModel(
                 editRestaurant { copy(openingHours = action.value) }
 
             SettingsRestaurantAction.Subscription -> emitEvent(SettingsEvent.NavigateToSubscription)
+            SettingsRestaurantAction.RequestDeletion -> requestAccountDeletion()
             SettingsRestaurantAction.SaveChanges -> saveRestaurantChanges()
             SettingsRestaurantAction.LogOut -> onLogOut()
         }
@@ -276,6 +281,36 @@ class SettingsViewModel(
                         )
                     }
                 }
+            }
+        }
+    }
+
+    private fun requestAccountDeletion() {
+        if (_uiState.value.isLoading || deletionRequestInProgress) return
+        deletionRequestInProgress = true
+        viewModelScope.launch {
+            try {
+                when (val result = requestAccountDeletionUseCase()) {
+                    is RepositoryResult.Success -> {
+                        updateCurrentState {
+                            when (this) {
+                                is SettingsUiState.User -> copy(error = null)
+                                is SettingsUiState.Restaurant -> copy(error = null)
+                                is SettingsUiState.Guest -> this
+                            }
+                        }
+                        eventChannel.send(SettingsEvent.DeletionRequested)
+                    }
+                    is RepositoryResult.Failure -> updateCurrentState {
+                        when (this) {
+                            is SettingsUiState.User -> copy(error = result.error.toSettingsError())
+                            is SettingsUiState.Restaurant -> copy(error = result.error.toSettingsError())
+                            is SettingsUiState.Guest -> this
+                        }
+                    }
+                }
+            } finally {
+                deletionRequestInProgress = false
             }
         }
     }

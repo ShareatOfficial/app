@@ -1,6 +1,13 @@
 package org.shareat.feature.restauranthome.ui.restauranthome.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
@@ -25,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,10 +75,37 @@ internal fun CategoriesRow(
                 AnimatedVisibility(
                     visible = isEditMode,
                     enter = slideInHorizontally(
-                        initialOffsetX = { -it }
+                        animationSpec = tween(
+                            durationMillis = 280,
+                            easing = FastOutSlowInEasing,
+                        ),
+                        initialOffsetX = { -it },
+                    ) + expandHorizontally(
+                        animationSpec = tween(
+                            durationMillis = 280,
+                            easing = FastOutSlowInEasing,
+                        ),
+                        expandFrom = Alignment.Start,
+                    ) + fadeIn(
+                        animationSpec = tween(
+                            durationMillis = 160,
+                            delayMillis = 40,
+                        ),
                     ),
                     exit = slideOutHorizontally(
-                        targetOffsetX = { -it }
+                        animationSpec = tween(
+                            durationMillis = 180,
+                            easing = FastOutLinearInEasing,
+                        ),
+                        targetOffsetX = { -it },
+                    ) + shrinkHorizontally(
+                        animationSpec = tween(
+                            durationMillis = 180,
+                            easing = FastOutLinearInEasing,
+                        ),
+                        shrinkTowards = Alignment.Start,
+                    ) + fadeOut(
+                        animationSpec = tween(durationMillis = 120),
                     ),
                     label = "edit_categories_animation",
                 ) {
@@ -110,7 +145,7 @@ internal fun CategoriesRow(
                                 ?: stringResource(Res.string.restaurant_home_category_other),
                         )
                     },
-                    modifier = Modifier.heightIn(min = 48.dp).animateItem(),
+                    modifier = Modifier.heightIn(min = 48.dp),
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimary,

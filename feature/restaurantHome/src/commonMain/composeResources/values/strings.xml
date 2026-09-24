@@ -35,6 +35,7 @@
     <string name="restaurant_home_allergens">Allergens</string>
     <string name="restaurant_home_allergen_filter">Filter by allergens</string>
     <string name="restaurant_home_publish_restaurant">Publish restaurant</string>
+    <string name="restaurant_home_publish_requires_dish">Add at least one dish before publishing.</string>
     <string name="restaurant_home_publish_dish">Enable and publish dish</string>
     <string name="restaurant_home_published">Visible to customers</string>
     <string name="restaurant_home_hidden">Hidden from customers</string>

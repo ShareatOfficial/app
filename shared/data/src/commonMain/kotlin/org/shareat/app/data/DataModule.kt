@@ -3,6 +3,7 @@ package org.shareat.app.data
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.shareat.app.data.fake.FakeAccountRepository
+import org.shareat.app.data.fake.FakeAccountDeletionRepository
 import org.shareat.app.data.fake.FakeDishRepository
 import org.shareat.app.data.fake.FakeAuthRepository
 import org.shareat.app.data.fake.FakeImageRepository
@@ -16,6 +17,7 @@ import org.shareat.app.data.language.LocalAppLanguageRepository
 import org.shareat.app.data.language.NoAppLanguageStorage
 import org.shareat.app.data.language.UnsupportedAppLanguageApplier
 import org.shareat.app.data.supabase.SupabaseAccountRepository
+import org.shareat.app.data.supabase.SupabaseAccountDeletionRepository
 import org.shareat.app.data.supabase.SupabaseAuthRepository
 import org.shareat.app.data.supabase.SupabaseConfig
 import org.shareat.app.data.supabase.SupabaseDishRepository
@@ -26,6 +28,7 @@ import org.shareat.app.data.supabase.SupabaseReviewRepository
 import org.shareat.app.data.supabase.SecureSessionStorage
 import org.shareat.app.data.supabase.createShareatSupabaseClient
 import org.shareat.app.domain.repository.AccountRepository
+import org.shareat.app.domain.repository.AccountDeletionRepository
 import org.shareat.app.domain.repository.AppLanguageRepository
 import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.DishRepository
@@ -53,6 +56,7 @@ val appLanguageModule: Module = module {
 val fakeDataModule: Module = module {
     single { FakeShareatData.preview() }
     single<AccountRepository> { FakeAccountRepository(get()) }
+    single<AccountDeletionRepository> { FakeAccountDeletionRepository() }
     single<RestaurantRepository> { FakeRestaurantRepository(get()) }
     single<MenuRepository> { FakeMenuRepository(get()) }
     single<DishRepository> { FakeDishRepository(get()) }
@@ -66,6 +70,7 @@ fun supabaseDataModule(config: SupabaseConfig = SupabaseConfig.fromBuildConfig()
     single { createShareatSupabaseClient(config, getOrNull<SecureSessionStorage>()) }
     single<AuthRepository> { SupabaseAuthRepository(get()) }
     single<AccountRepository> { SupabaseAccountRepository(get()) }
+    single<AccountDeletionRepository> { SupabaseAccountDeletionRepository(get()) }
     single<DishRepository> { SupabaseDishRepository(get()) }
     single<RestaurantRepository> { SupabaseRestaurantRepository(get()) }
     single<MenuRepository> { SupabaseMenuRepository(get()) }

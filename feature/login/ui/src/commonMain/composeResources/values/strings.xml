@@ -13,6 +13,7 @@
     <string name="login_passwords_mismatch">The passwords do not match</string>
     <string name="login_display_name">Public name</string>
     <string name="login_sign_in_instead">Already have an account? Sign in</string>
+    <string name="login_privacy_policy">Privacy policy</string>
     <string name="login_create_account_instead">New to Shareat? Create your account</string>
     <string name="login_forgot_password">Forgot your password?</string>
     <string name="login_recovery_sent">Check your inbox: we have sent you the password recovery link.</string>
