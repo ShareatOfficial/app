@@ -34,6 +34,7 @@ import org.shareat.app.domain.model.DishCategory
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_category_other
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_edit_categories
 
 @Composable
 internal fun CategoriesRow(
@@ -78,14 +79,14 @@ internal fun CategoriesRow(
                         onClick = onEditCategoryClick,
                         label = {
                             Text(
-                                text = "Edit Categories",
+                                text = stringResource(Res.string.restaurant_home_edit_categories),
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Filled.Edit,
-                                contentDescription = "Edit Categories",
+                                contentDescription = stringResource(Res.string.restaurant_home_edit_categories),
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         },
