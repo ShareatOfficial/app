@@ -1,7 +1,7 @@
 package org.shareat.feature.profile.ui.settings
 
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
-import org.shareat.shared.navigation.RequiresLogin
 
 @Serializable
-data object SettingsKey : RequiresLogin
+data object SettingsKey : NavKey

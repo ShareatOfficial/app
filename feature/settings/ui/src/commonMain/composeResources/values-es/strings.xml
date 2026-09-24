@@ -44,6 +44,7 @@
     <string name="settings_edit_profile">Editar perfil</string>
     <string name="settings_terms">Términos y condiciones</string>
     <string name="settings_privacy_policy">Política de privacidad</string>
+    <string name="settings_log_in">Iniciar sesión</string>
     <string name="settings_log_out">Cerrar sesión</string>
     <string name="settings_section_basic">Información básica</string>
     <string name="settings_section_address">Dirección</string>

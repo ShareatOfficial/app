@@ -15,7 +15,7 @@ class LoadProfileSettingsUseCaseImpl(
     override suspend fun invoke(): RepositoryResult<ProfileSettings> {
         val session = when (val result = authRepository.currentSession()) {
             is RepositoryResult.Success -> result.value
-                ?: return RepositoryResult.Failure(RepositoryError.Unauthenticated)
+                ?: return RepositoryResult.Success(ProfileSettings.Guest)
             is RepositoryResult.Failure -> return result
         }
         val account = when (val result = accountRepository.getAccount(session.accountId)) {

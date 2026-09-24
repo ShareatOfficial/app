@@ -58,7 +58,7 @@ class ProfileUseCasesTest {
     }
 
     @Test
-    fun returnsUnauthenticatedWhenThereIsNoSession() = runTest {
+    fun returnsGuestSettingsWhenThereIsNoSession() = runTest {
         val dependencies = testDependencies(AccountRole.Customer)
         dependencies.auth.session = null
 
@@ -68,10 +68,22 @@ class ProfileUseCasesTest {
             dependencies.restaurants,
         )()
 
-        assertEquals(
-            RepositoryResult.Failure(RepositoryError.Unauthenticated),
-            result,
-        )
+        val settings = assertIs<RepositoryResult.Success<ProfileSettings>>(result).value
+        assertEquals(ProfileSettings.Guest, settings)
+    }
+
+    @Test
+    fun propagatesSessionFailures() = runTest {
+        val dependencies = testDependencies(AccountRole.Customer)
+        dependencies.auth.currentSessionError = RepositoryError.Offline
+
+        val result = LoadProfileSettingsUseCaseImpl(
+            dependencies.auth,
+            dependencies.accounts,
+            dependencies.restaurants,
+        )()
+
+        assertEquals(RepositoryResult.Failure(RepositoryError.Offline), result)
     }
 
     @Test
@@ -192,11 +204,14 @@ private class TestAuthRepository(
     var session: AuthSession?,
 ) : AuthRepository {
     var signOutCalls = 0
+    var currentSessionError: RepositoryError? = null
 
     override fun observeSession(): Flow<AuthSessionState> = flowOf(
         session?.let(AuthSessionState::Authenticated) ?: AuthSessionState.Unauthenticated,
     )
-    override suspend fun currentSession() = RepositoryResult.Success(session)
+    override suspend fun currentSession(): RepositoryResult<AuthSession?> =
+        currentSessionError?.let { RepositoryResult.Failure(it) }
+            ?: RepositoryResult.Success(session)
     override suspend fun register(
         credentials: RegistrationCredentials,
     ): RepositoryResult<AuthSession> = unavailable()

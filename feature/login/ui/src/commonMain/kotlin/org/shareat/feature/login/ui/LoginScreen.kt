@@ -37,7 +37,11 @@ fun LoginScreen(
         }
     }
 
-    LoginBackground(modifier = Modifier) {
+    LoginBackground(
+        modifier = Modifier,
+        showBackButton = state.step == LoginStep.Welcome,
+        onBackClick = navigator::goBack,
+    ) {
         AnimatedContent(
             targetState = state.step,
             transitionSpec = {
@@ -71,7 +75,6 @@ fun LoginScreen(
                 LoginStep.Welcome -> LoginWelcome(
                     onSignInClick = { viewModel.goTo(LoginStep.SignIn) },
                     onRegisterClick = { viewModel.goTo(LoginStep.Register) },
-                    onBrowseAsGuestClick = { /* TODO: guest browsing */ },
                 )
 
                 LoginStep.SignIn -> SignInScreen(

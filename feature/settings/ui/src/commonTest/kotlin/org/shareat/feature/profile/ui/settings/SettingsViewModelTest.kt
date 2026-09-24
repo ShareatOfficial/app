@@ -24,11 +24,16 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.shareat.app.domain.model.AppLanguage
 import org.shareat.app.domain.model.AppLanguageSelectionSupport
+import org.shareat.app.domain.model.AuthSession
+import org.shareat.app.domain.model.AuthSessionState
+import org.shareat.app.domain.model.RegistrationCredentials
+import org.shareat.app.domain.repository.AuthRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
@@ -45,6 +50,35 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun loadsGuestSettingsWithoutAccountData() = runTest(dispatcher) {
+        val selectedLanguage = MutableStateFlow(AppLanguage.Spanish)
+        val viewModel = SettingsViewModel(
+            authRepository = TestSettingsAuthRepository(
+                MutableStateFlow(AuthSessionState.Unauthenticated),
+            ),
+            loadProfileSettingsUseCase = {
+                RepositoryResult.Success(ProfileSettings.Guest)
+            },
+            updateRestaurantInfoUseCase = {
+                error("Restaurant update must not run for guest settings")
+            },
+            signOutUseCase = {
+                error("Sign out must not run for guest settings")
+            },
+            observeAppLanguageUseCase = { selectedLanguage },
+            getAppLanguageSupportUseCase = { AppLanguageSelectionSupport.IMMEDIATE },
+            selectAppLanguageUseCase = { selectedLanguage.value = it },
+            requestAccountDeletionUseCase = { error("Deletion must not run for guest settings") },
+        )
+
+        advanceUntilIdle()
+
+        val state = assertIs<SettingsUiState.Guest>(viewModel.uiState.value)
+        assertFalse(state.isLoading)
+        assertEquals(AppLanguage.Spanish, state.language.selected)
+    }
+
+    @Test
     fun loadsUserSettingsFromDomainModel() = runTest(dispatcher) {
         val accountId = AccountId("customer-id")
         val account = Account(
@@ -54,6 +88,7 @@ class SettingsViewModelTest {
             AccountStatus.Active,
         )
         val viewModel = SettingsViewModel(
+            authRepository = authenticatedAuth(account),
             loadProfileSettingsUseCase = {
                 RepositoryResult.Success(
                     ProfileSettings.User(account, CustomerProfile(accountId, "Ana Rivera")),
@@ -86,6 +121,46 @@ class SettingsViewModelTest {
 
         val state = assertIs<SettingsUiState.Restaurant>(viewModel.uiState.value)
         assertEquals("New name", state.name)
+    }
+
+    @Test
+    fun reloadsAccountSettingsWhenAGuestLogsIn() = runTest(dispatcher) {
+        val accountId = AccountId("customer-id")
+        val account = Account(
+            accountId,
+            EmailAddress("ana@example.com"),
+            AccountRole.Customer,
+            AccountStatus.Active,
+        )
+        val sessionStates = MutableStateFlow<AuthSessionState>(AuthSessionState.Unauthenticated)
+        val viewModel = SettingsViewModel(
+            authRepository = TestSettingsAuthRepository(sessionStates),
+            loadProfileSettingsUseCase = {
+                RepositoryResult.Success(
+                    ProfileSettings.User(account, CustomerProfile(accountId, "Ana Rivera")),
+                )
+            },
+            updateRestaurantInfoUseCase = {
+                error("Restaurant update must not run for user settings")
+            },
+            signOutUseCase = { RepositoryResult.Success(Unit) },
+            observeAppLanguageUseCase = { MutableStateFlow(AppLanguage.System) },
+            getAppLanguageSupportUseCase = { AppLanguageSelectionSupport.IMMEDIATE },
+            selectAppLanguageUseCase = {},
+            requestAccountDeletionUseCase = { error("Deletion must not run during login") },
+        )
+        advanceUntilIdle()
+        assertIs<SettingsUiState.Guest>(viewModel.uiState.value)
+
+        sessionStates.value = AuthSessionState.Authenticated(
+            AuthSession(account.id, account.loginEmail),
+        )
+        advanceUntilIdle()
+
+        assertEquals(
+            "Ana Rivera",
+            assertIs<SettingsUiState.User>(viewModel.uiState.value).name,
+        )
     }
 
     @Test
@@ -241,6 +316,7 @@ private fun viewModelFor(
         AccountStatus.Active,
     )
     return SettingsViewModel(
+        authRepository = authenticatedAuth(account),
         loadProfileSettingsUseCase = {
             RepositoryResult.Success(ProfileSettings.RestaurantOwner(account, restaurant))
         },
@@ -251,4 +327,38 @@ private fun viewModelFor(
         selectAppLanguageUseCase = { selectedLanguage.value = it },
         requestAccountDeletionUseCase = requestDeletion,
     )
+}
+
+private fun authenticatedAuth(account: Account) = TestSettingsAuthRepository(
+    MutableStateFlow(
+        AuthSessionState.Authenticated(AuthSession(account.id, account.loginEmail)),
+    ),
+)
+
+private class TestSettingsAuthRepository(
+    private val sessionStates: MutableStateFlow<AuthSessionState>,
+) : AuthRepository {
+    override fun observeSession() = sessionStates
+
+    override suspend fun currentSession(): RepositoryResult<AuthSession?> =
+        RepositoryResult.Success(
+            (sessionStates.value as? AuthSessionState.Authenticated)?.session,
+        )
+
+    override suspend fun register(credentials: RegistrationCredentials): RepositoryResult<AuthSession> =
+        error("Registration is not used by settings tests")
+
+    override suspend fun signIn(
+        email: EmailAddress,
+        password: String,
+    ): RepositoryResult<AuthSession> = error("Sign in is not used by settings tests")
+
+    override suspend fun signOut(): RepositoryResult<Unit> =
+        error("Repository sign out is not used by settings tests")
+
+    override suspend fun requestPasswordReset(email: EmailAddress): RepositoryResult<Unit> =
+        error("Password reset is not used by settings tests")
+
+    override suspend fun updatePassword(password: String): RepositoryResult<Unit> =
+        error("Password update is not used by settings tests")
 }
