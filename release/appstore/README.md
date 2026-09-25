@@ -242,6 +242,11 @@ búsqueda avanzada en mapa, varias cartas por restaurante, cartas por QR,
 notificaciones push, verificación de restaurantes, verificación de alérgenos y
 analíticas de pago.
 
+**Shareat Unlimited se reserva para una actualización posterior.** Su propósito
+previsto es mostrar a los restaurantes qué productos reciben reseñas y
+estadísticas de la opinión de los clientes. No aparece ningún flujo de compra
+en la compilación inicial.
+
 ---
 
 ## 13. Cómo regenerar los recursos
