@@ -44,7 +44,7 @@ TARGETS = {
 
 SHOTS = [
     ("01-descubre", "raw_c1", "Clientes", "Descubre dónde\ncomer hoy",
-     "Restaurantes cerca de ti, con su nota\nmedia y si están abiertos ahora."),
+     "Restaurantes publicados en Shareat,\ncon su nota y si están abiertos ahora."),
     ("02-carta", "raw_c2", "Clientes", "La carta entera,\nantes de sentarte",
      "Cada plato con su precio, su descripción\ny los alérgenos que declara el local."),
     ("03-alergenos", "raw_c3", "Clientes", "Filtra por\nalérgenos",

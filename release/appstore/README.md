@@ -61,7 +61,7 @@ Antes de reservar o de sentarte, mira la carta entera, el precio real de cada pl
 
 PARA QUIEN SALE A COMER
 
-• Descubre restaurantes cerca de ti, con su nota media y su horario, y entra a ver la carta sin registrarte.
+• Explora restaurantes disponibles en Shareat, con su nota media y su horario, y entra a ver la carta sin registrarte.
 • Consulta la carta completa: cada plato con su nombre, su descripción, su precio y los alérgenos que declara el restaurante.
 • Filtra por alérgenos. El filtro solo te ofrece los alérgenos que declara esa carta concreta, y nunca esconde un plato por falta de información.
 • Valora plato a plato del 1 al 5 y escribe un comentario si te apetece. Cada plato tiene su propia nota, no solo el local.
@@ -157,7 +157,7 @@ restaurante. Cada imagen lleva impresa su frase y una etiqueta de color
 
 | # | Archivo | Titular | Apoyo |
 | --- | --- | --- | --- |
-| 1 | `01-descubre.png` | Descubre dónde comer hoy | Restaurantes cerca de ti, con su nota media y si están abiertos ahora. |
+| 1 | `01-descubre.png` | Descubre dónde comer hoy | Restaurantes publicados en Shareat, con su nota y si están abiertos ahora. |
 | 2 | `02-carta.png` | La carta entera, antes de sentarte | Cada plato con su precio, su descripción y los alérgenos que declara el local. |
 | 3 | `03-alergenos.png` | Filtra por alérgenos | Solo aparecen los alérgenos que declara esa carta. Nada se da por supuesto. |
 | 4 | `04-valora-platos.png` | Valora plato a plato | No solo el restaurante: cada plato tiene su nota y sus reseñas. |
