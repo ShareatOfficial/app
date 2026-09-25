@@ -32,7 +32,6 @@ import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.feature.profile.ui.profile.ProfileNavigation
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingNavigation
 import org.shareat.feature.profile.ui.editprofile.EditProfileNavigation
 import org.shareat.feature.profile.ui.editprofile.EditProfileUiState
 import org.shareat.feature.profile.ui.editprofile.EditProfileViewModel
@@ -84,7 +83,6 @@ class ProfileUiModuleTest {
                     single<ProfileNavigation> { WiringProfileNavigation }
                     single<EditProfileNavigation> { WiringEditProfileNavigation }
                     single<SettingsNavigation> { WiringSettingsNavigation }
-                    single<RestaurantOnboardingNavigation> { WiringRestaurantOnboardingNavigation }
                 },
                 profileUiModule,
             )
@@ -119,11 +117,6 @@ private data object WiringSettingsNavigation : SettingsNavigation {
     override fun openLogin() = Unit
     override fun openEditProfile() = Unit
     override fun openTermsAndConditions() = Unit
-    override fun onLogoutSuccess() = Unit
-}
-
-private data object WiringRestaurantOnboardingNavigation : RestaurantOnboardingNavigation {
-    override fun onCompleted() = Unit
     override fun onLogoutSuccess() = Unit
 }
 

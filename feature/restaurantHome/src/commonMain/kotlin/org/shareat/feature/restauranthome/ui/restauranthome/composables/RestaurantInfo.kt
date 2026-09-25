@@ -49,6 +49,8 @@ import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_hidden
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_publish_requires_dish
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_publish_requires_address
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_edit_address
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_publish_restaurant
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_published
 
@@ -140,7 +142,9 @@ internal fun RestaurantInfo(
         ) {
             HomeRestaurantActionRow(
                 icon = Icons.Outlined.LocationOn,
-                text = restaurant.address.streetLine,
+                text = restaurant.address.streetLine.ifBlank {
+                    stringResource(Res.string.restaurant_home_edit_address)
+                },
                 onClick = onOpenDirectionsClick,  // A better thing should return a type Actions or restaurant Info.
                 trailingContent = {}
             )
@@ -188,7 +192,9 @@ internal fun RestaurantInfo(
             ),
             label = "restaurant_publication_state_animation",
         ) {
-            val canPublish = restaurant.dishes.isNotEmpty()
+            val hasAddress = restaurant.address.streetLine.isNotBlank() &&
+                restaurant.address.locality.isNotBlank() && restaurant.address.postalCode.isNotBlank()
+            val canPublish = restaurant.dishes.any { it.isPublished } && hasAddress
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier
@@ -227,7 +233,10 @@ internal fun RestaurantInfo(
 
                 if (!canPublish && !restaurant.isPublished) {
                     Text(
-                        text = stringResource(Res.string.restaurant_home_publish_requires_dish),
+                        text = stringResource(
+                            if (!hasAddress) Res.string.restaurant_home_publish_requires_address
+                            else Res.string.restaurant_home_publish_requires_dish,
+                        ),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

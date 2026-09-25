@@ -19,9 +19,6 @@ import org.shareat.feature.profile.domain.UpdateRestaurantInfoUseCase
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoUseCaseImpl
 import org.shareat.feature.profile.domain.UpdateCustomerProfileUseCase
 import org.shareat.feature.profile.domain.UpdateCustomerProfileUseCaseImpl
-import org.shareat.feature.profile.domain.CreateRestaurantProfileUseCase
-import org.shareat.feature.profile.domain.CreateRestaurantProfileUseCaseImpl
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingViewModel
 import org.shareat.feature.profile.ui.editprofile.EditProfileViewModel
 import org.shareat.feature.profile.ui.settings.SettingsViewModel
 
@@ -35,9 +32,7 @@ val profileUiModule: Module = module {
     factory<ObserveAppLanguageUseCase> { ObserveAppLanguageUseCaseImpl(get()) }
     factory<GetAppLanguageSupportUseCase> { GetAppLanguageSupportUseCaseImpl(get()) }
     factory<SelectAppLanguageUseCase> { SelectAppLanguageUseCaseImpl(get()) }
-    factory<CreateRestaurantProfileUseCase> { CreateRestaurantProfileUseCaseImpl(get(), get(), get()) }
 
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { EditProfileViewModel(get(), get()) }
-    viewModel { RestaurantOnboardingViewModel(get(), get()) }
 }

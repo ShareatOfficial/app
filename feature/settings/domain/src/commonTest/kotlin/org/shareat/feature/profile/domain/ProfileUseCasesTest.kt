@@ -120,49 +120,6 @@ class ProfileUseCasesTest {
         assertEquals(1, auth.signOutCalls)
     }
 
-    @Test
-    fun createsDraftProfileForActiveRestaurantAccount() = runTest {
-        val dependencies = testDependencies(AccountRole.Restaurant)
-
-        val result = CreateRestaurantProfileUseCaseImpl(
-            dependencies.auth,
-            dependencies.accounts,
-            dependencies.restaurants,
-        )(
-            RestaurantProfileDraft(
-                name = "Nuevo local",
-                description = null,
-                publicEmail = null,
-                publicPhone = null,
-                address = PostalAddress("Calle Uno", "Madrid", "28001"),
-                openingHours = WeeklyOpeningHours(emptyList()),
-            ),
-        )
-
-        assertEquals("Nuevo local", assertIs<RepositoryResult.Success<Restaurant>>(result).value.name)
-    }
-
-    @Test
-    fun customerCannotCreateRestaurantProfile() = runTest {
-        val dependencies = testDependencies(AccountRole.Customer)
-
-        val result = CreateRestaurantProfileUseCaseImpl(
-            dependencies.auth,
-            dependencies.accounts,
-            dependencies.restaurants,
-        )(
-            RestaurantProfileDraft(
-                name = "No permitido",
-                description = null,
-                publicEmail = null,
-                publicPhone = null,
-                address = PostalAddress("Calle Uno", "Madrid", "28001"),
-                openingHours = WeeklyOpeningHours(emptyList()),
-            ),
-        )
-
-        assertEquals(RepositoryResult.Failure(RepositoryError.Forbidden), result)
-    }
 }
 
 private data class TestDependencies(

@@ -16,6 +16,7 @@ import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
+import org.shareat.feature.restauranthome.domain.CreateOwnerRestaurantUseCase
 import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
@@ -79,6 +80,10 @@ data class RestaurantHomeUiStateByTone(
     val categoriesDraft: Set<DishCategory>? = null,
     val isPublicationUpdating: Boolean = false,
     val publicationError: RestaurantHomeError? = null,
+    val newRestaurantName: String = "",
+    val isCreatingRestaurant: Boolean = false,
+    val newRestaurantNameInvalid: Boolean = false,
+    val createRestaurantError: RestaurantHomeError? = null,
 ) {
     val selectedDish: RestaurantDish?
         get() = (content as? RestaurantHomeContent.Loaded)
@@ -90,6 +95,7 @@ data class RestaurantHomeUiStateByTone(
 @Stable
 class RestaurantHomeViewModel(
     private val loadRestaurantHome: GetRestaurantHomeUseCase,
+    private val createOwnerRestaurant: CreateOwnerRestaurantUseCase,
     private val createOwnerDish: CreateOwnerDishUseCase,
     private val updateOwnerDish: UpdateOwnerDishUseCase,
     private val updateOwnerRestaurantInfo: UpdateOwnerRestaurantInfoUseCase,
@@ -107,6 +113,33 @@ class RestaurantHomeViewModel(
     }
 
     fun onRetryClick() = load()
+
+    fun onNewRestaurantNameChange(name: String) {
+        _uiState.value = _uiState.value.copy(
+            newRestaurantName = name,
+            newRestaurantNameInvalid = false,
+            createRestaurantError = null,
+        )
+    }
+
+    fun onCreateRestaurantClick() {
+        val state = _uiState.value
+        if (state.content != RestaurantHomeContent.Empty || state.isCreatingRestaurant) return
+        if (state.newRestaurantName.isBlank()) {
+            _uiState.value = state.copy(newRestaurantNameInvalid = true)
+            return
+        }
+        _uiState.value = state.copy(isCreatingRestaurant = true, createRestaurantError = null)
+        viewModelScope.launch {
+            when (val result = createOwnerRestaurant(state.newRestaurantName.trim())) {
+                is RepositoryResult.Success -> load()
+                is RepositoryResult.Failure -> _uiState.value = _uiState.value.copy(
+                    isCreatingRestaurant = false,
+                    createRestaurantError = result.error.toUiError(),
+                )
+            }
+        }
+    }
 
     fun onEditModeChange(isEditMode: Boolean) {
         _uiState.value = _uiState.value.copy(
@@ -126,7 +159,10 @@ class RestaurantHomeViewModel(
         val restaurant = (state.content as? RestaurantHomeContent.Loaded)?.restaurant ?: return
         if (!state.isEditMode || state.isPublicationUpdating) return
         if (isPublished == restaurant.isPublished) return
-        if (isPublished && restaurant.dishes.isEmpty()) return
+        if (isPublished && (restaurant.dishes.none { it.isPublished } ||
+                restaurant.address.streetLine.isBlank() ||
+                restaurant.address.locality.isBlank() ||
+                restaurant.address.postalCode.isBlank())) return
 
         _uiState.value = state.copy(
             isPublicationUpdating = true,
@@ -487,7 +523,12 @@ class RestaurantHomeViewModel(
                 is RepositoryResult.Failure -> {
                     ownerHome = null
                     _uiState.value = _uiState.value.copy(
-                        content = RestaurantHomeContent.Error(result.error.toUiError()),
+                        content = if (result.error is RepositoryError.NotFound) {
+                            RestaurantHomeContent.Empty
+                        } else {
+                            RestaurantHomeContent.Error(result.error.toUiError())
+                        },
+                        isCreatingRestaurant = false,
                     )
                 }
             }

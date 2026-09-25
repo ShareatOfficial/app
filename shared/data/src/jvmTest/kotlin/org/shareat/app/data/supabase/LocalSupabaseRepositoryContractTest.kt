@@ -26,7 +26,7 @@ class LocalSupabaseRepositoryContractTest {
 
         val restaurants = SupabaseRestaurantRepository(client).getPublishedRestaurants()
         val restaurant = (assertIs<RepositoryResult.Success<*>>(restaurants).value as List<*>)
-            .single() as Restaurant
+            .filterIsInstance<Restaurant>().single { it.name == "Local Shareat Kitchen" }
         assertEquals("Local Shareat Kitchen", restaurant.name)
 
         val menuResult = SupabaseMenuRepository(client).getPublishedMenus(restaurant.id)
@@ -37,8 +37,9 @@ class LocalSupabaseRepositoryContractTest {
         val summaryResult = SupabaseReviewRepository(client)
             .getRatingSummary(ReviewTarget.Restaurant(restaurant.id))
         val summary = assertIs<RepositoryResult.Success<*>>(summaryResult).value as RatingSummary
-        assertEquals(50, summary.averageTenths)
-        assertEquals(1, summary.ratingCount)
+        // Seeded text reviews require moderation and are not part of the public rating yet.
+        assertEquals(null, summary.averageTenths)
+        assertEquals(0, summary.ratingCount)
 
         val batchedDishes = dishes.getDishesByRestaurant(setOf(restaurant.id))
         val dishesByRestaurant = assertIs<RepositoryResult.Success<*>>(batchedDishes).value as Map<*, *>
@@ -50,7 +51,7 @@ class LocalSupabaseRepositoryContractTest {
         val batchedSummaries = SupabaseReviewRepository(client)
             .getRestaurantRatingSummaries(setOf(restaurant.id))
         val summariesById = assertIs<RepositoryResult.Success<*>>(batchedSummaries).value as Map<*, *>
-        assertEquals(summary, summariesById[restaurant.id])
+        assertEquals(null, summariesById[restaurant.id])
 
         val auth = SupabaseAuthRepository(client)
         val email = EmailAddress("integration-${System.currentTimeMillis()}@shareat.test")

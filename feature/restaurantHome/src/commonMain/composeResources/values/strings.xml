@@ -10,6 +10,8 @@
     <string name="restaurant_home_add_dish">Add dish</string>
     <string name="restaurant_home_dish_edit">Edit dish</string>
     <string name="restaurant_home_name">Restaurant name</string>
+    <string name="restaurant_home_create_restaurant">Create restaurant</string>
+    <string name="restaurant_home_create_restaurant_help">Name your restaurant to get started. You can then add its address and dishes before publishing.</string>
     <string name="restaurant_home_dish_name">Dish name</string>
     <string name="restaurant_home_dish_name_placeholder">E.g. seafood rice</string>
     <string name="restaurant_home_description">Description</string>
@@ -35,7 +37,8 @@
     <string name="restaurant_home_allergens">Allergens</string>
     <string name="restaurant_home_allergen_filter">Filter by allergens</string>
     <string name="restaurant_home_publish_restaurant">Publish restaurant</string>
-    <string name="restaurant_home_publish_requires_dish">Add at least one dish before publishing.</string>
+    <string name="restaurant_home_publish_requires_dish">Add and enable at least one dish before publishing.</string>
+    <string name="restaurant_home_publish_requires_address">Add an address before publishing.</string>
     <string name="restaurant_home_publish_dish">Enable and publish dish</string>
     <string name="restaurant_home_published">Visible to customers</string>
     <string name="restaurant_home_hidden">Hidden from customers</string>

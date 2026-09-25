@@ -28,6 +28,7 @@ import org.shareat.app.domain.model.WeeklyOpeningHours
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
+import org.shareat.feature.restauranthome.domain.CreateOwnerRestaurantUseCase
 import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerRestaurantImageUseCase
@@ -87,6 +88,35 @@ class RestaurantHomeViewModelTest {
 
         val content = assertIs<RestaurantHomeContent.Error>(viewModel.uiState.value.content)
         assertEquals(RestaurantHomeError.OFFLINE, content.error)
+    }
+
+    @Test
+    fun newOwnerCreatesRestaurantFromHome() = runTest(dispatcher) {
+        val home = ownerHome()
+        var created = false
+        var submittedName: String? = null
+        val viewModel = viewModelFor(
+            onLoad = {
+                if (created) RepositoryResult.Success(home)
+                else RepositoryResult.Failure(RepositoryError.NotFound("restaurant", "owner"))
+            },
+            onCreateRestaurant = { name ->
+                submittedName = name
+                created = true
+                RepositoryResult.Success(home.restaurant)
+            },
+        )
+        advanceUntilIdle()
+        assertIs<RestaurantHomeContent.Empty>(viewModel.uiState.value.content)
+
+        viewModel.onCreateRestaurantClick()
+        assertTrue(viewModel.uiState.value.newRestaurantNameInvalid)
+        viewModel.onNewRestaurantNameChange("  Casa Nueva  ")
+        viewModel.onCreateRestaurantClick()
+        advanceUntilIdle()
+
+        assertEquals("Casa Nueva", submittedName)
+        assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
     }
 
     @Test
@@ -488,6 +518,9 @@ class RestaurantHomeViewModelTest {
         onLoad: suspend () -> RepositoryResult<RestaurantHome> = {
             RepositoryResult.Success(home)
         },
+        onCreateRestaurant: suspend (String) -> RepositoryResult<Restaurant> = {
+            error("Create restaurant was not expected")
+        },
         onCreateDish: suspend (OwnerDishCreateDraft) -> RepositoryResult<OwnerDishUpdate> = {
             error("Create dish was not expected")
         },
@@ -508,6 +541,7 @@ class RestaurantHomeViewModelTest {
         },
     ) = RestaurantHomeViewModel(
         loadRestaurantHome = GetRestaurantHomeUseCase(onLoad),
+        createOwnerRestaurant = CreateOwnerRestaurantUseCase(onCreateRestaurant),
         createOwnerDish = CreateOwnerDishUseCase(onCreateDish),
         updateOwnerDish = UpdateOwnerDishUseCase(onUpdateDish),
         updateOwnerRestaurantInfo = UpdateOwnerRestaurantInfoUseCase(onUpdateRestaurant),

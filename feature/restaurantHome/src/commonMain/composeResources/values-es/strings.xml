@@ -10,6 +10,8 @@
     <string name="restaurant_home_add_dish">Añadir plato</string>
     <string name="restaurant_home_dish_edit">Editar plato</string>
     <string name="restaurant_home_name">Nombre del restaurante</string>
+    <string name="restaurant_home_create_restaurant">Crear restaurante</string>
+    <string name="restaurant_home_create_restaurant_help">Ponle nombre a tu restaurante para empezar. Después podrás añadir la dirección y los platos antes de publicarlo.</string>
     <string name="restaurant_home_dish_name">Nombre del plato</string>
     <string name="restaurant_home_dish_name_placeholder">Ej. Arroz marinero</string>
     <string name="restaurant_home_description">Descripción</string>
@@ -35,7 +37,8 @@
     <string name="restaurant_home_allergens">Alérgenos</string>
     <string name="restaurant_home_allergen_filter">Filtrar por alérgenos</string>
     <string name="restaurant_home_publish_restaurant">Publicar restaurante</string>
-    <string name="restaurant_home_publish_requires_dish">Añade al menos un plato antes de publicar.</string>
+    <string name="restaurant_home_publish_requires_dish">Añade y habilita al menos un plato antes de publicar.</string>
+    <string name="restaurant_home_publish_requires_address">Añade la dirección antes de publicar.</string>
     <string name="restaurant_home_publish_dish">Habilitar y publicar plato</string>
     <string name="restaurant_home_published">Visible para los clientes</string>
     <string name="restaurant_home_hidden">Oculto para los clientes</string>

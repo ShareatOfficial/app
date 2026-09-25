@@ -6,6 +6,8 @@ import org.koin.dsl.module
 import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCase
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCase
 import org.shareat.feature.restauranthome.domain.CreateOwnerDishUseCaseImpl
+import org.shareat.feature.restauranthome.domain.CreateOwnerRestaurantUseCase
+import org.shareat.feature.restauranthome.domain.CreateOwnerRestaurantUseCaseImpl
 import org.shareat.feature.restauranthome.domain.GetRestaurantHomeUseCaseImpl
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCase
 import org.shareat.feature.restauranthome.domain.ReplaceOwnerDishImageUseCaseImpl
@@ -30,6 +32,9 @@ val restaurantHomeUiModule: Module = module {
     factory<CreateOwnerDishUseCase> {
         CreateOwnerDishUseCaseImpl(get(), get(), get(), get())
     }
+    factory<CreateOwnerRestaurantUseCase> {
+        CreateOwnerRestaurantUseCaseImpl(get(), get())
+    }
     factory<UpdateOwnerRestaurantInfoUseCase> {
         UpdateOwnerRestaurantInfoUseCaseImpl(get(), get())
     }
@@ -47,6 +52,6 @@ val restaurantHomeUiModule: Module = module {
     }
 
     viewModel {
-        RestaurantHomeViewModel(get(), get(), get(), get(), get(), get(), get())
+        RestaurantHomeViewModel(get(), get(), get(), get(), get(), get(), get(), get())
     }
 }
