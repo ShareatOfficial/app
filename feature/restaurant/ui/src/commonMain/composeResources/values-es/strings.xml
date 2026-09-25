@@ -14,7 +14,7 @@
     <string name="restaurant_dish_reviews_empty">Sé el primero en valorar este plato</string>
     <string name="restaurant_dish_reviews_no_comments">Todavía nadie ha dejado un comentario</string>
     <string name="restaurant_review_report">Denunciar</string>
-    <string name="restaurant_review_block">Bloquear usuario</string>
+    <string name="restaurant_review_block">Bloquear</string>
     <string name="restaurant_review_report_title">Denunciar esta reseña</string>
     <string name="restaurant_review_report_offensive">Contenido ofensivo</string>
     <string name="restaurant_review_report_spam">Spam</string>

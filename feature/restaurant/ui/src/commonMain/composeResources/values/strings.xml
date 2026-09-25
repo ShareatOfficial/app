@@ -14,7 +14,7 @@
     <string name="restaurant_dish_reviews_empty">Be the first to rate this dish</string>
     <string name="restaurant_dish_reviews_no_comments">Nobody has left a comment yet</string>
     <string name="restaurant_review_report">Report</string>
-    <string name="restaurant_review_block">Block reviewer</string>
+    <string name="restaurant_review_block">Block</string>
     <string name="restaurant_review_report_title">Report this review</string>
     <string name="restaurant_review_report_offensive">Offensive content</string>
     <string name="restaurant_review_report_spam">Spam</string>
