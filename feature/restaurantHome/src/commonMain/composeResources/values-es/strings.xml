@@ -63,7 +63,7 @@
     <string name="restaurant_home_error_forbidden">Esta cuenta no puede gestionar este restaurante.</string>
     <string name="restaurant_home_error_not_found">No hemos encontrado el restaurante.</string>
     <string name="restaurant_home_error_unavailable">El servicio no está disponible temporalmente.</string>
-    <string name="restaurant_home_error_generic">No hemos podido guardar los cambios. Inténtalo de nuevo.</string>
+    <string name="restaurant_home_error_generic">Algo ha ido mal. Inténtalo de nuevo.</string>
     <string name="restaurant_home_error_image_format">Selecciona una imagen JPEG, PNG o WebP.</string>
     <string name="restaurant_home_error_image_size">La imagen supera el tamaño máximo de 512 KB.</string>
     <string name="restaurant_home_error_image_read">No hemos podido leer esta imagen. Inténtalo de nuevo.</string>

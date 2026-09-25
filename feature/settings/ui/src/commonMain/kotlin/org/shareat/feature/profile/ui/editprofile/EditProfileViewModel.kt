@@ -34,9 +34,6 @@ class EditProfileViewModel(
             is EditProfileAction.FullNameChanged -> edit { copy(fullName = action.value) }
             is EditProfileAction.DisplayNameChanged -> edit { copy(displayName = action.value) }
             is EditProfileAction.PhoneNumberChanged -> edit { copy(phoneNumber = action.value) }
-            EditProfileAction.ChangePhoto -> _uiState.update {
-                it.copy(error = EditProfileError.PHOTO_UNSUPPORTED)
-            }
             EditProfileAction.Save -> save()
         }
     }

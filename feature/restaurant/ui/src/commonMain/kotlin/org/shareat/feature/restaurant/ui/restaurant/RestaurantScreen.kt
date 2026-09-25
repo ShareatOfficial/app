@@ -87,7 +87,6 @@ fun RestaurantScreen(
         uiState = uiState,
         modifier = modifier,
         onBackClick = navigation::goBack,
-        onLeaveRateClick = { navigation.openRestaurantReviewForm(args.id) },
         onRefresh = viewModel::onRefresh,
         onErrorShown = viewModel::onErrorShown,
         onCategoryClick = viewModel::onCategoryClick,
@@ -108,7 +107,6 @@ internal fun RestaurantScreenStateless(
     uiState: RestaurantUiState,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    onLeaveRateClick: () -> Unit = {},
     onRefresh: () -> Unit = {},
     onErrorShown: () -> Unit = {},
     onCategoryClick: (DishCategory?) -> Unit = {},
@@ -150,7 +148,6 @@ internal fun RestaurantScreenStateless(
                         } else {
                             RestaurantInfoCard(
                                 header = uiState.header,
-                                onLeaveRateClick = onLeaveRateClick,
                                 modifier = Modifier.padding(ScreenPadding),
                             )
                         }

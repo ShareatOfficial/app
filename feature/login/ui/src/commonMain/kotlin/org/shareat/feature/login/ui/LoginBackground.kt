@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -11,11 +12,15 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -56,7 +61,7 @@ internal fun LoginBackground(
     content: @Composable () -> Unit,
 ) {
     val systemBarHeight = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
-    Box(modifier = modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         Image(
             painter = painterResource(welcomeBackground),
             contentDescription = null,
@@ -119,7 +124,11 @@ internal fun LoginBackground(
             }
         }
         Surface(
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .imePadding()
+                .heightIn(max = maxHeight),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
             shape = MaterialTheme.shapes.extraLarge.copy(
                 bottomStart = CornerSize(0.dp),
@@ -129,6 +138,7 @@ internal fun LoginBackground(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .windowInsetsPadding(
                         WindowInsets.safeDrawing.only(
                             WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom,

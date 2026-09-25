@@ -67,7 +67,6 @@ private fun RestaurantHeaderBackdropPreview() {
                     ratingLabel = "4,8",
                     reviewCount = 1_284,
                 ),
-                onLeaveRateClick = {},
                 modifier = Modifier.padding(16.dp),
             )
         }

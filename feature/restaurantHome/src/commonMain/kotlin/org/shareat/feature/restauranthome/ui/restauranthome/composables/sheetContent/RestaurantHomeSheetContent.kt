@@ -14,6 +14,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
+import org.shareat.feature.restauranthome.ui.model.toDisplayAddress
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeBottomSheet
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeUiStateByTone
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.ViewDishContent
@@ -22,6 +23,7 @@ import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_reviews
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_unrated
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_view_ratings
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_view_address
 
 @Composable
 internal fun RestaurantHomeSheetContent(
@@ -90,8 +92,15 @@ internal fun RestaurantHomeSheetContent(
                 )
             }
 
-            RestaurantHomeBottomSheet.VIEW_ADDRESS -> { // TODO remove this bottom sheet option? Have to check
-                // Just open google maps
+            RestaurantHomeBottomSheet.VIEW_ADDRESS -> {
+                Text(
+                    text = stringResource(Res.string.restaurant_home_view_address),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    text = restaurant.address.toDisplayAddress(),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
             }
 
             RestaurantHomeBottomSheet.EDIT_ADDRESS -> {

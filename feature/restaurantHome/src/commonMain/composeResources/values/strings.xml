@@ -63,7 +63,7 @@
     <string name="restaurant_home_error_forbidden">This account cannot manage this restaurant.</string>
     <string name="restaurant_home_error_not_found">We could not find the restaurant.</string>
     <string name="restaurant_home_error_unavailable">The service is temporarily unavailable.</string>
-    <string name="restaurant_home_error_generic">We could not save your changes. Please try again.</string>
+    <string name="restaurant_home_error_generic">Something went wrong. Please try again.</string>
     <string name="restaurant_home_error_image_format">Select a JPEG, PNG or WebP image.</string>
     <string name="restaurant_home_error_image_size">The image exceeds the 512 KB limit.</string>
     <string name="restaurant_home_error_image_read">We could not read this image. Please try again.</string>

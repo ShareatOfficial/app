@@ -1,8 +1,15 @@
 package org.shareat.feature.restauranthome.ui.restauranthome
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -12,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
@@ -26,6 +35,11 @@ import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.preparedImageUpload
 import org.shareat.feature.restauranthome.ui.model.toEditablePrice
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.sheetContent.RestaurantHomeSheetContent
+import org.shareat.feature.restauranthome.ui.restauranthome.composables.message
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.restauranthome.ui.generated.resources.Res
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_empty_management
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_retry
 import org.shareat.shared.designsystem.preview.FormFactorPreviews
 import org.shareat.shared.designsystem.theme.ShareatTheme
 
@@ -144,15 +158,23 @@ internal fun RestaurantHomeStateless(
     onCategoryClick: (DishCategory) -> Unit,
     onDishReviewClick: ((String) -> Unit)? = null,
 ) {
-    // skeleton a tomar por culo, cada componente tendría que tener su propio skeleton idealmente.
-    // instead of having a when to choose the content. We should have it to choose have the screen size
     when (val content = uiState.content) {
-        // TODO remove this three empty states.
-        RestaurantHomeContent.Loading,
-            // For errors we should show the error in the correct part or integrate it with the screnn
-        is RestaurantHomeContent.Error,
-        RestaurantHomeContent.Empty -> {
+        RestaurantHomeContent.Loading -> Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
         }
+        is RestaurantHomeContent.Error -> RestaurantHomeStatus(
+            message = content.error.message(),
+            onRetryClick = onRetryClick,
+            modifier = modifier,
+        )
+        RestaurantHomeContent.Empty -> RestaurantHomeStatus(
+            message = stringResource(Res.string.restaurant_home_empty_management),
+            onRetryClick = onRetryClick,
+            modifier = modifier,
+        )
 
         is RestaurantHomeContent.Loaded -> RestaurantHomeCompact(
             restaurant = content.restaurant,
@@ -200,6 +222,24 @@ internal fun RestaurantHomeStateless(
                 onCategoryClick = onCategoryClick,
                 onDishReviewClick = onDishReviewClick,
             )
+        }
+    }
+}
+
+@Composable
+private fun RestaurantHomeStatus(
+    message: String,
+    onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(message)
+            Button(onClick = onRetryClick) { Text(stringResource(Res.string.restaurant_home_retry)) }
         }
     }
 }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -20,10 +19,8 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -54,7 +51,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.settings.ui.generated.resources.Res
 import shareat.feature.settings.ui.generated.resources.edit_profile_back
-import shareat.feature.settings.ui.generated.resources.edit_profile_change_photo
 import shareat.feature.settings.ui.generated.resources.edit_profile_clear_display_name
 import shareat.feature.settings.ui.generated.resources.edit_profile_display_name
 import shareat.feature.settings.ui.generated.resources.edit_profile_display_name_hint
@@ -115,7 +111,6 @@ private fun EditProfileScreenStateless(
                 Spacer(modifier = Modifier.height(16.dp))
                 ProfileAvatar(
                     initials = uiState.initials,
-                    onChangePhoto = { onAction(EditProfileAction.ChangePhoto) },
                 )
                 Spacer(modifier = Modifier.height(28.dp))
 
@@ -260,41 +255,18 @@ private fun EditProfileTopBar(
 @Composable
 private fun ProfileAvatar(
     initials: String,
-    onChangePhoto: () -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box {
-            Box(
-                modifier = Modifier
-                    .size(88.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = initials,
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-            }
-            Surface(
-                modifier = Modifier.align(Alignment.BottomEnd).offset(x = 2.dp, y = 2.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.CameraAlt,
-                    contentDescription = null,
-                    modifier = Modifier.padding(7.dp).size(18.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
-        }
-        TextButton(
-            onClick = onChangePhoto,
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-        ) {
-            Text(stringResource(Res.string.edit_profile_change_photo))
-        }
+    Box(
+        modifier = Modifier
+            .size(88.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = initials,
+            style = MaterialTheme.typography.headlineMedium,
+        )
     }
 }
 
