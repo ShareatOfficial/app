@@ -137,7 +137,7 @@
     <string name="settings_language_unsupported">La versión web sigue el idioma de tu navegador.</string>
     <string name="settings_delete_account">Eliminar cuenta</string>
     <string name="settings_delete_title">Solicitar eliminación de cuenta</string>
-    <string name="settings_delete_description">Se eliminarán tu cuenta y los datos asociados cuando tramitemos la solicitud. Lo haremos en un máximo de 30 días y te avisaremos por correo. Si tienes una suscripción, cancélala en los ajustes de la tienda: eliminar tu cuenta no cancela el cobro.</string>
+    <string name="settings_delete_description">Se eliminarán tu cuenta y los datos asociados cuando tramitemos la solicitud. Lo haremos en un máximo de 30 días y te avisaremos por correo.</string>
     <string name="settings_delete_confirm">Enviar solicitud</string>
     <string name="settings_delete_cancel">Cancelar</string>
     <string name="settings_delete_close">Cerrar</string>

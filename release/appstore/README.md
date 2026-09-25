@@ -245,7 +245,8 @@ analíticas de pago.
 **Shareat Unlimited se reserva para una actualización posterior.** Su propósito
 previsto es mostrar a los restaurantes qué productos reciben reseñas y
 estadísticas de la opinión de los clientes. No aparece ningún flujo de compra
-en la compilación inicial.
+en la compilación inicial; RevenueCat permanece integrado para la actualización
+posterior.
 
 ---
 

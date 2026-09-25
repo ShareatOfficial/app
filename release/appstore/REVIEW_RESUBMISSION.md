@@ -8,8 +8,9 @@ the old build 1.0 (3) after the code and database changes in this branch.
 ## Before recording
 
 1. Merge this branch, apply both new Supabase migrations to production, and upload
-   a new iOS build. Verify that Shareat Unlimited is absent from the launch build
-   and that no subscription or IAP is submitted with this version.
+   a new iOS build. Verify that RevenueCat initializes in the launch build, while
+   Shareat Unlimited has no visible entry point, paid benefit, or purchase flow.
+   Keep the planned IAP products in draft until the benefits are implemented.
 2. Create a restaurant demo account with a **published** restaurant, a menu,
    dishes, prices, declared allergens, and photos you have permission to use.
 3. Create a customer demo account. For report/block, create another customer
@@ -42,7 +43,8 @@ flow should appear in this launch build.
    in App Review Information; add the second customer account used for
    report/block to Notes. Tell Apple which sample restaurant and dish to open.
 3. **Services:** Supabase hosts authentication, account data, menus, reviews,
-   and uploaded images. No paid content is enabled in this launch build.
+   and uploaded images. RevenueCat is integrated for a future Unlimited release,
+   but no paid content or purchase flow is enabled in this launch build.
 4. **Regions:** This release is distributed only in Spain; its available
    features are consistent across Spain.
 5. **Rights/regulation:** Shareat is a restaurant discovery/review app, not a

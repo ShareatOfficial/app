@@ -69,6 +69,8 @@ kotlin {
             implementation(project(":feature:lastActivity"))
             implementation(project(":feature:settings:ui"))
             implementation(project(":feature:login:ui"))
+            implementation(project(":feature:subscription:data"))
+            implementation(project(":feature:subscription:ui"))
             implementation(project(":feature:restaurantHome"))
             implementation(project(":feature:review"))
             implementation(project(":feature:restaurant:ui"))
