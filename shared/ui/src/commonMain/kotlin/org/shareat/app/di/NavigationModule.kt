@@ -7,7 +7,6 @@ import org.shareat.app.navigation.lastactivity.lastActivityNavigationModule
 import org.shareat.app.navigation.profile.profileNavigationModule
 import org.shareat.app.navigation.restaurant.restaurantNavigationModule
 import org.shareat.app.navigation.restauranthome.restaurantHomeNavigationModule
-import org.shareat.app.navigation.subscription.subscriptionNavigationModule
 
 val navigationModule = module {
     includes(
@@ -17,6 +16,5 @@ val navigationModule = module {
         restaurantNavigationModule,
         restaurantHomeNavigationModule,
         loginNavigationModule,
-        subscriptionNavigationModule,
     )
 }

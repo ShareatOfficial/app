@@ -3,7 +3,8 @@
     <string name="dish_review_rate_dish">Valora el plato</string>
     <string name="dish_review_rate_restaurant">Valora el restaurante</string>
     <string name="dish_review_submit">Enviar valoraciones</string>
-    <string name="dish_review_submitted">Tus valoraciones se han guardado.</string>
+    <string name="dish_review_submitted">Tus valoraciones se han guardado. Los comentarios aparecerán tras la revisión.</string>
+    <string name="dish_review_moderation_notice">Revisamos los comentarios antes de publicarlos.</string>
     <string name="dish_review_comment">Comentario (opcional)</string>
     <string name="dish_review_error_credentials">Las credenciales de tu sesión ya no son válidas.</string>
     <string name="dish_review_error_offline">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>

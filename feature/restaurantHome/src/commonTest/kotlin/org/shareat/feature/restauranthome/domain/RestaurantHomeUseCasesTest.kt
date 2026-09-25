@@ -520,6 +520,8 @@ private class TestReviewRepository(private val restaurantId: RestaurantId, dishI
     override suspend fun getRestaurantRatingSummaries(restaurantIds: Set<RestaurantId>): RepositoryResult<Map<RestaurantId, RatingSummary>> = RepositoryResult.Success(emptyMap())
     override suspend fun saveReview(draft: org.shareat.app.domain.model.ReviewDraft): RepositoryResult<Review> = failure()
     override suspend fun deleteReview(id: ReviewId, authorAccountId: AccountId): RepositoryResult<Unit> = RepositoryResult.Success(Unit)
+    override suspend fun reportReview(id: ReviewId, reason: org.shareat.app.domain.model.ReviewReportReason): RepositoryResult<Unit> = failure()
+    override suspend fun blockReviewAuthor(id: ReviewId): RepositoryResult<AccountId> = failure()
 }
 
 private class TestImageRepository : ImageRepository {

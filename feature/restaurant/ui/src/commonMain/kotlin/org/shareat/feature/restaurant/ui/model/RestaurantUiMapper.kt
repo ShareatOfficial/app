@@ -60,6 +60,7 @@ private fun Review.toArgs(): DishReviewArgs = DishReviewArgs(
     id = id.value,
     rating = rating.value,
     comment = comment,
+    authorAccountId = authorAccountId.value,
 )
 
 private fun Dish.declaredAllergens(): List<EuAllergen> =
@@ -132,6 +133,7 @@ private fun DishReviewArgs.toUiState(): DishReviewUiState = DishReviewUiState(
     id = id,
     rating = rating,
     comment = comment,
+    authorAccountId = authorAccountId,
 )
 
 internal fun Money.toPriceLabel(): String {

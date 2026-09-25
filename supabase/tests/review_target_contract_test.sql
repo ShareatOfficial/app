@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(11);
 
 select hasnt_column('public', 'reviews', 'restaurant_id', 'the review target lives in its own table');
 select hasnt_column('public', 'reviews', 'dish_id', 'the review target lives in its own table');
@@ -51,6 +51,7 @@ select is(
     'one review per author and restaurant stays a unique constraint'
 );
 
+set constraints reviews_have_a_target immediate;
 select throws_ok(
     $$insert into public.reviews (author_account_id, target_type, rating, visibility)
       values ('10000000-0000-4000-8000-000000000201', 'dish', 3, 'public')$$,

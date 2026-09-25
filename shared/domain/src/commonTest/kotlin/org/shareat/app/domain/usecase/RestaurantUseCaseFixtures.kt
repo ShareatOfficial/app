@@ -229,6 +229,8 @@ internal class FakeReviewRepository(
 
     override suspend fun saveReview(draft: ReviewDraft) = unavailable<Review>()
     override suspend fun deleteReview(id: ReviewId, authorAccountId: AccountId) = unavailable<Unit>()
+    override suspend fun reportReview(id: ReviewId, reason: org.shareat.app.domain.model.ReviewReportReason) = unavailable<Unit>()
+    override suspend fun blockReviewAuthor(id: ReviewId) = unavailable<AccountId>()
 }
 
 internal object FailingMenuRepository : MenuRepository {

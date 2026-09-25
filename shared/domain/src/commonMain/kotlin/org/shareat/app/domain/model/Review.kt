@@ -23,6 +23,12 @@ enum class ReviewModerationStatus {
     Removed,
 }
 
+enum class ReviewReportReason {
+    Offensive,
+    Spam,
+    Other,
+}
+
 data class Review(
     val id: ReviewId,
     val authorAccountId: AccountId,

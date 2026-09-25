@@ -204,25 +204,29 @@ cifrado **exento**, lo que en el `Info.plist` equivale a
 
 ## 10. Contenido generado por usuarios
 
-Shareat publica las reseñas sin moderación previa. Los restaurantes no pueden
-borrar ni ocultar las reseñas que reciben, ni pueden puntuar restaurantes o
-platos: solo las cuentas de cliente pueden valorar, y la regla se aplica en el
-backend, no solo en la interfaz.
+Los comentarios nuevos o editados esperan moderación antes de aparecer al
+público; las valoraciones sin comentario se publican de inmediato. Cada
+comentario visible permite denunciarlo y bloquear a su autor. El bloqueo
+oculta las reseñas de ese autor para la cuenta que lo activó. Las denuncias
+se guardan en una cola privada que debe tramitarse con rapidez. Los
+restaurantes no pueden borrar ni ocultar reseñas, ni puntuar platos o locales:
+solo las cuentas de cliente pueden valorar. El contacto público es
+`shareat.app.official@gmail.com`.
 
-> **Pendiente antes de enviar a revisión.** La *App Review Guideline 1.2* exige
-> para el contenido generado por usuarios: un filtro de contenido ofensivo, un
-> mecanismo de denuncia dentro de la app, la posibilidad de bloquear a otros
-> usuarios y una forma de contacto publicada. Hoy la app solo cumple la última
-> (`shareat.app.official@gmail.com`). Hay que implementar la denuncia y el
-> bloqueo, o Apple rechazará el envío.
+La migración de moderación tiene que estar aplicada en producción antes de
+instalar la nueva compilación. Hay que revisar la cola de denuncias y los
+comentarios pendientes a diario; los pasos están en
+`release/appstore/REVIEW_RESUBMISSION.md`.
 
 ---
 
 ## 11. Datos de demostración para App Review
 
-El revisor necesita entrar con una cuenta de restaurante para ver la mitad de
-las capturas. Hay que crear una cuenta en el entorno de producción y anotarla en
-*App Review Information → Sign-in required*, con una nota del tipo:
+El revisor necesita una cuenta de restaurante y una de cliente. Para probar
+denuncia y bloqueo debe haber una reseña visible de **otro** cliente: prepara
+una segunda cuenta de cliente o un contenido de muestra autorizado. Las
+credenciales se anotan en *App Review Information → Sign-in required* y
+*Notes*, con una nota del tipo:
 
 > La app se puede explorar sin cuenta. Para probar la gestión de restaurante,
 > usa la cuenta de demostración adjunta: incluye un restaurante publicado con

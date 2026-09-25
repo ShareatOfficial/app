@@ -134,7 +134,6 @@ fun SettingsScreen(
                 SettingsEvent.LogoutSuccess -> navigator.onLogoutSuccess()
                 SettingsEvent.DeletionRequested -> showDeletionSuccess = true
                 SettingsEvent.NavigateToEditProfile -> navigator.openEditProfile()
-                SettingsEvent.NavigateToSubscription -> navigator.openSubscription()
             }
         }
     }

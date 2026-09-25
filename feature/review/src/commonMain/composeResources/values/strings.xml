@@ -3,7 +3,8 @@
     <string name="dish_review_rate_dish">Rate the dish</string>
     <string name="dish_review_rate_restaurant">Rate the restaurant</string>
     <string name="dish_review_submit">Send reviews</string>
-    <string name="dish_review_submitted">Your reviews have been saved.</string>
+    <string name="dish_review_submitted">Your ratings were saved. Written comments will appear after moderation.</string>
+    <string name="dish_review_moderation_notice">Written comments are reviewed before they appear publicly.</string>
     <string name="dish_review_comment">Comment (optional)</string>
     <string name="dish_review_error_credentials">Your session credentials are no longer valid.</string>
     <string name="dish_review_error_offline">You are offline. Check your connection and try again.</string>

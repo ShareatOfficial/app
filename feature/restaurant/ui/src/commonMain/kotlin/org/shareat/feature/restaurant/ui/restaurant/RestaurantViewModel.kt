@@ -4,14 +4,19 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.RestaurantId
+import org.shareat.app.domain.model.ReviewId
+import org.shareat.app.domain.model.ReviewReportReason
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
+import org.shareat.app.domain.repository.ReviewRepository
 import org.shareat.app.domain.usecase.GetRestaurantMenuUseCase
 import org.shareat.app.domain.usecase.GetRestaurantUseCase
 import org.shareat.feature.restaurant.domain.model.DishFilterSubject
@@ -33,12 +38,15 @@ class RestaurantViewModel(
     private val getRestaurantMenu: GetRestaurantMenuUseCase,
     private val getRestaurant: GetRestaurantUseCase,
     private val dishMatchesFilters: DishMatchesFiltersUseCase,
+    private val reviewRepository: ReviewRepository? = null,
 ) : ViewModel() {
     private var restaurant: RestaurantArgs = args
     private var selection = RestaurantSelection()
 
     private val _uiState = MutableStateFlow(currentUiState())
     val uiState: StateFlow<RestaurantUiState> = _uiState.asStateFlow()
+    private val _moderationEvents = MutableSharedFlow<ReviewModerationFeedback>(extraBufferCapacity = 1)
+    val moderationEvents = _moderationEvents.asSharedFlow()
 
     init {
         loadDishes()
@@ -58,6 +66,36 @@ class RestaurantViewModel(
 
     fun onDishRatingClick(dishId: String, rating: Int) = updateSelection {
         copy(dishRatings = dishRatings + (dishId to rating))
+    }
+
+    fun onReportReview(reviewId: String, reason: ReviewReportReason) {
+        val repository = reviewRepository ?: return
+        viewModelScope.launch {
+            when (val result = repository.reportReview(ReviewId(reviewId), reason)) {
+                is RepositoryResult.Success -> _moderationEvents.emit(ReviewModerationFeedback.Reported)
+                is RepositoryResult.Failure ->
+                    _uiState.value = currentUiState(error = result.error.toRestaurantError())
+            }
+        }
+    }
+
+    fun onBlockReviewer(reviewId: String) {
+        val repository = reviewRepository ?: return
+        viewModelScope.launch {
+            when (val result = repository.blockReviewAuthor(ReviewId(reviewId))) {
+                is RepositoryResult.Success -> {
+                    val blockedId = result.value.value
+                    restaurant = restaurant.copy(dishes = restaurant.dishes.map { dish ->
+                        dish.copy(reviews = dish.reviews.filterNot { it.authorAccountId == blockedId })
+                    })
+                    _uiState.value = currentUiState()
+                    _moderationEvents.emit(ReviewModerationFeedback.Blocked)
+                    onRefresh()
+                }
+                is RepositoryResult.Failure ->
+                    _uiState.value = currentUiState(error = result.error.toRestaurantError())
+            }
+        }
     }
 
     fun onRefresh() {
@@ -149,4 +187,9 @@ private fun RepositoryError.toRestaurantError(): RestaurantError = when (this) {
     is RepositoryError.AlreadyExists -> RestaurantError.ALREADY_EXISTS
     is RepositoryError.NotFound -> RestaurantError.NOT_FOUND
     is RepositoryError.Conflict, is RepositoryError.Validation -> RestaurantError.UNKNOWN
+}
+
+enum class ReviewModerationFeedback {
+    Reported,
+    Blocked,
 }

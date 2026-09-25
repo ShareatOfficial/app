@@ -10,7 +10,7 @@ data class RestaurantArgs(
     val name: String,
     val address: String,
     val isOpen: Boolean,
-    val heroImageUrl: String? = "https://www.aragondigital.es/articulo/zaragoza/pizzeria-que-sigue-conquistando-zaragoza-abre-cuarto-local-celebra-comidas-gratis/202608271013371004086.html",
+    val heroImageUrl: String? = null,
     val heroImageDescription: String? = null,
     val description: String? = null,
     val cuisineLabel: String? = null,
@@ -39,4 +39,5 @@ data class DishReviewArgs(
     val id: String,
     val rating: Int,
     val comment: String? = null,
+    val authorAccountId: String? = null,
 )

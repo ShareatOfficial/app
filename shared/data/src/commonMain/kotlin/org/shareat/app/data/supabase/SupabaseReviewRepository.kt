@@ -15,6 +15,7 @@ import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
 import org.shareat.app.domain.model.ReviewId
+import org.shareat.app.domain.model.ReviewReportReason
 import org.shareat.app.domain.model.ReviewTarget
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.app.domain.repository.ReviewRepository
@@ -121,6 +122,20 @@ internal class SupabaseReviewRepository(
                 eq("author_account_id", authorAccountId.value)
             }
         }
+    }
+
+    override suspend fun reportReview(id: ReviewId, reason: ReviewReportReason): RepositoryResult<Unit> = supabaseResult {
+        client.postgrest.rpc(
+            function = "report_review",
+            parameters = mapOf("p_review_id" to id.value, "p_reason" to reason.name.lowercase()),
+        )
+    }
+
+    override suspend fun blockReviewAuthor(id: ReviewId): RepositoryResult<AccountId> = supabaseResult {
+        AccountId(client.postgrest.rpc(
+            function = "block_review_author",
+            parameters = mapOf("p_review_id" to id.value),
+        ).decodeAs<String>())
     }
 }
 

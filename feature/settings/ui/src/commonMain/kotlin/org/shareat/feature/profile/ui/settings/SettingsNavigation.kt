@@ -5,6 +5,5 @@ interface SettingsNavigation {
     fun openLogin()
     fun openEditProfile()
     fun openTermsAndConditions()
-    fun openSubscription()
     fun onLogoutSuccess()
 }

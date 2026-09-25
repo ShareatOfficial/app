@@ -7,6 +7,7 @@ import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
 import org.shareat.app.domain.model.ReviewId
+import org.shareat.app.domain.model.ReviewReportReason
 import org.shareat.app.domain.model.ReviewTarget
 
 interface ReviewRepository {
@@ -28,4 +29,6 @@ interface ReviewRepository {
     /** Creates or updates the unique review identified by author and target. */
     suspend fun saveReview(draft: ReviewDraft): RepositoryResult<Review>
     suspend fun deleteReview(id: ReviewId, authorAccountId: AccountId): RepositoryResult<Unit>
+    suspend fun reportReview(id: ReviewId, reason: ReviewReportReason): RepositoryResult<Unit>
+    suspend fun blockReviewAuthor(id: ReviewId): RepositoryResult<AccountId>
 }

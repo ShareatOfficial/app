@@ -48,6 +48,7 @@ import shareat.feature.review.generated.resources.dish_review_rate_dish
 import shareat.feature.review.generated.resources.dish_review_rate_restaurant
 import shareat.feature.review.generated.resources.dish_review_submit
 import shareat.feature.review.generated.resources.dish_review_submitted
+import shareat.feature.review.generated.resources.dish_review_moderation_notice
 import shareat.feature.review.generated.resources.dish_review_title
 
 @Composable
@@ -131,6 +132,12 @@ private fun DishReviewScreenContent(
                 enabled = !uiState.isSubmitting,
                 onRatingChange = onRestaurantRatingChange,
                 onCommentChange = onRestaurantCommentChange,
+            )
+
+            Text(
+                text = stringResource(Res.string.dish_review_moderation_notice),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Button(

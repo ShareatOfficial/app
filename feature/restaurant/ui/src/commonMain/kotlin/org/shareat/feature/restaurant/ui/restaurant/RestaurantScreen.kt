@@ -30,6 +30,7 @@ import org.koin.core.parameter.parametersOf
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.EuAllergen
+import org.shareat.app.domain.model.ReviewReportReason
 import org.shareat.feature.restaurant.ui.model.RestaurantArgs
 import org.shareat.feature.restaurant.ui.model.RestaurantUiState
 import org.shareat.feature.restaurant.ui.navigation.RestaurantNavigation
@@ -45,6 +46,8 @@ import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restaurant.ui.generated.resources.Res
 import shareat.feature.restaurant.ui.generated.resources.restaurant_no_dishes_for_filters
 import shareat.feature.restaurant.ui.generated.resources.restaurant_no_menus
+import shareat.feature.restaurant.ui.generated.resources.restaurant_review_blocked
+import shareat.feature.restaurant.ui.generated.resources.restaurant_review_reported
 import org.shareat.shared.designsystem.preview.FormFactorPreviews
 import org.shareat.feature.restaurant.ui.restaurant.composables.label
 
@@ -65,6 +68,17 @@ fun RestaurantScreen(
     ),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val reportedMessage = stringResource(Res.string.restaurant_review_reported)
+    val blockedMessage = stringResource(Res.string.restaurant_review_blocked)
+    LaunchedEffect(viewModel, reportedMessage, blockedMessage) {
+        viewModel.moderationEvents.collect { feedback ->
+            snackbarHostState.showSnackbar(when (feedback) {
+                ReviewModerationFeedback.Reported -> reportedMessage
+                ReviewModerationFeedback.Blocked -> blockedMessage
+            })
+        }
+    }
     LaunchedEffect(reviewSubmissionCount) {
         if (reviewSubmissionCount > 0) viewModel.onRefresh()
     }
@@ -82,6 +96,9 @@ fun RestaurantScreen(
             viewModel.onDishRatingClick(dishId, rating)
             onDishReviewRequest(DishId(dishId), rating)
         },
+        onReportReview = viewModel::onReportReview,
+        onBlockReviewer = viewModel::onBlockReviewer,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -97,12 +114,15 @@ internal fun RestaurantScreenStateless(
     onCategoryClick: (DishCategory?) -> Unit = {},
     onAllergenClick: (EuAllergen) -> Unit = {},
     onDishRatingClick: (String, Int) -> Unit = { _, _ -> },
+    onReportReview: (String, ReviewReportReason) -> Unit = { _, _ -> },
+    onBlockReviewer: (String) -> Unit = {},
+    snackbarHostState: SnackbarHostState? = null,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
+    val hostState = snackbarHostState ?: remember { SnackbarHostState() }
     val errorMessage = uiState.error?.label()
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+            hostState.showSnackbar(message)
             onErrorShown()
         }
     }
@@ -111,7 +131,7 @@ internal fun RestaurantScreenStateless(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = { RestaurantTopBar(name = uiState.header.name, onBackClick = onBackClick) },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(hostState) },
     ) { contentPadding ->
         PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
@@ -137,7 +157,7 @@ internal fun RestaurantScreenStateless(
                     }
                 }
                 filterSection(uiState, onCategoryClick, onAllergenClick)
-                dishSection(uiState, onDishRatingClick)
+                dishSection(uiState, onDishRatingClick, onReportReview, onBlockReviewer)
             }
         }
     }
@@ -168,6 +188,8 @@ private fun LazyListScope.filterSection(
 private fun LazyListScope.dishSection(
     uiState: RestaurantUiState,
     onDishRatingClick: (String, Int) -> Unit,
+    onReportReview: (String, ReviewReportReason) -> Unit,
+    onBlockReviewer: (String) -> Unit,
 ) {
     if (uiState.isRefreshing || uiState.isLoadingDishes) {
         items(LoadingDishSkeletons) {
@@ -194,6 +216,8 @@ private fun LazyListScope.dishSection(
         DishCard(
             dish = dish,
             onRatingClick = { rating -> onDishRatingClick(dish.id, rating) },
+            onReportReview = onReportReview,
+            onBlockReviewer = onBlockReviewer,
             modifier = Modifier.padding(horizontal = ScreenPadding),
         )
     }

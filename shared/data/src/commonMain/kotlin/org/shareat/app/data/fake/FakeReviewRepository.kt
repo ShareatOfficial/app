@@ -11,6 +11,7 @@ import org.shareat.app.domain.model.Review
 import org.shareat.app.domain.model.ReviewDraft
 import org.shareat.app.domain.model.ReviewId
 import org.shareat.app.domain.model.ReviewModerationStatus
+import org.shareat.app.domain.model.ReviewReportReason
 import org.shareat.app.domain.model.ReviewTarget
 import org.shareat.app.domain.model.ReviewVisibility
 import org.shareat.app.domain.model.toRatingSummary
@@ -35,14 +36,19 @@ class FakeReviewRepository(
         IsoTimestamp("2026-08-13T12:30:00Z")
     },
 ) : ReviewRepository {
+    private val blockedAuthors = mutableSetOf<AccountId>()
+    private val reports = mutableSetOf<ReviewId>()
+
     override suspend fun getPublicReviews(target: ReviewTarget) = scenario.result(
-        populated = { data.publicReviewsOf(target) },
+        populated = { data.publicReviewsOf(target).filterNot { it.authorAccountId in blockedAuthors } },
         empty = { emptyList() },
     )
 
     override suspend fun getPublicDishReviews(dishIds: Set<DishId>) = scenario.result(
         populated = {
-            dishIds.associateWith { data.publicReviewsOf(ReviewTarget.Dish(it)) }
+            dishIds.associateWith {
+                data.publicReviewsOf(ReviewTarget.Dish(it)).filterNot { review -> review.authorAccountId in blockedAuthors }
+            }
                 .filterValues(List<Review>::isNotEmpty)
         },
         empty = { emptyMap() },
@@ -54,14 +60,20 @@ class FakeReviewRepository(
     )
 
     override suspend fun getRatingSummary(target: ReviewTarget) = scenario.result(
-        populated = { data.publicReviewsOf(target).toRatingSummary() },
+        populated = {
+            data.publicReviewsOf(target).filterNot { it.authorAccountId in blockedAuthors }.toRatingSummary()
+        },
         empty = { RatingSummary.Unrated },
     )
 
     override suspend fun getRestaurantRatingSummaries(restaurantIds: Set<RestaurantId>) = scenario.result(
         populated = {
             restaurantIds
-                .associateWith { data.publicReviewsOf(ReviewTarget.Restaurant(it)).toRatingSummary() }
+                .associateWith { restaurantId ->
+                    data.publicReviewsOf(ReviewTarget.Restaurant(restaurantId))
+                        .filterNot { it.authorAccountId in blockedAuthors }
+                        .toRatingSummary()
+                }
                 .filterValues { it.ratingCount > 0 }
         },
         empty = { emptyMap() },
@@ -92,6 +104,13 @@ class FakeReviewRepository(
                 comment = draft.comment,
                 visibility = draft.visibility,
                 visitedAt = draft.visitedAt,
+                moderationStatus = if (data.reviews[existingIndex].moderationStatus == ReviewModerationStatus.Removed) {
+                    ReviewModerationStatus.Removed
+                } else if (draft.comment != data.reviews[existingIndex].comment) {
+                    if (draft.comment == null) ReviewModerationStatus.Visible else ReviewModerationStatus.Hidden
+                } else {
+                    data.reviews[existingIndex].moderationStatus
+                },
                 updatedAt = now,
             ).also { data.reviews[existingIndex] = it }
         } else {
@@ -102,7 +121,11 @@ class FakeReviewRepository(
                 rating = draft.rating,
                 comment = draft.comment,
                 visibility = draft.visibility,
-                moderationStatus = ReviewModerationStatus.Visible,
+                moderationStatus = if (draft.comment == null) {
+                    ReviewModerationStatus.Visible
+                } else {
+                    ReviewModerationStatus.Hidden
+                },
                 visitedAt = draft.visitedAt,
                 createdAt = now,
                 updatedAt = now,
@@ -122,6 +145,23 @@ class FakeReviewRepository(
         } else {
             RepositoryResult.Failure(RepositoryError.NotFound("Review", id.value))
         }
+    }
+
+    override suspend fun reportReview(id: ReviewId, reason: ReviewReportReason): RepositoryResult<Unit> {
+        scenario.failureOrNull()?.let { return it }
+        if (data.reviews.none { it.id == id }) {
+            return RepositoryResult.Failure(RepositoryError.NotFound("Review", id.value))
+        }
+        reports += id
+        return RepositoryResult.Success(Unit)
+    }
+
+    override suspend fun blockReviewAuthor(id: ReviewId): RepositoryResult<AccountId> {
+        scenario.failureOrNull()?.let { return it }
+        val author = data.reviews.firstOrNull { it.id == id }?.authorAccountId
+            ?: return RepositoryResult.Failure(RepositoryError.NotFound("Review", id.value))
+        blockedAuthors += author
+        return RepositoryResult.Success(author)
     }
 
     private fun targetExists(target: ReviewTarget): Boolean = when (target) {

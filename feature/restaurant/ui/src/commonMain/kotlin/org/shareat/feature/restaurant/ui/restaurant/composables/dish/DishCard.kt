@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.pluralStringResource
 import org.shareat.app.domain.model.EuAllergen
+import org.shareat.app.domain.model.ReviewReportReason
 import org.shareat.feature.restaurant.ui.model.DishCardUiState
 import org.shareat.feature.restaurant.ui.model.DishReviewUiState
 import org.shareat.feature.restaurant.ui.restaurant.composables.ShimmerBar
@@ -56,6 +57,8 @@ internal fun DishCard(
     dish: DishCardUiState,
     onRatingClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onReportReview: (String, ReviewReportReason) -> Unit = { _, _ -> },
+    onBlockReviewer: (String) -> Unit = {},
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     DishCardStateless(
@@ -63,6 +66,8 @@ internal fun DishCard(
         isExpanded = isExpanded,
         onClick = { isExpanded = !isExpanded },
         onRatingClick = onRatingClick,
+        onReportReview = onReportReview,
+        onBlockReviewer = onBlockReviewer,
         modifier = modifier,
     )
 }
@@ -75,6 +80,8 @@ private fun DishCardStateless(
     onClick: () -> Unit,
     onRatingClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onReportReview: (String, ReviewReportReason) -> Unit = { _, _ -> },
+    onBlockReviewer: (String) -> Unit = {},
 ) {
     Card(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
@@ -130,6 +137,8 @@ private fun DishCardStateless(
                 reviews = dish.reviews,
                 comments = dish.comments,
                 onRatingClick = onRatingClick,
+                onReportReview = onReportReview,
+                onBlockReviewer = onBlockReviewer,
             )
         }
     }

@@ -6,7 +6,6 @@ import org.shareat.feature.profile.ui.editprofile.EditProfileKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
 import org.shareat.feature.profile.ui.settings.SettingsNavigation
 import org.shareat.feature.profile.ui.terms.TermsAndConditionsKey
-import org.shareat.feature.subscription.ui.SubscriptionKey
 
 class SettingsNavigationImpl(
     private val navigator: Navigator,
@@ -21,10 +20,6 @@ class SettingsNavigationImpl(
 
     override fun openEditProfile() {
         navigator.navigate(EditProfileKey)
-    }
-
-    override fun openSubscription() {
-        navigator.navigate(SubscriptionKey)
     }
 
     override fun openTermsAndConditions() {

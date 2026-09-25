@@ -36,7 +36,6 @@ sealed interface SettingsRestaurantAction {
         val value: List<OpeningHoursUiState>,
     ) : SettingsRestaurantAction
 
-    data object Subscription : SettingsRestaurantAction
     data object RequestDeletion : SettingsRestaurantAction
     data object SaveChanges : SettingsRestaurantAction
     data object LogOut : SettingsRestaurantAction
