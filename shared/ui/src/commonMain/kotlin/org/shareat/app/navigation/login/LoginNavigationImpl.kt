@@ -6,6 +6,10 @@ import org.shareat.feature.login.ui.LoginNavigation
 class LoginNavigationImpl(
     private val navigator: Navigator,
 ) : LoginNavigation {
+    override fun goBack() {
+        navigator.goBack()
+    }
+
     override fun onLoginSuccess() {
         navigator.completeLogin()
     }

@@ -27,12 +27,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.shareat.app.domain.model.AccountRole
+import org.shareat.app.domain.PublicPages
 import org.shareat.feature.login.ui.components.AuthTextField
 import org.shareat.feature.login.ui.components.hint
 import org.shareat.feature.login.ui.components.label
@@ -47,6 +49,7 @@ import shareat.feature.login.ui.generated.resources.login_email
 import shareat.feature.login.ui.generated.resources.login_password
 import shareat.feature.login.ui.generated.resources.login_password_hint
 import shareat.feature.login.ui.generated.resources.login_passwords_mismatch
+import shareat.feature.login.ui.generated.resources.login_privacy_policy
 import shareat.feature.login.ui.generated.resources.login_register_title
 import shareat.feature.login.ui.generated.resources.login_role_prompt
 import shareat.feature.login.ui.generated.resources.login_sign_in_instead
@@ -71,6 +74,7 @@ internal fun RegisterScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val uriHandler = LocalUriHandler.current
     // The view model only tracks the password the account is created with; the confirmation is
     // UI-only and never leaves this screen.
     var confirmPassword by rememberSaveable { mutableStateOf("") }
@@ -156,6 +160,12 @@ internal fun RegisterScreen(
             } else {
                 Text(text = stringResource(Res.string.login_create_account))
             }
+        }
+        TextButton(
+            onClick = { uriHandler.openUri(PublicPages.PRIVACY_POLICY) },
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            Text(text = stringResource(Res.string.login_privacy_policy))
         }
         TextButton(
             onClick = onSignInInsteadClick,

@@ -4,5 +4,6 @@ import androidx.compose.runtime.Stable
 
 @Stable
 interface LoginNavigation {
+    fun goBack()
     fun onLoginSuccess()
 }

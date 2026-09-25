@@ -8,11 +8,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
+import org.shareat.app.domain.model.AuthSessionState
 import org.shareat.app.domain.model.Restaurant
+import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.profile.domain.GetAppLanguageSupportUseCase
@@ -21,34 +24,38 @@ import org.shareat.feature.profile.domain.ObserveAppLanguageUseCase
 import org.shareat.feature.profile.domain.SelectAppLanguageUseCase
 import org.shareat.feature.profile.domain.ProfileSettings
 import org.shareat.feature.profile.domain.SignOutUseCase
+import org.shareat.feature.profile.domain.RequestAccountDeletionUseCase
 import org.shareat.feature.profile.domain.UpdateRestaurantInfoUseCase
 
 @Stable
 @KoinViewModel
 class SettingsViewModel(
+    private val authRepository: AuthRepository,
     private val loadProfileSettingsUseCase: LoadProfileSettingsUseCase,
     private val updateRestaurantInfoUseCase: UpdateRestaurantInfoUseCase,
     private val signOutUseCase: SignOutUseCase,
     private val observeAppLanguageUseCase: ObserveAppLanguageUseCase,
     private val getAppLanguageSupportUseCase: GetAppLanguageSupportUseCase,
     private val selectAppLanguageUseCase: SelectAppLanguageUseCase,
+    private val requestAccountDeletionUseCase: RequestAccountDeletionUseCase,
 ) : ViewModel() {
     private val eventChannel = Channel<SettingsEvent>(capacity = Channel.BUFFERED)
     internal val events: Flow<SettingsEvent> = eventChannel.receiveAsFlow()
 
     private val _uiState = MutableStateFlow<SettingsUiState>(
-        SettingsUiState.User(isLoading = true),
+        SettingsUiState.Guest(isLoading = true),
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     private var loadedRestaurant: Restaurant? = null
+    private var deletionRequestInProgress = false
 
     /** Kept aside so replacing the whole state after a load or save does not drop the language. */
     private var languageState = AppLanguageUiState()
 
     init {
-        loadSettings()
         observeLanguage()
+        observeSession()
     }
 
     fun onLanguageAction(action: SettingsLanguageAction) {
@@ -65,9 +72,41 @@ class SettingsViewModel(
         }
     }
 
+    private fun observeSession() {
+        viewModelScope.launch {
+            authRepository.observeSession().collectLatest { session ->
+                when (session) {
+                    AuthSessionState.Initializing -> {
+                        loadedRestaurant = null
+                        _uiState.value = SettingsUiState.Guest(
+                            isLoading = true,
+                            language = languageState,
+                        )
+                    }
+
+                    AuthSessionState.Unauthenticated -> {
+                        loadedRestaurant = null
+                        _uiState.value = SettingsUiState.Guest(language = languageState)
+                    }
+
+                    AuthSessionState.RefreshUnavailable -> {
+                        loadedRestaurant = null
+                        _uiState.value = SettingsUiState.Guest(
+                            error = SettingsError.Offline,
+                            language = languageState,
+                        )
+                    }
+
+                    is AuthSessionState.Authenticated -> loadSettings()
+                }
+            }
+        }
+    }
+
     fun onUserAction(action: SettingsUserAction) {
         when (action) {
             SettingsUserAction.EditProfile -> emitEvent(SettingsEvent.NavigateToEditProfile)
+            SettingsUserAction.RequestDeletion -> requestAccountDeletion()
             SettingsUserAction.LogOut -> onLogOut()
         }
     }
@@ -95,35 +134,48 @@ class SettingsViewModel(
                 editRestaurant { copy(openingHours = action.value) }
 
             SettingsRestaurantAction.Subscription -> emitEvent(SettingsEvent.NavigateToSubscription)
+            SettingsRestaurantAction.RequestDeletion -> requestAccountDeletion()
             SettingsRestaurantAction.SaveChanges -> saveRestaurantChanges()
             SettingsRestaurantAction.LogOut -> onLogOut()
         }
     }
 
-    private fun loadSettings() {
-        viewModelScope.launch {
-            when (val result = loadProfileSettingsUseCase()) {
-                is RepositoryResult.Success -> when (val settings = result.value) {
-                    is ProfileSettings.User ->
-                        _uiState.value = settings.toUiState().withLanguage(languageState)
-                    is ProfileSettings.RestaurantOwner -> {
-                        loadedRestaurant = settings.restaurant
-                        _uiState.value = settings.toUiState().withLanguage(languageState)
-                    }
+    private suspend fun loadSettings() {
+        updateCurrentState {
+            when (this) {
+                is SettingsUiState.Guest -> copy(isLoading = true, error = null)
+                is SettingsUiState.User -> copy(isLoading = true, error = null)
+                is SettingsUiState.Restaurant -> copy(isLoading = true, error = null)
+            }
+        }
+        when (val result = loadProfileSettingsUseCase()) {
+            is RepositoryResult.Success -> when (val settings = result.value) {
+                ProfileSettings.Guest ->
+                    _uiState.value = SettingsUiState.Guest(language = languageState)
+                is ProfileSettings.User ->
+                    _uiState.value = settings.toUiState().withLanguage(languageState)
+                is ProfileSettings.RestaurantOwner -> {
+                    loadedRestaurant = settings.restaurant
+                    _uiState.value = settings.toUiState().withLanguage(languageState)
                 }
+            }
 
-                is RepositoryResult.Failure -> updateCurrentState {
-                    when (this) {
-                        is SettingsUiState.User -> copy(
-                            isLoading = false,
-                            error = result.error.toSettingsError(),
-                        )
+            is RepositoryResult.Failure -> updateCurrentState {
+                when (this) {
+                    is SettingsUiState.Guest -> copy(
+                        isLoading = false,
+                        error = result.error.toSettingsError(),
+                    )
 
-                        is SettingsUiState.Restaurant -> copy(
-                            isLoading = false,
-                            error = result.error.toSettingsError(),
-                        )
-                    }
+                    is SettingsUiState.User -> copy(
+                        isLoading = false,
+                        error = result.error.toSettingsError(),
+                    )
+
+                    is SettingsUiState.Restaurant -> copy(
+                        isLoading = false,
+                        error = result.error.toSettingsError(),
+                    )
                 }
             }
         }
@@ -193,10 +245,11 @@ class SettingsViewModel(
     }
 
     private fun onLogOut() {
-        if (_uiState.value.isLoading) return
+        if (_uiState.value.isLoading || _uiState.value is SettingsUiState.Guest) return
 
         updateCurrentState {
             when (this) {
+                is SettingsUiState.Guest -> this
                 is SettingsUiState.User -> copy(isLoading = true, error = null)
                 is SettingsUiState.Restaurant -> copy(isLoading = true, error = null)
             }
@@ -206,6 +259,7 @@ class SettingsViewModel(
                 is RepositoryResult.Success -> {
                     updateCurrentState {
                         when (this) {
+                            is SettingsUiState.Guest -> this
                             is SettingsUiState.User -> copy(isLoading = false)
                             is SettingsUiState.Restaurant -> copy(isLoading = false)
                         }
@@ -215,6 +269,7 @@ class SettingsViewModel(
 
                 is RepositoryResult.Failure -> updateCurrentState {
                     when (this) {
+                        is SettingsUiState.Guest -> this
                         is SettingsUiState.User -> copy(
                             isLoading = false,
                             error = result.error.toSettingsError(),
@@ -226,6 +281,36 @@ class SettingsViewModel(
                         )
                     }
                 }
+            }
+        }
+    }
+
+    private fun requestAccountDeletion() {
+        if (_uiState.value.isLoading || deletionRequestInProgress) return
+        deletionRequestInProgress = true
+        viewModelScope.launch {
+            try {
+                when (val result = requestAccountDeletionUseCase()) {
+                    is RepositoryResult.Success -> {
+                        updateCurrentState {
+                            when (this) {
+                                is SettingsUiState.User -> copy(error = null)
+                                is SettingsUiState.Restaurant -> copy(error = null)
+                                is SettingsUiState.Guest -> this
+                            }
+                        }
+                        eventChannel.send(SettingsEvent.DeletionRequested)
+                    }
+                    is RepositoryResult.Failure -> updateCurrentState {
+                        when (this) {
+                            is SettingsUiState.User -> copy(error = result.error.toSettingsError())
+                            is SettingsUiState.Restaurant -> copy(error = result.error.toSettingsError())
+                            is SettingsUiState.Guest -> this
+                        }
+                    }
+                }
+            } finally {
+                deletionRequestInProgress = false
             }
         }
     }

@@ -10,6 +10,8 @@ import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.model.WeeklyOpeningHours
 
 sealed interface ProfileSettings {
+    data object Guest : ProfileSettings
+
     data class User(
         val account: Account,
         val profile: CustomerProfile,

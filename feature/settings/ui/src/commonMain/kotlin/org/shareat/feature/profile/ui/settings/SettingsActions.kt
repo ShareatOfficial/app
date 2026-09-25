@@ -4,6 +4,7 @@ import org.shareat.app.domain.model.AppLanguage
 
 enum class SettingsUserAction {
     EditProfile,
+    RequestDeletion,
     LogOut,
 }
 
@@ -36,6 +37,7 @@ sealed interface SettingsRestaurantAction {
     ) : SettingsRestaurantAction
 
     data object Subscription : SettingsRestaurantAction
+    data object RequestDeletion : SettingsRestaurantAction
     data object SaveChanges : SettingsRestaurantAction
     data object LogOut : SettingsRestaurantAction
 }

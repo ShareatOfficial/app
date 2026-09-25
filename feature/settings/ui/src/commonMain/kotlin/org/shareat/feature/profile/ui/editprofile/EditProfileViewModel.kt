@@ -45,6 +45,10 @@ class EditProfileViewModel(
         viewModelScope.launch {
             when (val result = loadProfileSettingsUseCase()) {
                 is RepositoryResult.Success -> when (val settings = result.value) {
+                    ProfileSettings.Guest -> _uiState.value = EditProfileUiState(
+                        isLoading = false,
+                        error = EditProfileError.UNAUTHENTICATED,
+                    )
                     is ProfileSettings.User -> _uiState.value = EditProfileUiState(
                         accountId = settings.account.id,
                         fullName = settings.profile.fullName,
