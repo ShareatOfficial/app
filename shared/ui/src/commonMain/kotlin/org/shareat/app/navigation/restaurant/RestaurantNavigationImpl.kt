@@ -9,6 +9,4 @@ class RestaurantNavigationImpl(
     override fun goBack() {
         navigator.goBack()
     }
-
-    override fun openRestaurantReviewForm(restaurantId: String) = Unit
 }

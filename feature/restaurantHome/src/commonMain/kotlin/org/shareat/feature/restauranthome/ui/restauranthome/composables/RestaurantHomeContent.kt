@@ -15,9 +15,8 @@ import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_err
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_session
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_error_unavailable
 
-// we keep here and a todo be implement it
 @Composable
-private fun RestaurantHomeError.message(): String = stringResource(
+internal fun RestaurantHomeError.message(): String = stringResource(
     when (this) {
         RestaurantHomeError.OFFLINE -> Res.string.restaurant_home_error_offline
         RestaurantHomeError.UNAUTHENTICATED -> Res.string.restaurant_home_error_session

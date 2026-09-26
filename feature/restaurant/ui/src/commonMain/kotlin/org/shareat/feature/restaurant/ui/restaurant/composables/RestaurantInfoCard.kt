@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +32,6 @@ import org.shareat.feature.restaurant.ui.model.RestaurantHeaderUiState
 import org.shareat.shared.designsystem.shimmerEffect
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restaurant.ui.generated.resources.Res
-import shareat.feature.restaurant.ui.generated.resources.restaurant_leave_your_rate
 import shareat.feature.restaurant.ui.generated.resources.restaurant_reviews_count
 import shareat.feature.restaurant.ui.generated.resources.restaurant_unrated
 import shareat.feature.restaurant.ui.generated.resources.restaurant_verified
@@ -45,7 +43,6 @@ private const val DescriptionMaxLines = 3
 @Composable
 internal fun RestaurantInfoCard(
     header: RestaurantHeaderUiState,
-    onLeaveRateClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(modifier = modifier.fillMaxWidth(), shape = CardShape) {
@@ -65,19 +62,10 @@ internal fun RestaurantInfoCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    RestaurantRating(
-                        ratingLabel = header.ratingLabel,
-                        reviewCount = header.reviewCount,
-                    )
-                    Button(onClick = onLeaveRateClick) {
-                        Text(text = stringResource(Res.string.restaurant_leave_your_rate))
-                    }
-                }
+                RestaurantRating(
+                    ratingLabel = header.ratingLabel,
+                    reviewCount = header.reviewCount,
+                )
             }
         }
     }
@@ -206,7 +194,6 @@ private fun RestaurantInfoCardPreview() {
                 ratingLabel = "4,8",
                 reviewCount = 1_284,
             ),
-            onLeaveRateClick = {},
         )
     }
 }
@@ -220,7 +207,6 @@ private fun RestaurantInfoCardUnratedPreview() {
                 name = "Casa Naranja",
                 address = "Calle del Olmo, 18, Madrid",
             ),
-            onLeaveRateClick = {},
         )
     }
 }

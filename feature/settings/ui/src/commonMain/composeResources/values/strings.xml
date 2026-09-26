@@ -44,6 +44,7 @@
     <string name="settings_edit_profile">Edit profile</string>
     <string name="settings_terms">Terms and conditions</string>
     <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_support">Help and support</string>
     <string name="settings_log_in">Sign in</string>
     <string name="settings_log_out">Log out</string>
     <string name="settings_section_basic">Basic information</string>
@@ -97,8 +98,6 @@
     <string name="edit_profile_email">Email address</string>
     <string name="edit_profile_verified">Verified</string>
     <string name="edit_profile_phone">Phone</string>
-    <string name="edit_profile_change_photo">Change photo</string>
-    <string name="edit_profile_error_photo_unsupported">Changing the profile photo is not available yet.</string>
     <string name="edit_profile_error_customer_only">Only customer accounts can edit the personal profile.</string>
     <string name="edit_profile_error_credentials">Your credentials are no longer valid.</string>
     <string name="edit_profile_error_offline">You appear to be offline. Please try again.</string>
@@ -137,7 +136,7 @@
     <string name="settings_language_unsupported">The web app follows your browser language.</string>
     <string name="settings_delete_account">Delete account</string>
     <string name="settings_delete_title">Request account deletion</string>
-    <string name="settings_delete_description">Your account and associated data will be deleted after we process the request. We will do this within 30 days and confirm by email. If you have a subscription, cancel it in your store settings: deleting your account does not cancel billing.</string>
+    <string name="settings_delete_description">Your account and associated data will be deleted after we process the request. We will do this within 30 days and confirm by email.</string>
     <string name="settings_delete_confirm">Send request</string>
     <string name="settings_delete_cancel">Cancel</string>
     <string name="settings_delete_close">Close</string>

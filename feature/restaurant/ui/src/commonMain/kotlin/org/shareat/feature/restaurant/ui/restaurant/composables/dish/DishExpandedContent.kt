@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.shareat.feature.restaurant.ui.model.DishReviewUiState
+import org.shareat.app.domain.model.ReviewReportReason
 import org.shareat.shared.designsystem.theme.ShareatTheme
 
 private val SectionSpacing = 12.dp
@@ -23,6 +24,8 @@ internal fun DishExpandedContent(
     comments: List<DishReviewUiState>,
     onRatingClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onReportReview: (String, ReviewReportReason) -> Unit = { _, _ -> },
+    onBlockReviewer: (String) -> Unit = {},
 ) {
     AnimatedVisibility(visible = isExpanded, modifier = modifier) {
         Column(
@@ -31,7 +34,12 @@ internal fun DishExpandedContent(
         ) {
             HorizontalDivider()
             DishRatingBar(selectedRating = selectedRating, onRatingClick = onRatingClick)
-            DishReviewsCarousel(reviews = reviews, comments = comments)
+            DishReviewsCarousel(
+                reviews = reviews,
+                comments = comments,
+                onReportReview = onReportReview,
+                onBlockReviewer = onBlockReviewer,
+            )
         }
     }
 }

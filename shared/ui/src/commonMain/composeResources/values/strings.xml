@@ -4,4 +4,7 @@
     <string name="nav_settings">Settings</string>
     <string name="nav_edit_menu">Edit menu</string>
     <string name="nav_profile">Profile</string>
+    <string name="restaurant_gate_error">We could not check your account. Check your connection and try again.</string>
+    <string name="restaurant_gate_retry">Try again</string>
+    <string name="restaurant_gate_logout">Log out</string>
 </resources>

@@ -162,10 +162,10 @@ reset role;
 set local role anon;
 select is(
     (select count(*) from public.reviews where author_account_id = '10000000-0000-4000-8000-000000000001'),
-    1::bigint,
-    'anonymous cannot see private reviews'
+    0::bigint,
+    'anonymous cannot see private or unapproved reviews'
 );
-select is((select rating_count from public.restaurant_rating_summaries where restaurant_id = '30000000-0000-4000-8000-000000000001'), 1::bigint, 'restaurant rating aggregate includes public reviews');
+select is((select count(*) from public.restaurant_rating_summaries where restaurant_id = '30000000-0000-4000-8000-000000000001'), 0::bigint, 'restaurant rating aggregate excludes unapproved comments');
 select is((select count(*) from public.dish_rating_summaries where dish_id = '50000000-0000-4000-8000-000000000001'), 0::bigint, 'dish aggregate excludes private reviews');
 reset role;
 

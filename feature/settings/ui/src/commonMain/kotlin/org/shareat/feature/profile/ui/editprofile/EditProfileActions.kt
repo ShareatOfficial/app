@@ -4,6 +4,5 @@ sealed interface EditProfileAction {
     data class FullNameChanged(val value: String) : EditProfileAction
     data class DisplayNameChanged(val value: String) : EditProfileAction
     data class PhoneNumberChanged(val value: String) : EditProfileAction
-    data object ChangePhoto : EditProfileAction
     data object Save : EditProfileAction
 }

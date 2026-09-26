@@ -44,6 +44,7 @@
     <string name="settings_edit_profile">Editar perfil</string>
     <string name="settings_terms">Términos y condiciones</string>
     <string name="settings_privacy_policy">Política de privacidad</string>
+    <string name="settings_support">Ayuda y soporte</string>
     <string name="settings_log_in">Iniciar sesión</string>
     <string name="settings_log_out">Cerrar sesión</string>
     <string name="settings_section_basic">Información básica</string>
@@ -97,8 +98,6 @@
     <string name="edit_profile_email">Correo electrónico</string>
     <string name="edit_profile_verified">Verificado</string>
     <string name="edit_profile_phone">Teléfono</string>
-    <string name="edit_profile_change_photo">Cambiar foto</string>
-    <string name="edit_profile_error_photo_unsupported">Todavía no se puede cambiar la foto de perfil.</string>
     <string name="edit_profile_error_customer_only">Solo las cuentas de cliente pueden editar el perfil personal.</string>
     <string name="edit_profile_error_credentials">Tus credenciales ya no son válidas.</string>
     <string name="edit_profile_error_offline">Parece que no tienes conexión. Inténtalo de nuevo.</string>
@@ -137,7 +136,7 @@
     <string name="settings_language_unsupported">La versión web sigue el idioma de tu navegador.</string>
     <string name="settings_delete_account">Eliminar cuenta</string>
     <string name="settings_delete_title">Solicitar eliminación de cuenta</string>
-    <string name="settings_delete_description">Se eliminarán tu cuenta y los datos asociados cuando tramitemos la solicitud. Lo haremos en un máximo de 30 días y te avisaremos por correo. Si tienes una suscripción, cancélala en los ajustes de la tienda: eliminar tu cuenta no cancela el cobro.</string>
+    <string name="settings_delete_description">Se eliminarán tu cuenta y los datos asociados cuando tramitemos la solicitud. Lo haremos en un máximo de 30 días y te avisaremos por correo.</string>
     <string name="settings_delete_confirm">Enviar solicitud</string>
     <string name="settings_delete_cancel">Cancelar</string>
     <string name="settings_delete_close">Cerrar</string>

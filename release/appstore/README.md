@@ -61,7 +61,7 @@ Antes de reservar o de sentarte, mira la carta entera, el precio real de cada pl
 
 PARA QUIEN SALE A COMER
 
-• Descubre restaurantes cerca de ti, con su nota media y su horario, y entra a ver la carta sin registrarte.
+• Explora restaurantes disponibles en Shareat, con su nota media y su horario, y entra a ver la carta sin registrarte.
 • Consulta la carta completa: cada plato con su nombre, su descripción, su precio y los alérgenos que declara el restaurante.
 • Filtra por alérgenos. El filtro solo te ofrece los alérgenos que declara esa carta concreta, y nunca esconde un plato por falta de información.
 • Valora plato a plato del 1 al 5 y escribe un comentario si te apetece. Cada plato tiene su propia nota, no solo el local.
@@ -157,7 +157,7 @@ restaurante. Cada imagen lleva impresa su frase y una etiqueta de color
 
 | # | Archivo | Titular | Apoyo |
 | --- | --- | --- | --- |
-| 1 | `01-descubre.png` | Descubre dónde comer hoy | Restaurantes cerca de ti, con su nota media y si están abiertos ahora. |
+| 1 | `01-descubre.png` | Descubre dónde comer hoy | Restaurantes publicados en Shareat, con su nota y si están abiertos ahora. |
 | 2 | `02-carta.png` | La carta entera, antes de sentarte | Cada plato con su precio, su descripción y los alérgenos que declara el local. |
 | 3 | `03-alergenos.png` | Filtra por alérgenos | Solo aparecen los alérgenos que declara esa carta. Nada se da por supuesto. |
 | 4 | `04-valora-platos.png` | Valora plato a plato | No solo el restaurante: cada plato tiene su nota y sus reseñas. |
@@ -204,25 +204,29 @@ cifrado **exento**, lo que en el `Info.plist` equivale a
 
 ## 10. Contenido generado por usuarios
 
-Shareat publica las reseñas sin moderación previa. Los restaurantes no pueden
-borrar ni ocultar las reseñas que reciben, ni pueden puntuar restaurantes o
-platos: solo las cuentas de cliente pueden valorar, y la regla se aplica en el
-backend, no solo en la interfaz.
+Los comentarios nuevos o editados esperan moderación antes de aparecer al
+público; las valoraciones sin comentario se publican de inmediato. Cada
+comentario visible permite denunciarlo y bloquear a su autor. El bloqueo
+oculta las reseñas de ese autor para la cuenta que lo activó. Las denuncias
+se guardan en una cola privada que debe tramitarse con rapidez. Los
+restaurantes no pueden borrar ni ocultar reseñas, ni puntuar platos o locales:
+solo las cuentas de cliente pueden valorar. El contacto público es
+`shareat.app.official@gmail.com`.
 
-> **Pendiente antes de enviar a revisión.** La *App Review Guideline 1.2* exige
-> para el contenido generado por usuarios: un filtro de contenido ofensivo, un
-> mecanismo de denuncia dentro de la app, la posibilidad de bloquear a otros
-> usuarios y una forma de contacto publicada. Hoy la app solo cumple la última
-> (`shareat.app.official@gmail.com`). Hay que implementar la denuncia y el
-> bloqueo, o Apple rechazará el envío.
+La migración de moderación tiene que estar aplicada en producción antes de
+instalar la nueva compilación. Hay que revisar la cola de denuncias y los
+comentarios pendientes a diario; los pasos están en
+`release/appstore/REVIEW_RESUBMISSION.md`.
 
 ---
 
 ## 11. Datos de demostración para App Review
 
-El revisor necesita entrar con una cuenta de restaurante para ver la mitad de
-las capturas. Hay que crear una cuenta en el entorno de producción y anotarla en
-*App Review Information → Sign-in required*, con una nota del tipo:
+El revisor necesita una cuenta de restaurante y una de cliente. Para probar
+denuncia y bloqueo debe haber una reseña visible de **otro** cliente: prepara
+una segunda cuenta de cliente o un contenido de muestra autorizado. Las
+credenciales se anotan en *App Review Information → Sign-in required* y
+*Notes*, con una nota del tipo:
 
 > La app se puede explorar sin cuenta. Para probar la gestión de restaurante,
 > usa la cuenta de demostración adjunta: incluye un restaurante publicado con
@@ -237,6 +241,12 @@ fuera del MVP: feed social y seguidores, listas públicas o colaborativas,
 búsqueda avanzada en mapa, varias cartas por restaurante, cartas por QR,
 notificaciones push, verificación de restaurantes, verificación de alérgenos y
 analíticas de pago.
+
+**Shareat Unlimited se reserva para una actualización posterior.** Su propósito
+previsto es mostrar a los restaurantes qué productos reciben reseñas y
+estadísticas de la opinión de los clientes. No aparece ningún flujo de compra
+en la compilación inicial; RevenueCat permanece integrado para la actualización
+posterior.
 
 ---
 

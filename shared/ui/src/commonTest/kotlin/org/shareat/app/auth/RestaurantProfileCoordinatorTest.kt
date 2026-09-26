@@ -38,17 +38,19 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 class RestaurantProfileCoordinatorTest {
     @Test
-    fun restaurantWithoutProfileRequiresOnboardingUntilItCompletes() = runTest {
+    fun restaurantWithoutProfileCanOpenOwnerHome() = runTest {
         val restaurants = GateRestaurantRepository(
             RepositoryResult.Failure(RepositoryError.NotFound("restaurant", "owner")),
         )
         val fixture = fixture(restaurants = restaurants)
         runCurrent()
 
-        assertIs<RestaurantProfileGateState.OnboardingRequired>(fixture.gate.state.value)
+        val initial = assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        assertEquals(AccountRole.Restaurant, initial.role)
+        assertEquals(null, initial.restaurant)
         val restaurant = restaurant()
         restaurants.result = RepositoryResult.Success(restaurant)
-        fixture.gate.completeOnboarding()
+        fixture.gate.retry()
         runCurrent()
 
         val allowed = assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
@@ -67,7 +69,9 @@ class RestaurantProfileCoordinatorTest {
         fixture.gate.retry()
         runCurrent()
 
-        assertIs<RestaurantProfileGateState.OnboardingRequired>(fixture.gate.state.value)
+        val allowed = assertIs<RestaurantProfileGateState.Allowed>(fixture.gate.state.value)
+        assertEquals(AccountRole.Restaurant, allowed.role)
+        assertEquals(null, allowed.restaurant)
     }
 
     @Test

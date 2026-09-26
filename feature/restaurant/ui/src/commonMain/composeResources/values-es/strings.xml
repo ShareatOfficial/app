@@ -1,5 +1,4 @@
 <resources>
-    <string name="restaurant_leave_your_rate">Deja tu valoración</string>
     <string name="restaurant_unrated">Sin valoraciones</string>
     <string name="restaurant_verified">Restaurante verificado</string>
     <string name="restaurant_back">Volver</string>
@@ -13,6 +12,17 @@
     <string name="restaurant_dish_rate_star">Puntuar con %1$d estrellas</string>
     <string name="restaurant_dish_reviews_empty">Sé el primero en valorar este plato</string>
     <string name="restaurant_dish_reviews_no_comments">Todavía nadie ha dejado un comentario</string>
+    <string name="restaurant_review_report">Denunciar</string>
+    <string name="restaurant_review_block">Bloquear</string>
+    <string name="restaurant_review_report_title">Denunciar esta reseña</string>
+    <string name="restaurant_review_report_offensive">Contenido ofensivo</string>
+    <string name="restaurant_review_report_spam">Spam</string>
+    <string name="restaurant_review_report_other">Otro motivo</string>
+    <string name="restaurant_review_block_title">¿Bloquear a este usuario?</string>
+    <string name="restaurant_review_block_explanation">Dejarás de ver sus reseñas.</string>
+    <string name="restaurant_review_cancel">Cancelar</string>
+    <string name="restaurant_review_reported">Denuncia enviada para revisión.</string>
+    <string name="restaurant_review_blocked">Usuario bloqueado.</string>
     <string name="category_starters">Entrantes</string>
     <string name="category_main_courses">Platos principales</string>
     <string name="category_desserts">Postres</string>

@@ -1,5 +1,4 @@
 <resources>
-    <string name="restaurant_leave_your_rate">Leave your rating</string>
     <string name="restaurant_unrated">No ratings yet</string>
     <string name="restaurant_verified">Verified restaurant</string>
     <string name="restaurant_back">Back</string>
@@ -13,6 +12,17 @@
     <string name="restaurant_dish_rate_star">Rate %1$d stars</string>
     <string name="restaurant_dish_reviews_empty">Be the first to rate this dish</string>
     <string name="restaurant_dish_reviews_no_comments">Nobody has left a comment yet</string>
+    <string name="restaurant_review_report">Report</string>
+    <string name="restaurant_review_block">Block</string>
+    <string name="restaurant_review_report_title">Report this review</string>
+    <string name="restaurant_review_report_offensive">Offensive content</string>
+    <string name="restaurant_review_report_spam">Spam</string>
+    <string name="restaurant_review_report_other">Other concern</string>
+    <string name="restaurant_review_block_title">Block this reviewer?</string>
+    <string name="restaurant_review_block_explanation">You will no longer see reviews from this person.</string>
+    <string name="restaurant_review_cancel">Cancel</string>
+    <string name="restaurant_review_reported">Report sent for review.</string>
+    <string name="restaurant_review_blocked">Reviewer blocked.</string>
     <string name="category_starters">Starters</string>
     <string name="category_main_courses">Main courses</string>
     <string name="category_desserts">Desserts</string>

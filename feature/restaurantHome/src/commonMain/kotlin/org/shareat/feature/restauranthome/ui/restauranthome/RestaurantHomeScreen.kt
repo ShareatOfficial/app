@@ -1,8 +1,20 @@
 package org.shareat.feature.restauranthome.ui.restauranthome
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -12,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
@@ -26,6 +40,16 @@ import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.preparedImageUpload
 import org.shareat.feature.restauranthome.ui.model.toEditablePrice
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.sheetContent.RestaurantHomeSheetContent
+import org.shareat.feature.restauranthome.ui.restauranthome.composables.message
+import org.jetbrains.compose.resources.stringResource
+import shareat.feature.restauranthome.ui.generated.resources.Res
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_empty_management
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_retry
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_name
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_restaurant_name_invalid
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_create_restaurant
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_create_restaurant_help
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_saving
 import org.shareat.shared.designsystem.preview.FormFactorPreviews
 import org.shareat.shared.designsystem.theme.ShareatTheme
 
@@ -73,6 +97,8 @@ fun RestaurantHomeScreen(
         uiState = uiState,
         modifier = modifier,
         onRetryClick = viewModel::onRetryClick,
+        onNewRestaurantNameChange = viewModel::onNewRestaurantNameChange,
+        onCreateRestaurantClick = viewModel::onCreateRestaurantClick,
         onEditModeChange = viewModel::onEditModeChange,
         onPublicationStateChange = viewModel::onPublicationStateChange,
         onMainInfoClick = viewModel::onMainInfoClick,
@@ -118,6 +144,8 @@ internal fun RestaurantHomeStateless(
     uiState: RestaurantHomeUiStateByTone,
     modifier: Modifier = Modifier,
     onRetryClick: () -> Unit,
+    onNewRestaurantNameChange: (String) -> Unit,
+    onCreateRestaurantClick: () -> Unit,
     onEditModeChange: (Boolean) -> Unit,
     onPublicationStateChange: (Boolean) -> Unit,
     onMainInfoClick: () -> Unit,
@@ -144,15 +172,24 @@ internal fun RestaurantHomeStateless(
     onCategoryClick: (DishCategory) -> Unit,
     onDishReviewClick: ((String) -> Unit)? = null,
 ) {
-    // skeleton a tomar por culo, cada componente tendría que tener su propio skeleton idealmente.
-    // instead of having a when to choose the content. We should have it to choose have the screen size
     when (val content = uiState.content) {
-        // TODO remove this three empty states.
-        RestaurantHomeContent.Loading,
-            // For errors we should show the error in the correct part or integrate it with the screnn
-        is RestaurantHomeContent.Error,
-        RestaurantHomeContent.Empty -> {
+        RestaurantHomeContent.Loading -> Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
         }
+        is RestaurantHomeContent.Error -> RestaurantHomeStatus(
+            message = content.error.message(),
+            onRetryClick = onRetryClick,
+            modifier = modifier,
+        )
+        RestaurantHomeContent.Empty -> RestaurantHomeCreate(
+            state = uiState,
+            onNameChange = onNewRestaurantNameChange,
+            onCreateClick = onCreateRestaurantClick,
+            modifier = modifier,
+        )
 
         is RestaurantHomeContent.Loaded -> RestaurantHomeCompact(
             restaurant = content.restaurant,
@@ -204,6 +241,62 @@ internal fun RestaurantHomeStateless(
     }
 }
 
+@Composable
+private fun RestaurantHomeCreate(
+    state: RestaurantHomeUiStateByTone,
+    onNameChange: (String) -> Unit,
+    onCreateClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(stringResource(Res.string.restaurant_home_create_restaurant_help))
+        OutlinedTextField(
+            value = state.newRestaurantName,
+            onValueChange = onNameChange,
+            label = { Text(stringResource(Res.string.restaurant_home_name)) },
+            isError = state.newRestaurantNameInvalid,
+            enabled = !state.isCreatingRestaurant,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (state.newRestaurantNameInvalid) {
+            Text(stringResource(Res.string.restaurant_home_restaurant_name_invalid))
+        }
+        state.createRestaurantError?.let { Text(it.message()) }
+        Button(
+            onClick = onCreateClick,
+            enabled = !state.isCreatingRestaurant,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(
+                if (state.isCreatingRestaurant) Res.string.restaurant_home_saving
+                else Res.string.restaurant_home_create_restaurant,
+            ))
+        }
+    }
+}
+
+@Composable
+private fun RestaurantHomeStatus(
+    message: String,
+    onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(message)
+            Button(onClick = onRetryClick) { Text(stringResource(Res.string.restaurant_home_retry)) }
+        }
+    }
+}
+
 @FormFactorPreviews
 @Composable
 private fun RestaurantHomeStatelessPreview() {
@@ -216,6 +309,8 @@ private fun RestaurantHomeStatelessPreview() {
 
         RestaurantHomeStateless(
             uiState = uiState,
+            onNewRestaurantNameChange = {},
+            onCreateRestaurantClick = {},
             onEditModeChange = { isEditMode ->
                 uiState = uiState.copy(
                     isEditMode = isEditMode,

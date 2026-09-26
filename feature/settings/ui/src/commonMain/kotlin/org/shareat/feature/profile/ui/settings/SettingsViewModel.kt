@@ -133,7 +133,6 @@ class SettingsViewModel(
             is SettingsRestaurantAction.OpeningHoursChanged ->
                 editRestaurant { copy(openingHours = action.value) }
 
-            SettingsRestaurantAction.Subscription -> emitEvent(SettingsEvent.NavigateToSubscription)
             SettingsRestaurantAction.RequestDeletion -> requestAccountDeletion()
             SettingsRestaurantAction.SaveChanges -> saveRestaurantChanges()
             SettingsRestaurantAction.LogOut -> onLogOut()

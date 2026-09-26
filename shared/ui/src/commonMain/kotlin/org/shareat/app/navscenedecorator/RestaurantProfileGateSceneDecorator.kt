@@ -1,8 +1,14 @@
 package org.shareat.app.navscenedecorator
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -11,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneDecoratorStrategy
 import androidx.navigation3.scene.SceneDecoratorStrategyScope
@@ -19,13 +26,15 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.shareat.app.auth.RestaurantProfileCoordinator
 import org.shareat.app.auth.RestaurantProfileGateState
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingGateErrorScreen
-import org.shareat.feature.profile.ui.onboarding.RestaurantOnboardingScreen
+import org.jetbrains.compose.resources.stringResource
+import shareat.shared.ui.generated.resources.Res
+import shareat.shared.ui.generated.resources.restaurant_gate_error
+import shareat.shared.ui.generated.resources.restaurant_gate_retry
+import shareat.shared.ui.generated.resources.restaurant_gate_logout
 
 /**
  * Replaces the fully decorated app scene while an authenticated restaurant account is being
- * checked or bootstrapped. Apply this after navigation-chrome decorators so the management
- * landing is never shown before its starter workspace is ready.
+ * checked. Apply this after navigation-chrome decorators so the correct landing is selected.
  */
 @Composable
 fun <T : Any> rememberRestaurantProfileGateSceneDecoratorStrategy(
@@ -82,10 +91,24 @@ private class RestaurantProfileGateScene<T : Any>(
             }
 
             is RestaurantProfileGateState.Allowed -> scene.content()
-            RestaurantProfileGateState.OnboardingRequired -> RestaurantOnboardingScreen()
             is RestaurantProfileGateState.Failure -> {
-                RestaurantOnboardingGateErrorScreen(onRetry, onLogout)
+                RestaurantGateErrorScreen(onRetry, onLogout)
             }
+        }
+    }
+}
+
+@Composable
+private fun RestaurantGateErrorScreen(onRetry: () -> Unit, onLogout: () -> Unit) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(stringResource(Res.string.restaurant_gate_error))
+            Button(onClick = onRetry) { Text(stringResource(Res.string.restaurant_gate_retry)) }
+            TextButton(onClick = onLogout) { Text(stringResource(Res.string.restaurant_gate_logout)) }
         }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.ManageAccounts
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.Button
@@ -101,6 +102,7 @@ import shareat.feature.settings.ui.generated.resources.settings_log_out
 import shareat.feature.settings.ui.generated.resources.settings_opens
 import shareat.feature.settings.ui.generated.resources.settings_postcode
 import shareat.feature.settings.ui.generated.resources.settings_privacy_policy
+import shareat.feature.settings.ui.generated.resources.settings_support
 import shareat.feature.settings.ui.generated.resources.settings_published
 import shareat.feature.settings.ui.generated.resources.settings_restaurant_name
 import shareat.feature.settings.ui.generated.resources.settings_restaurant_title
@@ -134,7 +136,6 @@ fun SettingsScreen(
                 SettingsEvent.LogoutSuccess -> navigator.onLogoutSuccess()
                 SettingsEvent.DeletionRequested -> showDeletionSuccess = true
                 SettingsEvent.NavigateToEditProfile -> navigator.openEditProfile()
-                SettingsEvent.NavigateToSubscription -> navigator.openSubscription()
             }
         }
     }
@@ -146,6 +147,7 @@ fun SettingsScreen(
             onLoginClick = navigator::openLogin,
             onTermsAndConditionsClick = navigator::openTermsAndConditions,
             onPrivacyPolicyClick = { uriHandler.openUri(PublicPages.PRIVACY_POLICY) },
+            onSupportClick = { uriHandler.openUri(PublicPages.SUPPORT) },
             onRequestDeletionClick = { showDeletionConfirmation = true },
             onLanguageSelected = { viewModel.onLanguageAction(SettingsLanguageAction(it)) },
             onUserAction = viewModel::onUserAction,
@@ -195,6 +197,7 @@ private data class SettingsCallbacks(
     val onLoginClick: () -> Unit = {},
     val onTermsAndConditionsClick: () -> Unit = {},
     val onPrivacyPolicyClick: () -> Unit = {},
+    val onSupportClick: () -> Unit = {},
     val onRequestDeletionClick: () -> Unit = {},
     val onLanguageSelected: (AppLanguage) -> Unit = {},
     val onUserAction: (SettingsUserAction) -> Unit = {},
@@ -336,6 +339,12 @@ private fun GuestSettings(
                 text = stringResource(Res.string.settings_privacy_policy),
                 onClick = callbacks.onPrivacyPolicyClick,
             )
+            SettingsDivider()
+            SettingsItem(
+                leadingIcon = Icons.AutoMirrored.Outlined.HelpOutline,
+                text = stringResource(Res.string.settings_support),
+                onClick = callbacks.onSupportClick,
+            )
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -404,6 +413,12 @@ private fun UserSettings(
                 leadingIcon = Icons.Outlined.Description,
                 text = stringResource(Res.string.settings_privacy_policy),
                 onClick = callbacks.onPrivacyPolicyClick,
+            )
+            SettingsDivider()
+            SettingsItem(
+                leadingIcon = Icons.AutoMirrored.Outlined.HelpOutline,
+                text = stringResource(Res.string.settings_support),
+                onClick = callbacks.onSupportClick,
             )
             SettingsDivider()
             SettingsItem(
@@ -637,6 +652,12 @@ private fun RestaurantSettings(
                     Icons.Outlined.Description,
                     stringResource(Res.string.settings_privacy_policy),
                     callbacks.onPrivacyPolicyClick,
+                )
+                SettingsDivider()
+                SettingsItem(
+                    Icons.AutoMirrored.Outlined.HelpOutline,
+                    stringResource(Res.string.settings_support),
+                    callbacks.onSupportClick,
                 )
                 SettingsDivider()
                 SettingsItem(

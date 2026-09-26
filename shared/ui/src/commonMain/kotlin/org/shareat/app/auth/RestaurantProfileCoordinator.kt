@@ -23,21 +23,18 @@ sealed interface RestaurantProfileGateState {
 
     /**
      * The session may access the main application. A null [role] denotes a guest; a restaurant
-     * role is emitted only after its profile has been found, so the app can select the owner
-     * landing destination without doing a second profile request.
+     * role selects the correct landing destination. A newly registered restaurant can open
+     * its owner home before creating its profile.
      */
     data class Allowed(
         val role: AccountRole? = null,
         val restaurant: Restaurant? = null,
     ) : RestaurantProfileGateState
-    data object OnboardingRequired : RestaurantProfileGateState
     data class Failure(val error: RepositoryError) : RestaurantProfileGateState
 }
 
 /**
- * Observes the authenticated account and determines whether it may use the app or must complete
- * restaurant onboarding. A new owner creates their own draft profile before the app exposes
- * the management landing.
+ * Observes the authenticated account and determines whether it may use the app.
  */
 class RestaurantProfileCoordinator(
     private val sessions: SessionCoordinator,
@@ -68,9 +65,6 @@ class RestaurantProfileCoordinator(
         scope.launch { checkProfile(authenticated) }
     }
 
-    /** Re-check once onboarding has persisted the profile so the owner dashboard can load it. */
-    fun completeOnboarding() = retry()
-
     suspend fun signOut(): RepositoryResult<Unit> = auth.signOut()
 
     private suspend fun checkProfile(authenticated: AuthSessionState.Authenticated) {
@@ -93,7 +87,9 @@ class RestaurantProfileCoordinator(
                 restaurant = result.value,
             )
             is RepositoryResult.Failure -> when (result.error) {
-                is RepositoryError.NotFound -> _state.value = RestaurantProfileGateState.OnboardingRequired
+                is RepositoryError.NotFound -> _state.value = RestaurantProfileGateState.Allowed(
+                    role = AccountRole.Restaurant,
+                )
                 else -> _state.value = RestaurantProfileGateState.Failure(result.error)
             }
         }

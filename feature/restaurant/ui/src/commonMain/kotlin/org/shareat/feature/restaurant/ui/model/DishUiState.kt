@@ -28,4 +28,5 @@ data class DishReviewUiState(
     val id: String,
     val rating: Int,
     val comment: String? = null,
+    val authorAccountId: String? = null,
 )

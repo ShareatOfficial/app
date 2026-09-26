@@ -10,14 +10,12 @@ import shareat.feature.settings.ui.generated.resources.edit_profile_error_forbid
 import shareat.feature.settings.ui.generated.resources.edit_profile_error_generic
 import shareat.feature.settings.ui.generated.resources.edit_profile_error_not_found
 import shareat.feature.settings.ui.generated.resources.edit_profile_error_offline
-import shareat.feature.settings.ui.generated.resources.edit_profile_error_photo_unsupported
 import shareat.feature.settings.ui.generated.resources.edit_profile_error_session
 import shareat.feature.settings.ui.generated.resources.edit_profile_error_unavailable
 
 @Composable
 internal fun EditProfileError.label(): String = stringResource(
     when (this) {
-        EditProfileError.PHOTO_UNSUPPORTED -> Res.string.edit_profile_error_photo_unsupported
         EditProfileError.CUSTOMER_ONLY -> Res.string.edit_profile_error_customer_only
         EditProfileError.INVALID_CREDENTIALS -> Res.string.edit_profile_error_credentials
         EditProfileError.OFFLINE -> Res.string.edit_profile_error_offline
