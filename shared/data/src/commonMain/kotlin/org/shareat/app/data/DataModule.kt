@@ -10,6 +10,7 @@ import org.shareat.app.data.fake.FakeImageRepository
 import org.shareat.app.data.fake.FakeMenuRepository
 import org.shareat.app.data.fake.FakeRestaurantRepository
 import org.shareat.app.data.fake.FakeReviewRepository
+import org.shareat.app.data.fake.FakeUnlistedDishReviewRepository
 import org.shareat.app.data.fake.FakeShareatData
 import org.shareat.app.data.language.AppLanguageApplier
 import org.shareat.app.data.language.AppLanguageStorage
@@ -25,6 +26,7 @@ import org.shareat.app.data.supabase.SupabaseImageRepository
 import org.shareat.app.data.supabase.SupabaseMenuRepository
 import org.shareat.app.data.supabase.SupabaseRestaurantRepository
 import org.shareat.app.data.supabase.SupabaseReviewRepository
+import org.shareat.app.data.supabase.SupabaseUnlistedDishReviewRepository
 import org.shareat.app.data.supabase.SecureSessionStorage
 import org.shareat.app.data.supabase.createShareatSupabaseClient
 import org.shareat.app.domain.repository.AccountRepository
@@ -36,6 +38,7 @@ import org.shareat.app.domain.repository.ImageRepository
 import org.shareat.app.domain.repository.MenuRepository
 import org.shareat.app.domain.repository.RestaurantRepository
 import org.shareat.app.domain.repository.ReviewRepository
+import org.shareat.app.domain.repository.UnlistedDishReviewRepository
 
 /**
  * The selected app language. Bound independently of the data source: it is a device preference,
@@ -61,6 +64,7 @@ val fakeDataModule: Module = module {
     single<MenuRepository> { FakeMenuRepository(get()) }
     single<DishRepository> { FakeDishRepository(get()) }
     single<ReviewRepository> { FakeReviewRepository(get()) }
+    single<UnlistedDishReviewRepository> { FakeUnlistedDishReviewRepository(get()) }
     single<AuthRepository> { FakeAuthRepository() }
     single<ImageRepository> { FakeImageRepository() }
 }
@@ -75,5 +79,6 @@ fun supabaseDataModule(config: SupabaseConfig = SupabaseConfig.fromBuildConfig()
     single<RestaurantRepository> { SupabaseRestaurantRepository(get()) }
     single<MenuRepository> { SupabaseMenuRepository(get()) }
     single<ReviewRepository> { SupabaseReviewRepository(get()) }
+    single<UnlistedDishReviewRepository> { SupabaseUnlistedDishReviewRepository(client = get()) }
     single<ImageRepository> { SupabaseImageRepository(get()) }
 }

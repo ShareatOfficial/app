@@ -46,6 +46,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":shared:designsystem"))
             implementation(project(":shared:domain"))
+            implementation(project(":shared:media"))
 
             implementation(project.dependencies.platform(libs.koin.bom))
 
@@ -55,6 +56,8 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.material.icons.extended)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.coil.compose)
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
 

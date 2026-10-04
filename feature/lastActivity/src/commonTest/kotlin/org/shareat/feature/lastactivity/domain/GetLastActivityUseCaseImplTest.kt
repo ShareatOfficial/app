@@ -25,32 +25,64 @@ class GetLastActivityUseCaseImplTest {
         val newer = review("new", "2026-02-02T12:00:00Z")
         val older = review("old", "2026-01-01T12:00:00Z")
         val useCase = GetLastActivityUseCaseImpl(
-            reviews(listOf(older, newer)), dishes, unavailableRestaurants,
+            reviews(listOf(older, newer)), dishes, unavailableRestaurants, unlistedReviews(),
         )
 
         val result = assertIs<RepositoryResult.Success<List<LastActivityItem>>>(useCase(AccountId("author")))
 
-        assertEquals(listOf(newer.id, older.id), result.value.map { it.review.id })
-        assertEquals("Tortilla", assertIs<ReviewedTarget.Dish>(result.value.first().target).dish.name)
+        assertEquals(listOf(newer.id, older.id), result.value.map { it.id })
+        assertEquals("Tortilla", assertIs<ReviewedTarget.Dish>(assertIs<LastActivityItem.Catalog>(result.value.first()).target).dish.name)
     }
 
     @Test fun propagatesTargetLookupFailures() = runTest {
-        val useCase = GetLastActivityUseCaseImpl(reviews(listOf(review("one", "2026-01-01T12:00:00Z"))), failingDishes, unavailableRestaurants)
+        val useCase = GetLastActivityUseCaseImpl(reviews(listOf(review("one", "2026-01-01T12:00:00Z"))), failingDishes, unavailableRestaurants, unlistedReviews())
         assertIs<RepositoryResult.Failure>(useCase(AccountId("author")))
     }
 
     @Test fun returnsEmptyAndPropagatesReviewFailures() = runTest {
-        assertEquals(emptyList(), assertIs<RepositoryResult.Success<List<LastActivityItem>>>(GetLastActivityUseCaseImpl(reviews(emptyList()), dishes, unavailableRestaurants)(AccountId("author"))).value)
+        assertEquals(emptyList(), assertIs<RepositoryResult.Success<List<LastActivityItem>>>(GetLastActivityUseCaseImpl(reviews(emptyList()), dishes, unavailableRestaurants, unlistedReviews())(AccountId("author"))).value)
         val failing = object : ReviewRepository by unavailableReviews { override suspend fun getReviewsByAuthor(accountId: AccountId) = RepositoryResult.Failure(RepositoryError.Offline) }
-        assertIs<RepositoryResult.Failure>(GetLastActivityUseCaseImpl(failing, dishes, unavailableRestaurants)(AccountId("author")))
+        assertIs<RepositoryResult.Failure>(GetLastActivityUseCaseImpl(failing, dishes, unavailableRestaurants, unlistedReviews())(AccountId("author")))
     }
 
     @Test fun enrichesRestaurantTargets() = runTest {
         val review = review("restaurant", "2026-01-01T12:00:00Z").copy(target = ReviewTarget.Restaurant(org.shareat.app.domain.model.RestaurantId("restaurant")))
         val restaurants = object : RestaurantRepository by unavailableRestaurants { override suspend fun getRestaurant(id: org.shareat.app.domain.model.RestaurantId) = RepositoryResult.Success(restaurant()) }
-        val result = assertIs<RepositoryResult.Success<List<LastActivityItem>>>(GetLastActivityUseCaseImpl(reviews(listOf(review)), dishes, restaurants)(AccountId("author")))
-        assertEquals("Casa", assertIs<ReviewedTarget.Restaurant>(result.value.single().target).restaurant.name)
+        val result = assertIs<RepositoryResult.Success<List<LastActivityItem>>>(GetLastActivityUseCaseImpl(reviews(listOf(review)), dishes, restaurants, unlistedReviews())(AccountId("author")))
+        assertEquals("Casa", assertIs<ReviewedTarget.Restaurant>(assertIs<LastActivityItem.Catalog>(result.value.single()).target).restaurant.name)
     }
+
+    @Test fun mixesCatalogueAndUnlistedReviewsByUpdatedTimeWithoutCatalogueLookupForUnlisted() = runTest {
+        val manual = unlistedReview("manual", "2026-02-01T12:00:00Z")
+        val useCase = GetLastActivityUseCaseImpl(
+            reviews(listOf(review("old", "2026-01-01T12:00:00Z"), review("new", "2026-03-01T12:00:00Z"))),
+            dishes, unavailableRestaurants, unlistedReviews(listOf(manual)),
+        )
+        val result = assertIs<RepositoryResult.Success<List<LastActivityItem>>>(useCase(AccountId("author")))
+        assertEquals(listOf("new", "manual", "old"), result.value.map { it.id.value })
+        assertEquals(manual, assertIs<LastActivityItem.Unlisted>(result.value[1]).review)
+
+        val manualOnly = GetLastActivityUseCaseImpl(reviews(emptyList()), failingDishes, unavailableRestaurants, unlistedReviews(listOf(manual)))
+        assertEquals(listOf(LastActivityItem.Unlisted(manual)), assertIs<RepositoryResult.Success<List<LastActivityItem>>>(manualOnly(AccountId("author"))).value)
+    }
+
+    @Test fun propagatesUnlistedReadFailure() = runTest {
+        val failing = object : org.shareat.app.domain.repository.UnlistedDishReviewRepository by unlistedReviews() {
+            override suspend fun getByAuthor(accountId: AccountId) = RepositoryResult.Failure(RepositoryError.Offline)
+        }
+        assertEquals(RepositoryResult.Failure(RepositoryError.Offline), GetLastActivityUseCaseImpl(reviews(emptyList()), dishes, unavailableRestaurants, failing)(AccountId("author")))
+    }
+}
+
+private fun unlistedReview(id: String, updated: String) = org.shareat.app.domain.model.UnlistedDishReview(
+    ReviewId(id), AccountId("author"), "Bar del barrio", "Tortilla", org.shareat.app.domain.model.ImageRef("https://example.com/review.jpg"),
+    Rating(4), "Muy buena", ReviewVisibility.Private, ReviewModerationStatus.Hidden,
+    createdAt = IsoTimestamp(updated), updatedAt = IsoTimestamp(updated),
+)
+
+private fun unlistedReviews(value: List<org.shareat.app.domain.model.UnlistedDishReview> = emptyList()) = object : org.shareat.app.domain.repository.UnlistedDishReviewRepository {
+    override suspend fun create(draft: org.shareat.app.domain.model.UnlistedDishReviewDraft) = failure<org.shareat.app.domain.model.UnlistedDishReview>()
+    override suspend fun getByAuthor(accountId: AccountId) = RepositoryResult.Success(value)
 }
 
 private fun review(id: String, updated: String) = Review(ReviewId(id), AccountId("author"), ReviewTarget.Dish(DishId("dish")), Rating(5), "Excelente", ReviewVisibility.Public, ReviewModerationStatus.Visible, createdAt = IsoTimestamp(updated), updatedAt = IsoTimestamp(updated))

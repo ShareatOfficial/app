@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -26,7 +26,7 @@ import org.shareat.feature.lastactivity.navigation.LastActivityKey
 import org.shareat.feature.profile.ui.settings.SettingsKey
 import org.shareat.feature.restauranthome.ui.navigation.RestaurantHomeKey
 import shareat.shared.ui.generated.resources.Res
-import shareat.shared.ui.generated.resources.nav_activity
+import shareat.shared.ui.generated.resources.nav_reviews
 import shareat.shared.ui.generated.resources.nav_edit_menu
 import shareat.shared.ui.generated.resources.nav_home
 import shareat.shared.ui.generated.resources.nav_profile
@@ -47,7 +47,7 @@ fun topLevelNavigationItems(homeRoute: NavKey): List<TopLevelNavigationItem> =
     } else {
         listOf(
             TopLevelNavigationItem(homeRoute, Res.string.nav_home, Icons.Default.Home),
-            TopLevelNavigationItem(LastActivityKey, Res.string.nav_activity, Icons.Default.History),
+            TopLevelNavigationItem(LastActivityKey, Res.string.nav_reviews, Icons.Default.RateReview),
             TopLevelNavigationItem(SettingsKey, Res.string.nav_settings, Icons.Default.Settings),
         )
     }

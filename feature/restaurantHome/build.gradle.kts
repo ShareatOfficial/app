@@ -52,6 +52,7 @@ kotlin {
             implementation(project(":shared:domain"))
             implementation(project(":shared:navigation"))
             implementation(project(":shared:designsystem"))
+            implementation(project(":shared:media"))
 
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.compose.foundation)

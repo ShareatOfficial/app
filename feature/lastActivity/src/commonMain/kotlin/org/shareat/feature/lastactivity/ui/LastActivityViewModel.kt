@@ -15,6 +15,7 @@ import org.shareat.app.domain.repository.AuthRepository
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
 import org.shareat.feature.lastactivity.domain.GetLastActivityUseCase
+import org.shareat.feature.lastactivity.domain.LastActivityItem
 import org.shareat.feature.lastactivity.domain.ReviewedTarget
 
 @Stable
@@ -85,7 +86,16 @@ class LastActivityViewModel(
     }
 }
 
-private fun org.shareat.feature.lastactivity.domain.LastActivityItem.toUiState() = when (val target = target) {
+internal fun LastActivityItem.toUiState(): LastActivityReviewUiState = when (this) {
+    is LastActivityItem.Unlisted -> LastActivityReviewUiState(
+        id = review.id, type = LastActivityTargetType.DISH, imageUrl = review.image?.url,
+        imageDescription = review.image?.alternativeText, name = review.dishName,
+        description = review.restaurantName, rating = review.rating.value, comment = review.comment,
+    )
+    is LastActivityItem.Catalog -> toCatalogUiState()
+}
+
+private fun LastActivityItem.Catalog.toCatalogUiState() = when (val target = target) {
     is ReviewedTarget.Dish -> LastActivityReviewUiState(
         id = review.id, type = LastActivityTargetType.DISH, imageUrl = target.dish.image?.url,
         imageDescription = target.dish.image?.alternativeText, name = target.dish.name,

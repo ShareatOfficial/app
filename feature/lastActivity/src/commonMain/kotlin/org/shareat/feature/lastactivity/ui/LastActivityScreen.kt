@@ -13,17 +13,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.shareat.shared.designsystem.layout.safeDrawingTopPadding
 import org.shareat.shared.designsystem.shimmerEffect
 import org.jetbrains.compose.resources.stringResource
 import shareat.feature.lastactivity.generated.resources.Res
@@ -51,16 +53,29 @@ import shareat.feature.lastactivity.generated.resources.last_activity_image_unav
 import shareat.feature.lastactivity.generated.resources.last_activity_rating
 import shareat.feature.lastactivity.generated.resources.last_activity_retry
 import shareat.feature.lastactivity.generated.resources.last_activity_title
+import shareat.feature.lastactivity.generated.resources.last_activity_add_review
+import shareat.feature.lastactivity.generated.resources.last_activity_login_to_add_review
 
 @Composable
 fun LastActivityScreen(
     modifier: Modifier = Modifier,
+    refreshKey: Int = 0,
+    onAddReviewClick: () -> Unit = {},
     viewModel: LastActivityViewModel = koinViewModel(),
     navigation: LastActivityNavigation = koinInject(),
 ) {
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(viewModel) { viewModel.onScreenVisible() }
-    LastActivityScreenStateless(state, navigation::openLogin, viewModel::retry, modifier)
+    LaunchedEffect(refreshKey) {
+        if (refreshKey > 0) viewModel.retry()
+    }
+    LastActivityScreenStateless(
+        state = state,
+        onLoginClick = navigation::openLogin,
+        onRetryClick = viewModel::retry,
+        onAddReviewClick = onAddReviewClick,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -68,17 +83,43 @@ internal fun LastActivityScreenStateless(
     state: LastActivityUiState,
     onLoginClick: () -> Unit,
     onRetryClick: () -> Unit,
+    onAddReviewClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize().safeDrawingTopPadding()) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        floatingActionButton = {
+            val action = state.fabAction()
+            if (action != LastActivityFabAction.Hidden) {
+                FloatingActionButton(
+                    onClick = when (action) {
+                        LastActivityFabAction.Login -> onLoginClick
+                        LastActivityFabAction.AddReview -> onAddReviewClick
+                        LastActivityFabAction.Hidden -> onAddReviewClick
+                    },
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = stringResource(
+                            if (action == LastActivityFabAction.Login) {
+                                Res.string.last_activity_login_to_add_review
+                            } else {
+                                Res.string.last_activity_add_review
+                            },
+                        ),
+                    )
+                }
+            }
+        },
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             Text(
                 text = stringResource(Res.string.last_activity_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
             )
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 when (state) {
                     LastActivityUiState.Initializing, LastActivityUiState.Loading -> ActivityLoading()
                     LastActivityUiState.Guest -> GuestActivity(onLoginClick, Modifier.align(Alignment.Center))
@@ -93,10 +134,18 @@ internal fun LastActivityScreenStateless(
     }
 }
 
+internal enum class LastActivityFabAction { Hidden, Login, AddReview }
+
+internal fun LastActivityUiState.fabAction(): LastActivityFabAction = when (this) {
+    LastActivityUiState.Initializing, LastActivityUiState.Loading -> LastActivityFabAction.Hidden
+    LastActivityUiState.Guest -> LastActivityFabAction.Login
+    LastActivityUiState.Empty, is LastActivityUiState.Content, is LastActivityUiState.Error -> LastActivityFabAction.AddReview
+}
+
 @Composable
 private fun ActivityList(items: List<LastActivityReviewUiState>) {
     LazyColumn(
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(items, key = { it.id.value }) { item -> ActivityReviewCard(item) }

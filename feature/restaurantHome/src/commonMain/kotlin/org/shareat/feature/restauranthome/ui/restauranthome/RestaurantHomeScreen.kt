@@ -35,9 +35,10 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
-import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
+import org.shareat.shared.media.ImageUploadValidationResult
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
-import org.shareat.feature.restauranthome.ui.model.preparedImageUpload
+import org.shareat.shared.media.compressedAsJpeg
+import org.shareat.shared.media.preparedImageUpload
 import org.shareat.feature.restauranthome.ui.model.toEditablePrice
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.sheetContent.RestaurantHomeSheetContent
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.message
