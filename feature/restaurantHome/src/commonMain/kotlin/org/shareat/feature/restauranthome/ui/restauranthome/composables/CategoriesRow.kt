@@ -20,7 +20,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.FilterChip
@@ -42,7 +42,7 @@ import org.shareat.app.domain.model.DishCategory
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_category_other
-import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_edit_categories
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_types_title
 
 @Composable
 internal fun CategoriesRow(
@@ -114,14 +114,14 @@ internal fun CategoriesRow(
                         onClick = onEditCategoryClick,
                         label = {
                             Text(
-                                text = stringResource(Res.string.restaurant_home_edit_categories),
+                                text = stringResource(Res.string.restaurant_home_types_title),
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Filled.Edit,
-                                contentDescription = stringResource(Res.string.restaurant_home_edit_categories),
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         },

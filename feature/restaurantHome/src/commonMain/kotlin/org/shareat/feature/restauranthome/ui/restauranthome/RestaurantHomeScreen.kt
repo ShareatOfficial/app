@@ -32,7 +32,6 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
 import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
@@ -115,6 +114,7 @@ fun RestaurantHomeScreen(
             imagePicker.launch()
         },
         onSaveMainInfo = viewModel::onSaveMainInfo,
+        onSaveAddress = viewModel::onSaveAddress,
         onDishImageChange = {
             imageTarget = ImagePickerTarget.Dish
             imagePicker.launch()
@@ -128,7 +128,6 @@ fun RestaurantHomeScreen(
         onAddressLocalityChange = viewModel::onAddressLocalityChange,
         onAddressPostalCodeChange = viewModel::onAddressPostalCodeChange,
         onAddressRegionChange = viewModel::onAddressRegionChange,
-        onCategoryClick = viewModel::onCategoryClick,
         onDishReviewClick = onDishReviewClick,
     )
 }
@@ -159,6 +158,7 @@ internal fun RestaurantHomeStateless(
     onRestaurantDescriptionChange: (String) -> Unit,
     onRestaurantImageChange: () -> Unit,
     onSaveMainInfo: () -> Unit,
+    onSaveAddress: () -> Unit,
     onDishImageChange: () -> Unit,
     onDishNameChange: (String) -> Unit,
     onDishDescriptionChange: (String) -> Unit,
@@ -169,7 +169,6 @@ internal fun RestaurantHomeStateless(
     onAddressLocalityChange: (String) -> Unit,
     onAddressPostalCodeChange: (String) -> Unit,
     onAddressRegionChange: (String) -> Unit,
-    onCategoryClick: (DishCategory) -> Unit,
     onDishReviewClick: ((String) -> Unit)? = null,
 ) {
     when (val content = uiState.content) {
@@ -224,6 +223,8 @@ internal fun RestaurantHomeStateless(
                 onRestaurantDescriptionChange = onRestaurantDescriptionChange,
                 onRestaurantImageChange = onRestaurantImageChange,
                 onSaveMainInfo = onSaveMainInfo,
+                onSaveAddress = onSaveAddress,
+                onClose = onDismissBottomSheet,
                 onDishImageChange = onDishImageChange,
                 onDishNameChange = onDishNameChange,
                 onDishDescriptionChange = onDishDescriptionChange,
@@ -234,7 +235,6 @@ internal fun RestaurantHomeStateless(
                 onAddressLocalityChange = onAddressLocalityChange,
                 onAddressPostalCodeChange = onAddressPostalCodeChange,
                 onAddressRegionChange = onAddressRegionChange,
-                onCategoryClick = onCategoryClick,
                 onDishReviewClick = onDishReviewClick,
             )
         }
@@ -511,21 +511,10 @@ private fun RestaurantHomeStatelessPreview() {
                     addressDraft = uiState.addressDraft?.copy(region = value),
                 )
             },
-            onCategoryClick = { category ->
-                val categories = uiState.categoriesDraft
-                if (categories != null) {
-                    uiState = uiState.copy(
-                        categoriesDraft = if (category in categories) {
-                            categories - category
-                        } else {
-                            categories + category
-                        },
-                    )
-                }
-            },
             onRetryClick = {},
             onRestaurantImageChange = {},
             onSaveMainInfo = {},
+            onSaveAddress = {},
             onDishImageChange = {},
             onDishReviewClick = {},
         )

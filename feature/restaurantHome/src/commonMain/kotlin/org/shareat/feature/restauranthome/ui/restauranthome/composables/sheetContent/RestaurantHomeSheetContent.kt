@@ -2,16 +2,23 @@ package org.shareat.feature.restauranthome.ui.restauranthome.composables.sheetCo
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
 import org.shareat.feature.restauranthome.ui.model.toDisplayAddress
@@ -20,6 +27,7 @@ import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomeUiStat
 import org.shareat.feature.restauranthome.ui.restauranthome.composables.ViewDishContent
 import org.shareat.shared.designsystem.components.RatingBadge
 import shareat.feature.restauranthome.ui.generated.resources.Res
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_close
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_reviews
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_unrated
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_view_ratings
@@ -34,6 +42,8 @@ internal fun RestaurantHomeSheetContent(
     onRestaurantDescriptionChange: (String) -> Unit,
     onRestaurantImageChange: () -> Unit,
     onSaveMainInfo: () -> Unit,
+    onSaveAddress: () -> Unit,
+    onClose: () -> Unit,
     onDishImageChange: () -> Unit,
     onDishNameChange: (String) -> Unit,
     onDishDescriptionChange: (String) -> Unit,
@@ -44,7 +54,6 @@ internal fun RestaurantHomeSheetContent(
     onAddressLocalityChange: (String) -> Unit,
     onAddressPostalCodeChange: (String) -> Unit,
     onAddressRegionChange: (String) -> Unit,
-    onCategoryClick: (DishCategory) -> Unit,
     onDishReviewClick: ((String) -> Unit)?,
 ) {
     Column(
@@ -53,6 +62,24 @@ internal fun RestaurantHomeSheetContent(
             .padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Spacer(Modifier.weight(1f))
+            IconButton(
+                onClick = onClose,
+                enabled = uiState.mainInfoDraft?.isSaving != true &&
+                    uiState.dishEditForm?.isSaving != true &&
+                    uiState.addressDraft?.isSaving != true,
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Close,
+                    contentDescription = stringResource(Res.string.restaurant_home_close),
+                )
+            }
+        }
         when (sheet) {
             RestaurantHomeBottomSheet.VIEW_DISH -> uiState.selectedDish?.let { dish ->
                 ViewDishContent(
@@ -111,17 +138,13 @@ internal fun RestaurantHomeSheetContent(
                         onLocalityChange = onAddressLocalityChange,
                         onPostalCodeChange = onAddressPostalCodeChange,
                         onRegionChange = onAddressRegionChange,
+                        onSaveClick = onSaveAddress,
                     )
                 }
             }
 
             RestaurantHomeBottomSheet.EDIT_CATEGORIES -> {
-                uiState.categoriesDraft?.let { categories ->
-                    EditCategoriesContent(
-                        selectedCategories = categories,
-                        onCategoryClick = onCategoryClick,
-                    )
-                }
+                CategoriesComingSoonContent()
             }
 
             RestaurantHomeBottomSheet.VIEW_RATING -> {

@@ -45,6 +45,7 @@ import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_change_image
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_description
+import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_edit_restaurant
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_image_selected
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_name
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_restaurant_name_invalid
@@ -76,6 +77,10 @@ internal fun EditMainInfoContent(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        Text(
+            text = stringResource(Res.string.restaurant_home_edit_restaurant),
+            style = MaterialTheme.typography.headlineSmall,
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()

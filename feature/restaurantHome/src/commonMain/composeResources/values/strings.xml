@@ -55,6 +55,7 @@
     <string name="restaurant_home_view_ratings">Ratings</string>
     <string name="restaurant_home_feature_coming_soon">This content will be available soon.</string>
     <string name="restaurant_home_cancel">Cancel</string>
+    <string name="restaurant_home_close">Close</string>
     <string name="restaurant_home_save">Save</string>
     <string name="restaurant_home_saving">Saving…</string>
     <string name="restaurant_home_retry">Try again</string>

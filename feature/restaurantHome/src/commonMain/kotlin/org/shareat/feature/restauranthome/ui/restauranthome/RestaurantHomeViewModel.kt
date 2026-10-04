@@ -12,6 +12,7 @@ import org.shareat.app.domain.model.DishId
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.ImageRef
 import org.shareat.app.domain.model.ImageUpload
+import org.shareat.app.domain.model.PostalAddress
 import org.shareat.app.domain.model.RestaurantPublicationState
 import org.shareat.app.domain.repository.RepositoryError
 import org.shareat.app.domain.repository.RepositoryResult
@@ -67,6 +68,11 @@ data class RestaurantAddressDraft(
     val postalCode: String,
     val region: String,
     val countryCode: String,
+    val isSaving: Boolean = false,
+    val streetInvalid: Boolean = false,
+    val localityInvalid: Boolean = false,
+    val postalCodeInvalid: Boolean = false,
+    val error: RestaurantHomeError? = null,
 )
 
 data class RestaurantHomeUiStateByTone(
@@ -467,13 +473,71 @@ class RestaurantHomeViewModel(
         }
     }
 
-    fun onAddressStreetLineChange(value: String) = updateAddressDraft { copy(streetLine = value) }
+    fun onAddressStreetLineChange(value: String) = updateAddressDraft {
+        copy(streetLine = value, streetInvalid = false, error = null)
+    }
 
-    fun onAddressLocalityChange(value: String) = updateAddressDraft { copy(locality = value) }
+    fun onAddressLocalityChange(value: String) = updateAddressDraft {
+        copy(locality = value, localityInvalid = false, error = null)
+    }
 
-    fun onAddressPostalCodeChange(value: String) = updateAddressDraft { copy(postalCode = value) }
+    fun onAddressPostalCodeChange(value: String) = updateAddressDraft {
+        copy(postalCode = value, postalCodeInvalid = false, error = null)
+    }
 
-    fun onAddressRegionChange(value: String) = updateAddressDraft { copy(region = value) }
+    fun onAddressRegionChange(value: String) = updateAddressDraft { copy(region = value, error = null) }
+
+    fun onSaveAddress() {
+        val form = _uiState.value.addressDraft ?: return
+        if (form.isSaving) return
+        val streetInvalid = form.streetLine.isBlank()
+        val localityInvalid = form.locality.isBlank()
+        val postalCodeInvalid = form.postalCode.isBlank()
+        if (streetInvalid || localityInvalid || postalCodeInvalid) {
+            updateAddressDraft {
+                copy(
+                    streetInvalid = streetInvalid,
+                    localityInvalid = localityInvalid,
+                    postalCodeInvalid = postalCodeInvalid,
+                )
+            }
+            return
+        }
+        val home = ownerHome ?: return
+        updateAddressDraft { copy(isSaving = true, error = null) }
+        viewModelScope.launch {
+            val address = PostalAddress(
+                streetLine = form.streetLine.trim(),
+                locality = form.locality.trim(),
+                postalCode = form.postalCode.trim(),
+                region = form.region.trim().ifEmpty { null },
+                countryCode = form.countryCode,
+            )
+            when (val result = updateOwnerRestaurantInfo(
+                OwnerRestaurantInfoDraft(
+                    name = home.restaurant.name,
+                    description = home.restaurant.description,
+                    address = address,
+                    publicEmail = home.restaurant.publicEmail,
+                    publicPhone = home.restaurant.publicPhone,
+                    openingHours = home.restaurant.openingHours,
+                ),
+            )) {
+                is RepositoryResult.Success -> {
+                    ownerHome = home.copy(restaurant = result.value)
+                    _uiState.value = _uiState.value.copy(
+                        activeBottomSheet = null,
+                        addressDraft = null,
+                    )
+                    publishLoadedContent()
+                }
+
+                is RepositoryResult.Failure -> updateAddressDraft {
+                    copy(isSaving = false, error = result.error.toUiError())
+                }
+            }
+        }
+    }
 
     fun onCategoryClick(category: DishCategory) {
         val categories = _uiState.value.categoriesDraft ?: return
@@ -490,6 +554,7 @@ class RestaurantHomeViewModel(
         if (
             _uiState.value.dishEditForm?.isSaving == true ||
             _uiState.value.mainInfoDraft?.isSaving == true
+            || _uiState.value.addressDraft?.isSaving == true
         ) return
         _uiState.value = _uiState.value.copy(
             activeBottomSheet = null,

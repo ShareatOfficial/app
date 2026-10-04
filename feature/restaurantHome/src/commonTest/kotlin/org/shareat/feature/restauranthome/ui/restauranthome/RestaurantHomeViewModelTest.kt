@@ -513,6 +513,54 @@ class RestaurantHomeViewModelTest {
         assertFalse(DishCategory.Desserts in requireNotNull(viewModel.uiState.value.categoriesDraft))
     }
 
+    @Test
+    fun saveAddressPersistsAndClosesTheSheet() = runTest(dispatcher) {
+        val home = ownerHome()
+        var submittedDraft: OwnerRestaurantInfoDraft? = null
+        val viewModel = viewModelFor(
+            home = home,
+            onUpdateRestaurant = { draft ->
+                submittedDraft = draft
+                RepositoryResult.Success(home.restaurant.copy(address = draft.address))
+            },
+        )
+        advanceUntilIdle()
+        viewModel.onAddressClick()
+        viewModel.onAddressStreetLineChange(" Muelle 3 ")
+        viewModel.onSaveAddress()
+        advanceUntilIdle()
+
+        assertEquals("Muelle 3", submittedDraft?.address?.streetLine)
+        assertEquals(home.restaurant.name, submittedDraft?.name)
+        assertNull(viewModel.uiState.value.activeBottomSheet)
+        val content = assertIs<RestaurantHomeContent.Loaded>(viewModel.uiState.value.content)
+        assertEquals("Muelle 3", content.restaurant.address.streetLine)
+    }
+
+    @Test
+    fun invalidAddressDoesNotSubmitAndSaveFailureKeepsSheetOpen() = runTest(dispatcher) {
+        var updateCalls = 0
+        val viewModel = viewModelFor(
+            onUpdateRestaurant = {
+                updateCalls++
+                RepositoryResult.Failure(RepositoryError.Offline)
+            },
+        )
+        advanceUntilIdle()
+        viewModel.onAddressClick()
+        viewModel.onAddressStreetLineChange(" ")
+        viewModel.onSaveAddress()
+        assertTrue(requireNotNull(viewModel.uiState.value.addressDraft).streetInvalid)
+        assertEquals(0, updateCalls)
+
+        viewModel.onAddressStreetLineChange("Muelle 3")
+        viewModel.onSaveAddress()
+        advanceUntilIdle()
+        assertEquals(1, updateCalls)
+        assertEquals(RestaurantHomeError.OFFLINE, viewModel.uiState.value.addressDraft?.error)
+        assertEquals(RestaurantHomeBottomSheet.EDIT_ADDRESS, viewModel.uiState.value.activeBottomSheet)
+    }
+
     private fun viewModelFor(
         home: RestaurantHome = ownerHome(),
         onLoad: suspend () -> RepositoryResult<RestaurantHome> = {
