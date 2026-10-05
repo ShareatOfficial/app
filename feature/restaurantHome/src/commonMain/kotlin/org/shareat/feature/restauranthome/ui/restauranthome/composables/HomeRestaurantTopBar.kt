@@ -39,7 +39,7 @@ internal fun HomeRestaurantTopBar(
     val collapseProgress = rememberCollapseProgress(LocalDensity.current, scrollState)
     val rowColor = MaterialTheme.colorScheme.surfaceContainer
 
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .drawBehind {
@@ -50,51 +50,55 @@ internal fun HomeRestaurantTopBar(
             }
             .safeDrawingPadding()
             .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .height(48.dp)
-                .graphicsLayer {
-                    alpha = 1f - collapseProgress.value
-                }
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(8.dp),
-                )
-                .padding(horizontal = 12.dp)
-                .align(Alignment.CenterStart),
-            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.CenterStart
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLargeEmphasized,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .height(48.dp)
-                .graphicsLayer {
-                    alpha = 0f + collapseProgress.value
-                }
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    shape = RoundedCornerShape(8.dp),
+            Box(
+                modifier = Modifier
+                    .height(48.dp)
+                    .graphicsLayer {
+                        alpha = 1f - collapseProgress.value
+                    }
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(8.dp),
+                    )
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-                .padding(horizontal = 12.dp)
-                .align(Alignment.CenterStart),
-            contentAlignment = Alignment.CenterStart,
-        ) {
-            Text(
-                text = restaurantName,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-                autoSize = TextAutoSize.StepBased(
-                    minFontSize = MaterialTheme.typography.bodySmall.fontSize,
-                    maxFontSize = MaterialTheme.typography.headlineSmall.fontSize,
-                ),
-                maxLines = 1,
-            )
+            }
+            Box(
+                modifier = Modifier
+                    .height(48.dp)
+                    .graphicsLayer {
+                        alpha = 0f + collapseProgress.value
+                    }
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(8.dp),
+                    )
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(
+                    text = restaurantName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = MaterialTheme.typography.bodySmall.fontSize,
+                        maxFontSize = MaterialTheme.typography.headlineSmall.fontSize,
+                    ),
+                    maxLines = 1,
+                )
+            }
         }
         Row(
             modifier = Modifier
@@ -102,7 +106,7 @@ internal fun HomeRestaurantTopBar(
                 .background(
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     shape = RoundedCornerShape(8.dp)
-                ).align(Alignment.CenterEnd)
+                )
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
