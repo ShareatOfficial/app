@@ -44,7 +44,7 @@ import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantMenu
 import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeError
-import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
+import org.shareat.shared.media.ImageUploadValidationResult
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

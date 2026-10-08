@@ -18,4 +18,29 @@
         <item quantity="one">%1$d estrella</item>
         <item quantity="other">%1$d estrellas</item>
     </plurals>
+    <string name="unlisted_review_title">Añadir reseña</string>
+    <string name="unlisted_review_restaurant_name">Nombre del restaurante</string>
+    <string name="unlisted_review_dish_name">Nombre del plato</string>
+    <string name="unlisted_review_image_add">Añadir foto del plato</string>
+    <string name="unlisted_review_image_change">Cambiar foto</string>
+    <string name="unlisted_review_image_required">La foto es obligatoria.</string>
+    <string name="unlisted_review_image_selected">Foto del plato seleccionada</string>
+    <string name="unlisted_review_image_processing">Preparando foto…</string>
+    <string name="unlisted_review_rating">Tu valoración</string>
+    <string name="unlisted_review_star_accessibility">%1$d de 5 estrellas</string>
+    <string name="unlisted_review_star_selected">Seleccionada</string>
+    <string name="unlisted_review_star_not_selected">No seleccionada</string>
+    <string name="unlisted_review_comment">¿Qué te ha parecido?</string>
+    <string name="unlisted_review_submit">Publicar reseña</string>
+    <string name="unlisted_review_submitting">Publicando…</string>
+    <string name="unlisted_review_submitted">Reseña publicada. Será visible tras la moderación.</string>
+    <string name="unlisted_review_error_image_type">Elige una foto JPEG, PNG o WebP.</string>
+    <string name="unlisted_review_error_image_size">La foto pesa demasiado. Elige otra imagen.</string>
+    <string name="unlisted_review_error_image_invalid">No hemos podido leer la foto. Prueba con otra.</string>
+    <string name="unlisted_review_error_offline">Parece que no tienes conexión. Revisa la conexión e inténtalo de nuevo.</string>
+    <string name="unlisted_review_error_session">Tu sesión ha caducado. Inicia sesión para publicar.</string>
+    <string name="unlisted_review_error_forbidden">Tu cuenta no puede publicar una reseña ahora.</string>
+    <string name="unlisted_review_error_unavailable">Las reseñas no están disponibles temporalmente. Inténtalo más tarde.</string>
+    <string name="unlisted_review_validation">Revisa los campos obligatorios e inténtalo de nuevo.</string>
+    <string name="unlisted_review_error_submit">No hemos podido publicar la reseña. Revisa los datos e inténtalo de nuevo.</string>
 </resources>

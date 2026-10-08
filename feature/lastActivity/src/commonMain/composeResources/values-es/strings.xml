@@ -1,5 +1,7 @@
 <resources>
-    <string name="last_activity_title">Actividad</string>
+    <string name="last_activity_title">Reseñas</string>
+    <string name="last_activity_add_review">Agregar reseña</string>
+    <string name="last_activity_login_to_add_review">Inicia sesión para añadir una reseña</string>
     <string name="last_activity_type_dish">Plato</string>
     <string name="last_activity_type_restaurant">Restaurante</string>
     <string name="last_activity_image_unavailable">Imagen no disponible de %1$s</string>

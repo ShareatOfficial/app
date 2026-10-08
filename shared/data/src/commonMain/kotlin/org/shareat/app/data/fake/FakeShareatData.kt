@@ -34,6 +34,7 @@ import org.shareat.app.domain.model.ReviewTarget
 import org.shareat.app.domain.model.ReviewVisibility
 import org.shareat.app.domain.model.Weekday
 import org.shareat.app.domain.model.WeeklyOpeningHours
+import org.shareat.app.domain.model.UnlistedDishReview
 
 class FakeShareatData internal constructor(
     internal val accounts: List<Account>,
@@ -43,6 +44,7 @@ class FakeShareatData internal constructor(
     dishes: List<Dish>,
     menuItems: List<MenuItem>,
     reviews: List<Review>,
+    unlistedDishReviews: List<UnlistedDishReview> = emptyList(),
 ) {
     internal val customerProfiles: MutableList<CustomerProfile> = customerProfiles.toMutableList()
     internal val restaurants: MutableList<Restaurant> = restaurants.toMutableList()
@@ -50,6 +52,7 @@ class FakeShareatData internal constructor(
     internal val dishes: MutableList<Dish> = dishes.toMutableList()
     internal val menuItems: MutableList<MenuItem> = menuItems.toMutableList()
     internal val reviews: MutableList<Review> = reviews.toMutableList()
+    internal val unlistedDishReviews: MutableList<UnlistedDishReview> = unlistedDishReviews.toMutableList()
 
     companion object {
         fun preview(): FakeShareatData = mockShareatData()

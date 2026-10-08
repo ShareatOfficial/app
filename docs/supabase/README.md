@@ -43,6 +43,19 @@ npx supabase db lint --local --schema private,public --level warning --fail-on w
 
 Crear migraciones únicamente con `npx supabase migration new <name>`. El seed es local y no forma parte del despliegue.
 
+Los contratos pgTAP requieren que la extensión `pgtap` esté instalada y sus funciones sean accesibles
+en el `search_path` de la sesión. Si aparece `function no_plan() does not exist`, comprobar ambos
+requisitos antes de interpretar el resultado como un fallo del contrato. No se instala pgTAP mediante
+la migración de producto.
+
+Para verificar las reseñas de platos no registrados en un staging autorizado sin esa extensión,
+[unlisted_dish_review_staging_smoke_test.sql](../../supabase/tests/unlisted_dish_review_staging_smoke_test.sql)
+ofrece un contrato SQL independiente. Ejecutar el archivo completo en una única sesión administrativa
+contra staging o local, nunca producción. Crea fixtures aleatorios, comprueba las políticas con los roles
+reales y termina con `ROLLBACK`; si falla, ejecutar `ROLLBACK` antes de reutilizar la sesión. Solo inserta
+metadatos temporales en Storage: no verifica cargas HTTP, archivos reales ni la generación efectiva de
+URLs firmadas. Su salida TAP básica permite incluirlo también en `supabase test db`.
+
 ## Despliegue seguro
 
 1. Ejecutar reset, pgTAP y lint local.

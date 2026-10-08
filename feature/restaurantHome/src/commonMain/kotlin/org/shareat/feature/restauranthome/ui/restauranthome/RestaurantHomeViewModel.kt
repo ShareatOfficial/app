@@ -32,7 +32,7 @@ import org.shareat.feature.restauranthome.domain.model.OwnerRestaurantInfoDraft
 import org.shareat.feature.restauranthome.domain.model.RestaurantHome
 import org.shareat.feature.restauranthome.ui.model.DishEditFormUiState
 import org.shareat.feature.restauranthome.ui.model.DishFormValidation
-import org.shareat.feature.restauranthome.ui.model.ImageUploadValidationResult
+import org.shareat.shared.media.ImageUploadValidationResult
 import org.shareat.feature.restauranthome.ui.model.RestaurantAddressUiState
 import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent

@@ -8,6 +8,6 @@ import org.shareat.feature.lastactivity.domain.GetLastActivityUseCaseImpl
 import org.shareat.feature.lastactivity.ui.LastActivityViewModel
 
 val lastActivityModule: Module = module {
-    factory<GetLastActivityUseCase> { GetLastActivityUseCaseImpl(get(), get(), get()) }
+    factory<GetLastActivityUseCase> { GetLastActivityUseCaseImpl(get(), get(), get(), get()) }
     viewModel { LastActivityViewModel(get(), get()) }
 }
