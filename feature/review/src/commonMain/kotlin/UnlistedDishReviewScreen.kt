@@ -25,13 +25,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -131,11 +134,17 @@ private fun UnlistedDishReviewScreenContent(
     onCommentChange: (String) -> Unit = {},
     onSubmit: () -> Unit = {},
 ) {
+    val isSubmitting by rememberUpdatedState(state.isSubmitting)
+    // Material3 keys SheetState by this callback. Keep it stable while editing,
+    // but let it read the current submission status and reset for a new opening.
+    val confirmValueChange = remember(state.openingToken) {
+        { target: SheetValue -> target != SheetValue.Hidden || !isSubmitting }
+    }
     ModalBottomSheet(
         onDismissRequest = { if (!state.isSubmitting) onDismissRequest() },
         sheetState = rememberModalBottomSheetState(
             skipPartiallyExpanded = true,
-            confirmValueChange = { target -> target != androidx.compose.material3.SheetValue.Hidden || !state.isSubmitting },
+            confirmValueChange = confirmValueChange,
         ),
     ) {
         Column(
