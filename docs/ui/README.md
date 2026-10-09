@@ -13,9 +13,30 @@ Que cualquier pantalla en estado de carga se sienta parte de la misma app: la mi
 - El `Loading` de un ViewModel siempre se renderiza como un **skeleton con la forma esperada de la pantalla ya cargada**, no como un spinner centrado ni una pantalla en blanco. Ejemplo de referencia: `HomeScreen.HomeLoading` (`feature/home/ui`), que muestra la sección de highlights (`RestaurantHighlightsSectionSkeleton`, 4 tarjetas) seguida de una tarjeta standalone (`RestaurantCardSkeleton`), reproduciendo el layout real (`RestaurantHighlightsSection` + `RestaurantStandaloneCard`).
 - Una pantalla que se abre con el dato ya en la mano (patrón *payload* en [Navegación](../navigation/README.md)) no tiene estado `Loading`: pinta el contenido cargado en el primer frame. Aun así mantiene sus skeletons y los muestra mientras hay una **recarga** en curso, de modo que la regla se cumple en lo que importa: siempre que la pantalla espera datos, enseña la forma de esos datos. `RestaurantScreen` lo hace con *pull to refresh*.
 
+## Componentes de restaurante compartidos
+
+`shared:designsystem.components.restaurant` contiene la cabecera con imagen, la barra superior que
+cambia al desplazarse, la navegación de categorías, las filas y los detalles de plato. Los componentes
+reciben valores de presentación y slots Compose; los modelos, las etiquetas localizadas y las
+acciones de gestión pertenecen a cada feature. `RestaurantHome` conserva sus controles de edición
+y publicación en esos slots.
+
+La pantalla pública usa una única lista con categorías que desplazan a su sección; el filtro de
+alérgenos recalcula las secciones visibles. Los detalles se abren en un panel identificado por el ID
+del plato, con reseñas actualizadas y acciones de valoración y moderación. El panel se cierra si el
+plato desaparece y se oculta antes de abrir el formulario de reseña. Una declaración de alérgenos
+ausente se distingue de una declaración explícitamente vacía.
+
+El adaptador de imágenes compartido usa Coil con una fotografía de respaldo empaquetada en el
+design system. Los recursos específicos de previews se resuelven dentro de la feature, sin que el
+design system conozca sus URLs de ejemplo. Las barras superpuestas gestionan el inset superior;
+la imagen puede dibujarse bajo la barra de estado.
+
 ## Padding superior (insets)
 
-- Una pantalla cuya raíz es un `Scaffold` con `topBar` no toca los insets: `TopAppBar` ya pinta el de la barra de estado y `Scaffold` reparte el resto por su `contentPadding` (`RestaurantScreen`, `RestaurantHomeScreen`, `RestaurantOnboardingScreen`).
+- Una pantalla cuya raíz es un `Scaffold` con `topBar` no toca los insets: `TopAppBar` ya pinta el de la barra de estado y `Scaffold` reparte el resto por su `contentPadding` (por ejemplo, `RestaurantOnboardingScreen`). La pantalla pública de restaurante con barra superpuesta
+  usa el componente compartido para el inset superior y reserva en el `Scaffold` solo los insets
+  inferiores y horizontales.
 - Una pantalla que construye su propia cabecera con `Surface` + `Column` aplica `safeDrawingTopPadding()` en ese `Column` raíz, una sola vez y lo más arriba posible (`HomeScreen`, `LastActivityScreen`, `SettingsScreen`, `EditProfileScreen`, `TermsAndConditionsScreen`, `SubscriptionScreen`).
 - Una pantalla que quiere dibujar *bajo* la barra de estado a propósito (fotografía a sangre, degradados) gestiona sus insets a mano y no usa el modifier: `LoginBackground` pinta la imagen de fondo a pantalla completa y solo aplica insets al panel inferior.
 

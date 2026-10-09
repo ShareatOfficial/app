@@ -1,7 +1,6 @@
 package org.shareat.feature.restaurant.ui.model
 
 import org.shareat.app.domain.model.Dish
-import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.Money
 import org.shareat.app.domain.model.RatingSummary
@@ -50,6 +49,7 @@ private fun RatedMenuDish.toArgs(): DishArgs = DishArgs(
     priceLabel = menuDish.price.toPriceLabel(),
     description = menuDish.dish.description,
     imageUrl = menuDish.dish.image?.url,
+    imageDescription = menuDish.dish.image?.alternativeText,
     reviews = reviews.map(Review::toArgs),
     category = menuDish.category,
     allergens = menuDish.dish.declaredAllergens(),
@@ -77,7 +77,6 @@ fun RestaurantArgs.toUiState(
     dishMatchesFilters: (DishArgs) -> Boolean = { true },
 ): RestaurantUiState = RestaurantUiState(
     header = toHeaderUiState(),
-    categories = toCategoryChips(selection.category),
     allergenFilter = AllergenFilterUiState(
         allergens = declaredAllergens().map { allergen ->
             AllergenChipUiState(allergen, isExcluded = allergen in selection.excludedAllergens)
@@ -110,14 +109,6 @@ private fun RestaurantArgs.toHeaderUiState(): RestaurantHeaderUiState = Restaura
     reviewCount = reviewCount,
 )
 
-private fun RestaurantArgs.toCategoryChips(selected: DishCategory?): List<CategoryChipUiState> {
-    val categories = dishes.mapNotNull(DishArgs::category).distinct().sortedBy(DishCategory::ordinal)
-    if (categories.isEmpty()) return emptyList()
-    return (listOf(null) + categories).map { category ->
-        CategoryChipUiState(category = category, isSelected = category == selected)
-    }
-}
-
 private fun DishArgs.toCardUiState(selectedRating: Int?): DishCardUiState = DishCardUiState(
     id = id,
     name = name,
@@ -127,6 +118,9 @@ private fun DishArgs.toCardUiState(selectedRating: Int?): DishCardUiState = Dish
     reviews = reviews.map(DishReviewArgs::toUiState),
     allergens = allergens,
     selectedRating = selectedRating,
+    category = category,
+    declaresAllergens = declaresAllergens,
+    imageDescription = imageDescription,
 )
 
 private fun DishReviewArgs.toUiState(): DishReviewUiState = DishReviewUiState(

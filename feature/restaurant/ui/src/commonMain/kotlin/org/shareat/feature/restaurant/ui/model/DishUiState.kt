@@ -1,5 +1,6 @@
 package org.shareat.feature.restaurant.ui.model
 
+import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.Rating
 import org.shareat.app.domain.model.RatingSummary
@@ -13,6 +14,9 @@ data class DishCardUiState(
     val reviews: List<DishReviewUiState> = emptyList(),
     val allergens: List<EuAllergen> = emptyList(),
     val selectedRating: Int? = null,
+    val category: DishCategory? = null,
+    val declaresAllergens: Boolean = false,
+    val imageDescription: String? = null,
 ) {
     private val ratingSummary: RatingSummary
         get() = RatingSummary.of(reviews.map { Rating(it.rating) })

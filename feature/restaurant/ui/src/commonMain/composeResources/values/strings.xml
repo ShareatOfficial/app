@@ -53,4 +53,13 @@
     <string name="restaurant_error_already_exists">That already exists.</string>
     <string name="restaurant_error_not_found">We could not find what you were looking for.</string>
     <string name="restaurant_error_generic">Something went wrong. Please try again.</string>
+    <string name="restaurant_title">Restaurant</string>
+    <string name="restaurant_category_other">Other</string>
+    <string name="restaurant_address_title">Address</string>
+    <string name="restaurant_address_unavailable">Address unavailable</string>
+    <string name="restaurant_rating_title">Restaurant rating</string>
+    <string name="restaurant_dish_allergens">Allergens</string>
+    <string name="restaurant_dish_allergens_unknown">The restaurant has not provided allergen information for this dish.</string>
+    <string name="restaurant_dish_allergens_none">The restaurant declares none of the listed allergens for this dish.</string>
+    <string name="restaurant_close">Close</string>
 </resources>

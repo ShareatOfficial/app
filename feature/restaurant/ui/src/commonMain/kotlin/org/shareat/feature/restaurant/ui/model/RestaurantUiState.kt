@@ -1,11 +1,9 @@
 package org.shareat.feature.restaurant.ui.model
 
-import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 
 data class RestaurantUiState(
     val header: RestaurantHeaderUiState,
-    val categories: List<CategoryChipUiState> = emptyList(),
     val allergenFilter: AllergenFilterUiState = AllergenFilterUiState(),
     val dishes: List<DishCardUiState> = emptyList(),
     val hasPublishedMenu: Boolean = false,
@@ -27,11 +25,6 @@ data class RestaurantHeaderUiState(
     val isVerified: Boolean = false,
     val ratingLabel: String? = null,
     val reviewCount: Int = 0,
-)
-
-data class CategoryChipUiState(
-    val category: DishCategory?,
-    val isSelected: Boolean,
 )
 
 data class AllergenFilterUiState(

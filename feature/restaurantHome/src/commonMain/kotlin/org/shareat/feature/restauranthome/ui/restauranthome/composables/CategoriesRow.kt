@@ -13,19 +13,14 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,6 +38,7 @@ import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_category_other
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_types_title
+import org.shareat.shared.designsystem.components.restaurant.RestaurantCategoryNavigation
 
 @Composable
 internal fun CategoriesRow(
@@ -60,19 +56,15 @@ internal fun CategoriesRow(
             .fillMaxWidth()
             .onSizeChanged { onHeightChanged(it.height) },
     ) {
-        LazyRow(
-            state = categoryListState,
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                bottom = 4.dp,
-                top = 4.dp
-            ),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.background(color = MaterialTheme.colorScheme.background)
-        ) {
-            item(key = "edit_button_container") {
-                AnimatedVisibility(
+        RestaurantCategoryNavigation(
+            labels = categories.map { category ->
+                category?.label() ?: stringResource(Res.string.restaurant_home_category_other)
+            },
+            selectedIndex = selectedCategoryIndex,
+            listState = categoryListState,
+            onCategoryClick = onCategoryClick,
+            leadingContent = {
+            AnimatedVisibility(
                     visible = isEditMode,
                     enter = slideInHorizontally(
                         animationSpec = tween(
@@ -129,31 +121,8 @@ internal fun CategoriesRow(
                             .copy(containerColor = MaterialTheme.colorScheme.secondaryContainer),
                     )
                 }
-            }
-
-            items(
-                count = categories.size,
-                key = { index -> categories[index]?.name ?: "other" },
-            ) { index ->
-                val category = categories[index]
-                FilterChip(
-                    selected = index == selectedCategoryIndex,
-                    onClick = { onCategoryClick(index) },
-                    label = {
-                        Text(
-                            text = category?.label()
-                                ?: stringResource(Res.string.restaurant_home_category_other),
-                        )
-                    },
-                    modifier = Modifier.heightIn(min = 48.dp),
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
-                )
-            }
-        }
-        HorizontalDivider()
+            },
+        )
     }
 }
 

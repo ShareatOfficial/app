@@ -27,6 +27,7 @@ import org.shareat.feature.restauranthome.ui.model.RestaurantDish
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomePreviewData
 import org.shareat.shared.designsystem.components.RatingBadge
+import org.shareat.shared.designsystem.components.restaurant.RestaurantDishDetails
 import org.shareat.shared.designsystem.theme.ShareatTheme
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_allergens
@@ -45,116 +46,67 @@ internal fun ViewDishContent(
 ) {
     val priceUnits = dish.priceMinorUnits / 100
     val priceCents = (dish.priceMinorUnits % 100).toString().padStart(2, '0')
-
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        RestaurantImage(
-            imageUrl = dish.imageUrl,
-            contentDescription = dish.imageDescription,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp)
-                .clip(RoundedCornerShape(16.dp)),
-            contentScale = ContentScale.Crop,
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Text(
-                text = dish.name,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.headlineSmall,
+    RestaurantDishDetails(
+        name = dish.name,
+        description = dish.description.orEmpty(),
+        priceLabel = stringResource(Res.string.restaurant_home_price, priceUnits, priceCents),
+        modifier = modifier,
+        image = { imageModifier ->
+            RestaurantImage(
+                imageUrl = dish.imageUrl,
+                contentDescription = dish.imageDescription,
+                modifier = imageModifier,
+                contentScale = ContentScale.Crop,
             )
-            Column(horizontalAlignment = Alignment.End) {
-                dish.ratingLabel?.let { rating ->
-                    RatingBadge(ratingLabel = rating)
-                } ?: Text(
-                    text = stringResource(Res.string.restaurant_home_unrated),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = pluralStringResource(
-                        Res.plurals.restaurant_home_reviews,
-                        dish.reviewCount,
-                        dish.reviewCount,
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Text(
-                text = dish.description.orEmpty(),
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyLarge,
+        },
+        ratingContent = {
+            dish.ratingLabel?.let { RatingBadge(ratingLabel = it) } ?: Text(
+                text = stringResource(Res.string.restaurant_home_unrated),
+                style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = stringResource(
-                    Res.string.restaurant_home_price,
-                    priceUnits,
-                    priceCents,
-                ),
-                style = MaterialTheme.typography.titleMedium,
+                text = pluralStringResource(Res.plurals.restaurant_home_reviews, dish.reviewCount, dish.reviewCount),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                text = stringResource(Res.string.restaurant_home_allergens),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            if (dish.allergens.isEmpty()) {
-                Text(
-                    text = stringResource(Res.string.restaurant_home_no_allergen_information),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    dish.allergens.sortedBy { it.ordinal }.forEach { allergen ->
-                        Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            shape = RoundedCornerShape(8.dp),
-                        ) {
-                            Text(
-                                text = allergen.label(),
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                            )
+        },
+        allergenContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(text = stringResource(Res.string.restaurant_home_allergens), style = MaterialTheme.typography.titleSmall)
+                if (dish.allergens.isEmpty()) {
+                    Text(
+                        text = stringResource(Res.string.restaurant_home_no_allergen_information),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        dish.allergens.sortedBy { it.ordinal }.forEach { allergen ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                shape = RoundedCornerShape(8.dp),
+                            ) {
+                                Text(
+                                    text = allergen.label(),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-
-        onReviewClick?.let {
-            Button(
-                onClick = onReviewClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp),
-            ) {
-                Text(text = stringResource(Res.string.restaurant_home_write_review))
+        },
+        actions = {
+            onReviewClick?.let { click ->
+                Button(onClick = click, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(text = stringResource(Res.string.restaurant_home_write_review))
+                }
             }
-        }
-    }
+        },
+    )
 }
 
 @Preview(showBackground = true, widthDp = 412)
