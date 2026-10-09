@@ -71,6 +71,10 @@ kotlin {
             implementation(libs.coil.network.ktor3)
         }
 
+        jvmTest.dependencies {
+            implementation(compose.desktop.currentOs)
+        }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

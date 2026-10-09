@@ -33,7 +33,6 @@ internal object RestaurantPreviewData {
 
     val filteredEmpty = args.toUiState(
         selection = RestaurantSelection(
-            category = DishCategory.Desserts,
             excludedAllergens = setOf(EuAllergen.CerealsContainingGluten),
         ),
         dishMatchesFilters = { false },

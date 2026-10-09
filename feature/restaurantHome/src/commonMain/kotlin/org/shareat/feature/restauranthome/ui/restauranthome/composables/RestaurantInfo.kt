@@ -46,6 +46,8 @@ import org.shareat.feature.restauranthome.ui.model.RestaurantHomeContent
 import org.shareat.feature.restauranthome.ui.model.RestaurantHomeData
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomePreviewData
 import org.shareat.shared.designsystem.theme.ShareatTheme
+import org.shareat.shared.designsystem.components.restaurant.RestaurantHeader
+import org.shareat.shared.designsystem.components.restaurant.RestaurantInfoAction
 import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_hidden
 import shareat.feature.restauranthome.ui.generated.resources.restaurant_home_publish_requires_dish
@@ -66,96 +68,63 @@ internal fun RestaurantInfo(
     publicationError: RestaurantHomeError? = null,
     onPublicationStateChange: (Boolean) -> Unit = {},
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth().background(color = MaterialTheme.colorScheme.background)
-    ) {
-        // Image + main info box with the image the restaurant choose behind.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 297.dp) // ~1/3 of a 891dp tall screen like Pixel 9
-        ) {
+    RestaurantHeader(
+        name = restaurant.name,
+        description = restaurant.description.orEmpty(),
+        modifier = modifier,
+        image = { imageModifier ->
             RestaurantImage(
                 imageUrl = restaurant.imageUrl,
                 contentDescription = restaurant.imageDescription,
-                modifier = Modifier.fillMaxWidth().matchParentSize(),
+                modifier = imageModifier,
                 contentScale = ContentScale.Crop,
             )
-
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
-            )
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Bottom
+        },
+        heroActions = {
+            AnimatedVisibility(
+                visible = isEditMode,
+                enter = slideInHorizontally(initialOffsetX = { it }),
+                exit = slideOutHorizontally(targetOffsetX = { it }),
+                label = "edit_main_info_button_animation",
             ) {
-                Text(
-                    text = restaurant.name,
-                    style = MaterialTheme.typography.displayMedium,
-                    color = Color.White
-                )
-                Text(
-                    text = restaurant.description.orEmpty(),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White
-                )
-            }
-            // We map it inside a custom component to avoid ColumnScope extension propagation.
-            Row(
-                modifier = Modifier.fillMaxWidth().align(Alignment.CenterEnd),
-                horizontalArrangement = Arrangement.End
-            ) {
-                AnimatedVisibility(
-                    visible = isEditMode,
-                    enter = slideInHorizontally(initialOffsetX = { it }),
-                    exit = slideOutHorizontally(targetOffsetX = { it }),
-                    label = "edit_main_info_button_animation"
+                IconButton(
+                    onClick = onEditMainInfoClick,
+                    modifier = Modifier.padding(16.dp),
+                    colors = IconButtonDefaults.iconButtonColors()
+                        .copy(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                    shape = RoundedCornerShape(8.dp),
                 ) {
-                    IconButton(
-                        onClick = onEditMainInfoClick,
-                        modifier = Modifier.padding(16.dp),
-                        colors = IconButtonDefaults.iconButtonColors()
-                            .copy(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                        shape = RoundedCornerShape(8.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar",
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Editar",
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
                 }
             }
-        }
-
-        // Secondary info.  Street, rating, if it is open, etc...
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            HomeRestaurantActionRow(
-                icon = Icons.Outlined.LocationOn,
-                text = restaurant.address.streetLine.ifBlank {
-                    stringResource(Res.string.restaurant_home_edit_address)
-                },
-                onClick = onOpenDirectionsClick,  // A better thing should return a type Actions or restaurant Info.
-                trailingContent = {}
-            )
-            HomeRestaurantActionRow(
-                icon = Icons.Filled.Star,
-                text = restaurant.ratingLabel ?: "Sin calificación",
-                onClick = onRateClick,
-                trailingContent = {}
-            )
-        }
-        AnimatedVisibility(
+        },
+        info = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    RestaurantInfoAction(
+                        icon = Icons.Outlined.LocationOn,
+                        text = restaurant.address.streetLine.ifBlank {
+                            stringResource(Res.string.restaurant_home_edit_address)
+                        },
+                        onClick = onOpenDirectionsClick,
+                        modifier = Modifier.weight(1f),
+                        trailingContent = {},
+                    )
+                    RestaurantInfoAction(
+                        icon = Icons.Filled.Star,
+                        text = restaurant.ratingLabel ?: "Sin calificación",
+                        onClick = onRateClick,
+                        trailingContent = {},
+                    )
+                }
+                AnimatedVisibility(
             visible = isEditMode,
             enter = slideInHorizontally(
                 animationSpec = tween(
@@ -253,23 +222,11 @@ internal fun RestaurantInfo(
                 }
             }
         }
-    }
+            }
+        },
+    )
 }
 
-
-@Composable
-private fun HomeRestaurantActionRow(
-    icon: ImageVector,
-    text: String,
-    onClick: () -> Unit,
-    trailingContent: @Composable () -> Unit
-) {
-    Row(modifier = Modifier.padding(16.dp).clickable(onClick = onClick)) {
-        Icon(imageVector = icon, contentDescription = null)
-        Text(text = text, style = MaterialTheme.typography.bodyMedium)
-        trailingContent()
-    }
-}
 
 @Preview(showBackground = true, widthDp = 412)
 @Composable

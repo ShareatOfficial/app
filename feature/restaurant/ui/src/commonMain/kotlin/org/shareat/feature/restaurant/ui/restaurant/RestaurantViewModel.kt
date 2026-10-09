@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.shareat.app.domain.model.DishCategory
 import org.shareat.app.domain.model.EuAllergen
 import org.shareat.app.domain.model.RestaurantId
 import org.shareat.app.domain.model.ReviewId
@@ -51,8 +50,6 @@ class RestaurantViewModel(
     init {
         loadDishes()
     }
-
-    fun onCategoryClick(category: DishCategory?) = updateSelection { copy(category = category) }
 
     fun onAllergenClick(allergen: EuAllergen) = updateSelection {
         copy(
@@ -161,7 +158,6 @@ class RestaurantViewModel(
             declaresAllergens = dish.declaresAllergens,
         ),
         DishFilters(
-            category = selection.category,
             excludedAllergens = selection.excludedAllergens,
         ),
     )
@@ -170,9 +166,6 @@ class RestaurantViewModel(
 private fun RestaurantSelection.retainedFor(restaurant: RestaurantArgs): RestaurantSelection {
     val dishIds = restaurant.dishes.map(DishArgs::id).toSet()
     return copy(
-        category = category?.takeIf {
-            it in restaurant.dishes.mapNotNull(DishArgs::category).toSet()
-        },
         excludedAllergens = excludedAllergens intersect restaurant.declaredAllergens().toSet(),
         dishRatings = dishRatings.filterKeys { it in dishIds },
     )

@@ -6,19 +6,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.shareat.feature.restauranthome.ui.restauranthome.RestaurantHomePreviewImagePrefix
-import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.baratie_bouillabaisse
 import shareat.feature.restauranthome.ui.generated.resources.baratie_fish_and_chips
 import shareat.feature.restauranthome.ui.generated.resources.baratie_grilled_octopus
 import shareat.feature.restauranthome.ui.generated.resources.baratie_hero
 import shareat.feature.restauranthome.ui.generated.resources.baratie_ocean_panna_cotta
 import shareat.feature.restauranthome.ui.generated.resources.baratie_seafood_fried_rice
+import shareat.feature.restauranthome.ui.generated.resources.Res
 import shareat.feature.restauranthome.ui.generated.resources.baratie_tuna_steak
-import shareat.feature.restauranthome.ui.generated.resources.restaurant_placeholder_hero
+import org.shareat.shared.designsystem.components.restaurant.RestaurantImage as SharedRestaurantImage
 
 /**
  * Loads network images in production and packaged drawable resources in previews.
@@ -47,14 +46,10 @@ internal fun RestaurantImage(
             colorFilter = colorFilter,
         )
     } else {
-        val fallback = painterResource(Res.drawable.restaurant_placeholder_hero)
-        AsyncImage(
-            model = imageUrl?.ifBlank { null },
+        SharedRestaurantImage(
+            imageUrl = imageUrl,
             contentDescription = contentDescription,
             modifier = modifier,
-            placeholder = fallback,
-            error = fallback,
-            fallback = fallback,
             contentScale = contentScale,
             alignment = alignment,
             colorFilter = colorFilter,

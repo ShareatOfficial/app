@@ -32,6 +32,7 @@ data class DishArgs(
     val category: DishCategory? = null,
     val allergens: List<EuAllergen> = emptyList(),
     val declaresAllergens: Boolean = false,
+    val imageDescription: String? = null,
 )
 
 @Serializable

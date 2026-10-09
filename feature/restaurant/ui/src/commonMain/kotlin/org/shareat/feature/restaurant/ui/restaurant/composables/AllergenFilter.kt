@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -74,6 +75,7 @@ private fun AllergenFilterStateless(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AssistChip(
+            modifier = Modifier.heightIn(min = 48.dp),
             onClick = onToggleExpanded,
             label = { Text(text = stringResource(Res.string.restaurant_allergen_filter)) },
             trailingIcon = {
@@ -117,6 +119,7 @@ private fun AllergenFilterStateless(
 @Composable
 private fun AllergenChip(chip: AllergenChipUiState, onClick: () -> Unit) {
     FilterChip(
+        modifier = Modifier.heightIn(min = 48.dp),
         selected = chip.isExcluded,
         onClick = onClick,
         label = { Text(text = chip.allergen.label()) },

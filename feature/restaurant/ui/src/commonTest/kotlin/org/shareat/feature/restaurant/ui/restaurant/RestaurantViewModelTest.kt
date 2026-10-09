@@ -40,6 +40,7 @@ import org.shareat.app.domain.usecase.RatedMenuDish
 import org.shareat.app.domain.usecase.RestaurantDetails
 import org.shareat.app.domain.usecase.RestaurantMenu
 import org.shareat.feature.restaurant.domain.DishMatchesFiltersUseCaseImpl
+import org.shareat.feature.restaurant.ui.model.menuSections
 import org.shareat.feature.restaurant.ui.model.RestaurantArgs
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -96,17 +97,18 @@ class RestaurantViewModelTest {
         val state = viewModel.uiState.value
         assertFalse(state.hasPublishedMenu)
         assertTrue(state.dishes.isEmpty())
-        assertTrue(state.categories.isEmpty())
+        assertTrue(state.dishes.menuSections().isEmpty())
         assertTrue(state.allergenFilter.allergens.isEmpty())
     }
 
     @Test
-    fun theCategoryChipNarrowsTheDishList() = runTest(dispatcher) {
+    fun categorySectionsKeepTheWholeVisibleMenuAvailable() = runTest(dispatcher) {
         val viewModel = viewModelFor()
-
-        viewModel.onCategoryClick(DishCategory.Desserts)
-
-        assertEquals(listOf("Torrija"), viewModel.uiState.value.dishes.map { it.name })
+        assertEquals(
+            listOf(DishCategory.Starters, DishCategory.MainCourses, DishCategory.Desserts),
+            viewModel.uiState.value.dishes.menuSections().map { it.category },
+        )
+        assertEquals(listOf("Croquetas", "Lubina", "Torrija"), viewModel.uiState.value.dishes.map { it.name })
     }
 
     @Test
@@ -140,6 +142,7 @@ class RestaurantViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(listOf("Lubina"), state.dishes.map { it.name })
         assertTrue(state.allergenFilter.hasExclusions)
+        assertEquals(listOf(DishCategory.MainCourses), state.dishes.menuSections().map { it.category })
     }
 
     @Test
